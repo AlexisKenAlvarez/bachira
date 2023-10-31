@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+
+  /* Chrome, Safari, Edge, Opera */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox */
+  input[type=number] {
+    -moz-appearance: textfield;
+  }
+
+  /* Hide the default scrollbar */
+  ::-webkit-scrollbar {
+    width: 0.8rem;
+    height: 0.5rem;
+  }
+
+  /* Track */
+  ::-webkit-scrollbar-track {
+    background: #121212;
+  }
+
+  /* Handle */
+  ::-webkit-scrollbar-thumb {
+    background: #666;
+    border-radius: 1rem;
+    transition: background-color 0.2s;
+  }
+
+  /* Handle on hover */
+  ::-webkit-scrollbar-thumb:hover {
+    background: #999;
+  }
+
+  .truncate-text {
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Number of lines to display */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+}
