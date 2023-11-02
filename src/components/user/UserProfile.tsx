@@ -1,21 +1,14 @@
 "use client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { userDataOutput } from "@/lib/routerTypes";
+import { FollowerData } from "@/lib/userTypes";
 import { api } from "@/trpc/react";
 import { useUser } from "@clerk/nextjs";
-import { User, UserCheck2, UserPlus2 } from "lucide-react";
+import { Settings, UserCheck2, UserPlus2 } from "lucide-react";
 import { useState } from "react";
-import { Button } from "./ui/button";
-
-interface FollowerData {
-  followers: {
-    follower_id: string;
-    following_id: string;
-  }[];
-  following: {
-    follower_id: string;
-    following_id: string;
-  }[];
-}
+import { Button } from "../ui/button";
+import { Skeleton } from "../ui/skeleton";
+import FollowData from "./FollowData";
 
 const UserProfile = ({
   userData,
@@ -28,6 +21,7 @@ const UserProfile = ({
 }) => {
   const currentUser = useUser();
   const [follows, setFollow] = useState<boolean>(isFollowing);
+  const [followModal, setFollowModal] = useState("")
   const [userFollowData, setFollowData] = useState<FollowerData>({
     followers: userData[0]!.following,
     following: userData[0]!.follower,
@@ -132,53 +126,55 @@ const UserProfile = ({
           </div>
           <div className="h-full w-full flex-1 rounded-tl-3xl rounded-tr-3xl border-l border-r border-t border-black/10 bg-white p-5">
             <div className="flex gap-4">
-              <div className="bg-gchat h-28 w-28 shrink-0 rounded-full p-3">
-                <User className="h-full w-full text-white" />
-              </div>
+              <Avatar className="h-24 w-24">
+                <AvatarImage src="/fox.webp" />
+                <AvatarFallback>
+                  <Skeleton className="h-full w-full rounded-full" />
+                </AvatarFallback>
+              </Avatar>
               <div className="w-full">
-                <div className="font-secondary flex h-auto w-full justify-between">
-                  <div>
-                    <h2 className=" text-xl font-bold">
+                <div className="flex h-auto w-full justify-between font-secondary">
+                  <div className="">
+                    <h2 className=" w-44 truncate text-xl font-bold sm:w-60">
                       @{userData[0]!.username}
                     </h2>
                     <h3 className="font-medium">
                       {userData[0]!.firstName} {userData[0]!.lastName}
                     </h3>
+                    {inProfile ? (
+                      <Button
+                        className="mt-2 gap-x-2 px-6 text-sm font-semibold"
+                        disabled={!currentUser.isLoaded}
+                        variant="secondary"
+                      >
+                        <Settings size={18} />
+                        Edit Profile
+                      </Button>
+                    ) : (
+                      <Button
+                        className="px-7"
+                        onClick={handleFollow}
+                        disabled={!currentUser.isLoaded}
+                        variant={follows ? "secondary" : "default"}
+                      >
+                        {follows ? (
+                          <span className="flex items-center gap-2">
+                            <UserCheck2 /> Following
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-2">
+                            <UserPlus2 /> Follow
+                          </span>
+                        )}
+                      </Button>
+                    )}
                   </div>
-                  {!inProfile && (
-                    <Button
-                      className="px-7"
-                      onClick={handleFollow}
-                      disabled={!currentUser.isLoaded}
-                      variant={follows ? "secondary" : "default"}
-                    >
-                      {follows ? (
-                        <span className="flex items-center gap-2">
-                          <UserCheck2 /> Following
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-2">
-                          <UserPlus2 /> Follow
-                        </span>
-                      )}
-                    </Button>
-                  )}
-                </div>
-                <div className="font-secondary mt-8 flex gap-x-5">
-                  <h2 className="font-medium">
-                    <span className="text-xl font-bold">
-                      {userFollowData.following.length}
-                    </span>{" "}
-                    Following
-                  </h2>
-                  <h2 className="font-medium">
-                    <span className="text-xl font-bold">
-                      {userFollowData.followers.length}
-                    </span>{" "}
-                    Followers
-                  </h2>
                 </div>
               </div>
+            </div>
+            <div className="mt-4 flex gap-x-5 font-secondary">
+              <FollowData type="Following" value={userFollowData.following} />
+              <FollowData type="Followers" value={userFollowData.followers} />
             </div>
           </div>
         </div>

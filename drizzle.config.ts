@@ -4,9 +4,10 @@ import { env } from "@/env.mjs";
 
 export default {
   schema: "./src/server/db/schema/index.ts",
+  out: "./src/server/db",
   driver: "mysql2",
   dbCredentials: {
     connectionString: env.DATABASE_URL,
   },
-  tablesFilter: ["gchatt3_*"],
+  tablesFilter: ["gchat_*"],
 } satisfies Config;

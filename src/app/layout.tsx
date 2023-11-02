@@ -1,9 +1,9 @@
 import "@/app/styles/globals.css";
 
 import { ClerkProvider, SignedIn, SignedOut } from "@clerk/nextjs";
-import type { Metadata } from "next";
 import { Lalezar, Montserrat } from "next/font/google";
 import { headers } from "next/headers";
+import type { Metadata } from "next";
 
 import { TRPCReactProvider } from "@/trpc/react";
 import Nav from "../components/Nav";
@@ -11,6 +11,7 @@ import Nav from "../components/Nav";
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
+  display: 'swap',
 });
 
 const lalezar = Lalezar({

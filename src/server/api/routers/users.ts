@@ -20,17 +20,90 @@ export const userRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const data = await ctx.db.query.users.findMany({
-        where: (users, { eq }) => eq(users.username, input.username),
+      const userSelect = await ctx.db
+        .select({
+          id: users.id,
+        })
+        .from(users)
+        .where(eq(users.username, input.username));
+
+      if (userSelect[0]) {
+        const data = await ctx.db.query.users.findMany({
+          where: (users, { eq }) => eq(users.username, input.username),
+          extras: {
+            followers:
+              sql`(SELECT count(*) from ${followership} WHERE following_id = ${userSelect[0].id})`.as(
+                "followers",
+              ),
+
+            following:
+              sql`(SELECT count(*) from ${followership} WHERE follower_id = ${userSelect[0].id})`.as(
+                "following",
+              ),
+          },
+        });
+
+        return data;
+      }
+      return null;
+    }),
+  getdata: publicProcedure
+    .input(
+      z.object({
+        username: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const userSelect = await ctx.db
+        .select({
+          id: users.id,
+        })
+        .from(users)
+        .where(eq(users.username, input.username));
+
+      if (userSelect[0]) {
+        const data = await ctx.db.query.users.findMany({
+          where: (users, { eq }) => eq(users.username, input.username),
+          extras: {
+            followers:
+              sql`(SELECT count(*) from ${followership} WHERE following_id = ${userSelect[0].id})`.as(
+                "followers",
+              ),
+
+            following:
+              sql`(SELECT count(*) from ${followership} WHERE follower_id = ${userSelect[0].id})`.as(
+                "following",
+              ),
+          },
+        });
+
+        return data;
+      }
+      return null;
+    }),
+  checkFollowing: publicProcedure
+    .input(
+      z.object({
+        user_id: z.string(),
+        following_id: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const data = await ctx.db.query.users.findFirst({
+        where: (users, { eq }) => eq(users.id, input.user_id),
         with: {
-          follower: true,
-          following: true,
-        },
+          follower: true
+        }
       });
 
       if (data) {
-        return data;
+        const isFollowing = data.follower.filter((val) => val.following_id === input.following_id);
+        console.log(isFollowing);
+        return {
+          isFollowing: isFollowing.length > 0
+        };
       }
+
       return null;
     }),
   checkEmail: publicProcedure

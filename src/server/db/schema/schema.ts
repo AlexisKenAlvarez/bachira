@@ -3,11 +3,12 @@
 
 import { sql } from "drizzle-orm";
 import {
-  mysqlTableCreator,
-  timestamp,
-  varchar,
+  index,
   int,
   mysqlEnum,
+  mysqlTableCreator,
+  timestamp,
+  varchar
 } from "drizzle-orm/mysql-core";
 
 export const mysqlTable = mysqlTableCreator((name) => `gchat_${name}`);
@@ -36,6 +37,11 @@ export const followership = mysqlTable("followership", {
   id: int("id").primaryKey().notNull().autoincrement(),
   follower_id: varchar("follower_id", { length: 256 }).notNull(),
   following_id: varchar("following_id", { length: 256 }).notNull(),
+}, (table) => {
+  return {
+    followerIdx: index("follower_idx").on(table.follower_id),
+    followingIdx: index("following_idx").on(table.following_id)
+  }
 });
 
 export const notification = mysqlTable("notifications", {

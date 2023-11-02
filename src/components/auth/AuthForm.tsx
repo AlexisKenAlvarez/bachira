@@ -575,7 +575,7 @@ const AuthForm = ({ type }: AuthPageProps) => {
                   </svg>
 
                   <p className="font-semibold">
-                    {type.charAt(0).toUpperCase() + type.slice(1)} in with
+                    {type.charAt(0).toUpperCase() + type.slice(1)} with
                     Google
                   </p>
                 </Button>

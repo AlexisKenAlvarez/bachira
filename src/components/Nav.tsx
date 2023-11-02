@@ -13,6 +13,8 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { Cog, LogOut, User } from "lucide-react";
 import Link from "next/link";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Skeleton } from "./ui/skeleton";
 
 const Nav = () => {
   const router = useRouter();
@@ -27,8 +29,13 @@ const Nav = () => {
       </div>
 
       <DropdownMenu>
-        <DropdownMenuTrigger className="h-10 w-10 rounded-full bg-gchat p-2 uppercase text-white">
-          <User className="h-full w-full text-white" />
+        <DropdownMenuTrigger className="">
+          <Avatar className="">
+            <AvatarImage src="/fox.webp" />
+            <AvatarFallback>
+              <Skeleton className="h-full w-full rounded-full" />
+            </AvatarFallback>
+          </Avatar>
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="end"
@@ -37,7 +44,7 @@ const Nav = () => {
           <DropdownMenuLabel className="relative">
             <div className="">
               <h1 className="">My Account</h1>
-              <p className="truncate max-w-full overflow-ellipsis">
+              <p className="max-w-full truncate overflow-ellipsis">
                 {user?.emailAddresses[0]?.emailAddress}
               </p>
             </div>

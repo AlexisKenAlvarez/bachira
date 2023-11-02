@@ -5,7 +5,7 @@ const forUnauthenticated = ["/signin", "/signin/reset-password", "/signup"];
 
 export default authMiddleware({
   // "/" will be accessible to all users
-  publicRoutes: ["/signin", "/signup", "/api/:path*"],
+  publicRoutes: ["/signin", "/signup", "/api/trpc/:path*"],
   afterAuth(auth, req) {
     // handle users who aren't authenticated
     if (!auth.userId && !auth.isPublicRoute) {
@@ -21,5 +21,5 @@ export default authMiddleware({
 });
 
 export const config = {
-  matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
+  matcher: ["/((?!.*\\..*|_next).*)", "/"],
 };
