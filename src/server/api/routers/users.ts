@@ -1,12 +1,25 @@
-import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
-import { followership, users } from "@/server/db/schema";
 import { signupSchema } from "@/lib/zodSchema";
+import { createTRPCRouter, privateProcedure } from "@/server/api/trpc";
+import { followership, users } from "@/server/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
-import { userData } from "@/lib/routerTypes";
+
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+import { TRPCError } from "@trpc/server";
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL as string,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN as string,
+});
+
+const rateLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.fixedWindow(5, "10 s"),
+});
 
 export const userRouter = createTRPCRouter({
-  getUsers: publicProcedure.query(async ({ ctx }) => {
+  getUsers: privateProcedure.query(async ({ ctx }) => {
     const data = await ctx.db.query.users.findMany({});
 
     if (data[0]) {
@@ -14,7 +27,7 @@ export const userRouter = createTRPCRouter({
     }
     return null;
   }),
-  getUser: publicProcedure
+  getUser: privateProcedure
     .input(
       z.object({
         username: z.string(),
@@ -48,7 +61,7 @@ export const userRouter = createTRPCRouter({
       }
       return null;
     }),
-  getdata: publicProcedure
+  getdata: privateProcedure
     .input(
       z.object({
         username: z.string(),
@@ -82,7 +95,7 @@ export const userRouter = createTRPCRouter({
       }
       return null;
     }),
-  checkFollowing: publicProcedure
+  checkFollowing: privateProcedure
     .input(
       z.object({
         user_id: z.string(),
@@ -93,21 +106,23 @@ export const userRouter = createTRPCRouter({
       const data = await ctx.db.query.users.findFirst({
         where: (users, { eq }) => eq(users.id, input.user_id),
         with: {
-          follower: true
-        }
+          follower: true,
+        },
       });
 
       if (data) {
-        const isFollowing = data.follower.filter((val) => val.following_id === input.following_id);
+        const isFollowing = data.follower.filter(
+          (val) => val.following_id === input.following_id,
+        );
         console.log(isFollowing);
         return {
-          isFollowing: isFollowing.length > 0
+          isFollowing: isFollowing.length > 0,
         };
       }
 
       return null;
     }),
-  checkEmail: publicProcedure
+  checkEmail: privateProcedure
     .input(
       z.object({
         email: z.string(),
@@ -124,12 +139,12 @@ export const userRouter = createTRPCRouter({
 
       return null;
     }),
-  addUser: publicProcedure
+  addUser: privateProcedure
     .input(signupSchema)
     .mutation(async ({ ctx, input }) => {
       await ctx.db.insert(users).values({ ...input });
     }),
-  followUser: publicProcedure
+  followUser: privateProcedure
     .input(
       z.object({
         followerId: z.string(),
@@ -137,6 +152,10 @@ export const userRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const { success } = await rateLimiter.limit(ctx.auth.userId as string);
+      if (!success) {
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
+      }
       const followPrepare = ctx.db
         .insert(followership)
         .values({
@@ -154,9 +173,14 @@ export const userRouter = createTRPCRouter({
         success: true,
       };
     }),
-  unfollowUser: publicProcedure
+  unfollowUser: privateProcedure
+
     .input(z.object({ user_id: z.string() }))
     .mutation(async ({ ctx, input }) => {
+      const { success } = await rateLimiter.limit(ctx.auth.userId as string);
+      if (!success) {
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
+      }
       const deletePrepare = ctx.db
         .delete(followership)
         .where(eq(followership.follower_id, sql.placeholder("user_id")))
