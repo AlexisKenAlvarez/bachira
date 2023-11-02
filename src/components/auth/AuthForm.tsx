@@ -289,6 +289,8 @@ const AuthForm = ({ type }: AuthPageProps) => {
   const userNeedsToBeCreated =
     mySignin.signIn?.firstFactorVerification.status === "transferable";
 
+  console.log(mySignin.signIn);
+
   const oAuthExisting = async () => {
     try {
       if (!mySignup.isLoaded) {
@@ -335,6 +337,8 @@ const AuthForm = ({ type }: AuthPageProps) => {
 
           const userData = {
             id: result.createdUserId!,
+            image: null,
+            bio: null,
             username: result.username!,
             email: result.emailAddress!,
             firstName: result.firstName!,

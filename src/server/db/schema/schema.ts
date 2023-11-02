@@ -8,7 +8,7 @@ import {
   mysqlEnum,
   mysqlTableCreator,
   timestamp,
-  varchar
+  varchar,
 } from "drizzle-orm/mysql-core";
 
 export const mysqlTable = mysqlTableCreator((name) => `gchat_${name}`);
@@ -23,6 +23,8 @@ const updated_at = timestamp("updated_at")
 export const users = mysqlTable("users", {
   id: varchar("id", { length: 256 }).primaryKey().unique().notNull(),
   username: varchar("username", { length: 20 }).notNull().unique(),
+  image: varchar("image", { length: 254 }),
+  bio: varchar("bio", { length: 100 }),
   email: varchar("email", { length: 254 }).notNull(),
   firstName: varchar("firstName", { length: 50 }).notNull(),
   lastName: varchar("lastName", { length: 50 }).notNull(),
@@ -33,16 +35,20 @@ export const users = mysqlTable("users", {
   updated_at,
 });
 
-export const followership = mysqlTable("followership", {
-  id: int("id").primaryKey().notNull().autoincrement(),
-  follower_id: varchar("follower_id", { length: 256 }).notNull(),
-  following_id: varchar("following_id", { length: 256 }).notNull(),
-}, (table) => {
-  return {
-    followerIdx: index("follower_idx").on(table.follower_id),
-    followingIdx: index("following_idx").on(table.following_id)
-  }
-});
+export const followership = mysqlTable(
+  "followership",
+  {
+    id: int("id").primaryKey().notNull().autoincrement(),
+    follower_id: varchar("follower_id", { length: 256 }).notNull(),
+    following_id: varchar("following_id", { length: 256 }).notNull(),
+  },
+  (table) => {
+    return {
+      followerIdx: index("follower_idx").on(table.follower_id),
+      followingIdx: index("following_idx").on(table.following_id),
+    };
+  },
+);
 
 export const notification = mysqlTable("notifications", {
   id: int("id").primaryKey().notNull().autoincrement(),

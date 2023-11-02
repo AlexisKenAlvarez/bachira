@@ -1,5 +1,5 @@
 import { signupSchema } from "@/lib/zodSchema";
-import { createTRPCRouter, privateProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, privateProcedure, publicProcedure } from "@/server/api/trpc";
 import { followership, users } from "@/server/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -122,7 +122,7 @@ export const userRouter = createTRPCRouter({
 
       return null;
     }),
-  checkEmail: privateProcedure
+  checkEmail: publicProcedure
     .input(
       z.object({
         email: z.string(),
@@ -139,7 +139,7 @@ export const userRouter = createTRPCRouter({
 
       return null;
     }),
-  addUser: privateProcedure
+  addUser: publicProcedure
     .input(signupSchema)
     .mutation(async ({ ctx, input }) => {
       await ctx.db.insert(users).values({ ...input });
