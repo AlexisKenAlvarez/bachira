@@ -22,10 +22,6 @@ const UserProfile = ({
   const currentUser = useUser();
   const [follows, setFollow] = useState<boolean>(isFollowing);
   const [followModal, setFollowModal] = useState("")
-  const [userFollowData, setFollowData] = useState<FollowerData>({
-    followers: userData[0]!.following,
-    following: userData[0]!.follower,
-  });
 
   const followUser = api.user.followUser.useMutation({
     onMutate: () => {
