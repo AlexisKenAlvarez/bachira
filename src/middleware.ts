@@ -19,7 +19,7 @@ export default authMiddleware({
   // "/" will be accessible to all users
   publicRoutes: ["/signin", "/signup", "/api/trpc/:path*"],
   afterAuth(auth, req) {
-    const ip = req.ip ?? "127.0.0.1";
+    
     // handle users who aren't authenticated
     if (!auth.userId && !auth.isPublicRoute) {
       return redirectToSignIn({ returnBackUrl: req.url }) as NextResponse;
