@@ -5,10 +5,10 @@ import { api } from "@/trpc/react";
 import { useUser } from "@clerk/nextjs";
 import { Settings, UserCheck2, UserPlus2 } from "lucide-react";
 import { useState } from "react";
+import { toast } from 'sonner';
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import FollowData from "./FollowData";
-
 interface FollowData {
   followers: number;
   following: number;
@@ -25,7 +25,6 @@ const UserProfile = ({
 }) => {
   const currentUser = useUser();
   const [follows, setFollow] = useState<boolean>(isFollowing);
-  const [followModal, setFollowModal] = useState("");
   const [userFollowData, setFollowData] = useState<FollowData>({
     followers: Number(userData[0]!.followers as number),
     following: Number(userData[0]!.following as number),
@@ -49,8 +48,13 @@ const UserProfile = ({
         previousFollowData: previousFollowData,
       };
     },
-    onError(error, _, context) {
-      console.log(error);
+    onError(err, _, context) {
+      const errMessage = err.message
+
+      if (errMessage === 'TOO_MANY_REQUESTS') {
+        toast.error('You are doing that too much. Try again later.')
+      }
+
       setFollow(context!.previousLike);
       setFollowData((prevState) => ({
         ...prevState,
@@ -80,7 +84,12 @@ const UserProfile = ({
       };
     },
     onError: (err, variables, context) => {
-      console.log(err);
+      const errMessage = err.message
+
+      if (errMessage === 'TOO_MANY_REQUESTS') {
+        toast.error('You are doing that too much. Try again later.')
+      }
+
       setFollow(context!.previousLike);
       setFollowData((prevState) => ({
         ...prevState,

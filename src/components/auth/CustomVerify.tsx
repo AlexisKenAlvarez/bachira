@@ -75,7 +75,7 @@ const CustomVerify = () => {
           lastName: completeSignUp.lastName!,
         };
 
-        const query = addUser.mutate(userData);
+        await addUser.mutateAsync(userData);
 
         await mySignup.setActive({ session: completeSignUp.createdSessionId });
         router.push("/");

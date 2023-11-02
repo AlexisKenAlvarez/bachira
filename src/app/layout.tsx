@@ -4,14 +4,14 @@ import { ClerkProvider, SignedIn, SignedOut } from "@clerk/nextjs";
 import { Lalezar, Montserrat } from "next/font/google";
 import { headers } from "next/headers";
 import type { Metadata } from "next";
-
+import { Toaster } from "sonner";
 import { TRPCReactProvider } from "@/trpc/react";
 import Nav from "../components/Nav";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
-  display: 'swap',
+  display: "swap",
 });
 
 const lalezar = Lalezar({
@@ -41,8 +41,10 @@ export default function RootLayout({
             <SignedIn>
               <div className="mx-auto flex min-h-screen w-full max-w-[700px] flex-col border-x border-black/10">
                 <Nav />
-
                 {children}
+                <Toaster toastOptions={{
+                  duration: 5000
+                }} />
               </div>
             </SignedIn>
             <SignedOut>{children}</SignedOut>
