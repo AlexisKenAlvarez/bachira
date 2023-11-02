@@ -8,23 +8,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { FollowerType, FollowingType } from "@/lib/userTypes";
 import { Separator } from "../ui/separator";
-
-type FollowerOrFollowing = FollowingType[] | FollowerType[];
 
 const FollowData = ({
   type,
   value,
 }: {
   type: "Following" | "Followers";
-  value: FollowerOrFollowing;
+  value: number;
 }) => {
   return (
     <Dialog>
       <DialogTrigger>
         <h2 className="group cursor-pointer font-medium">
-          <span className="text-xl font-bold">{value.length}</span>{" "}
+          <span className="text-xl font-bold">{value}</span>{" "}
           <span className="underline-offset-2 group-hover:underline">
             {type}
           </span>

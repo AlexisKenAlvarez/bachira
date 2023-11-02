@@ -18,15 +18,14 @@ const page = async ({ params }: { params: { username: string } }) => {
     notFound();
   }
 
-  const isFollowing = await api.user.checkFollowing.query({
+  const data = await api.user.checkFollowing.query({
     user_id: userId as string,
     following_id: userData[0]!.id as string,
   })
 
   const inProfile = userId === userData[0]!.id;
 
-
-  return <UserProfile userData={userData} inProfile={inProfile} isFollowing={isFollowing ? true : false} />;
+  return <UserProfile userData={userData} inProfile={inProfile} isFollowing={data ? data?.isFollowing : false} />;
 };
 
 export default page;

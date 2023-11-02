@@ -3,6 +3,7 @@ import { followership, users } from "@/server/db/schema";
 import { signupSchema } from "@/lib/zodSchema";
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
+import { userData } from "@/lib/routerTypes";
 
 export const userRouter = createTRPCRouter({
   getUsers: publicProcedure.query(async ({ ctx }) => {

@@ -1,7 +1,6 @@
 "use client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { userDataOutput } from "@/lib/routerTypes";
-import { FollowerData } from "@/lib/userTypes";
 import { api } from "@/trpc/react";
 import { useUser } from "@clerk/nextjs";
 import { Settings, UserCheck2, UserPlus2 } from "lucide-react";
@@ -9,6 +8,11 @@ import { useState } from "react";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import FollowData from "./FollowData";
+
+interface FollowData {
+  followers: number;
+  following: number;
+}
 
 const UserProfile = ({
   userData,
@@ -21,7 +25,11 @@ const UserProfile = ({
 }) => {
   const currentUser = useUser();
   const [follows, setFollow] = useState<boolean>(isFollowing);
-  const [followModal, setFollowModal] = useState("")
+  const [followModal, setFollowModal] = useState("");
+  const [userFollowData, setFollowData] = useState<FollowData>({
+    followers: Number(userData[0]!.followers as number),
+    following: Number(userData[0]!.following as number),
+  });
 
   const followUser = api.user.followUser.useMutation({
     onMutate: () => {
@@ -29,14 +37,10 @@ const UserProfile = ({
       const previousFollowData = userFollowData.followers;
       setFollowData((prevState) => ({
         ...prevState,
-        followers: [
-          ...prevState.followers,
-          {
-            follower_id: currentUser.user!.id,
-            following_id: userData[0]!.id,
-          },
-        ],
+        followers: prevState.followers + 1,
       }));
+
+      console.log(userFollowData);
 
       setFollow(true);
 
@@ -62,13 +66,14 @@ const UserProfile = ({
     onMutate: () => {
       const previousState = follows;
       const previousFollowData = userFollowData.followers;
-      const filteredArr = userFollowData.followers.filter(
-        (value) => value.follower_id !== currentUser.user!.id,
-      );
-      console.log(filteredArr);
-      setFollowData((prevState) => ({ ...prevState, followers: filteredArr }));
-      setFollow(false);
 
+      setFollowData((prevState) => ({
+        ...prevState,
+        followers: prevState.followers - 1,
+      }));
+
+      setFollow(false)
+      
       return {
         previousLike: previousState,
         previousFollowData: previousFollowData,
@@ -148,7 +153,7 @@ const UserProfile = ({
                       </Button>
                     ) : (
                       <Button
-                        className="px-7"
+                        className="px-7 mt-2"
                         onClick={handleFollow}
                         disabled={!currentUser.isLoaded}
                         variant={follows ? "secondary" : "default"}
