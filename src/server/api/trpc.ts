@@ -6,13 +6,21 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
+import {
+  SignedInAuthObject,
+  SignedOutAuthObject,
+  getAuth,
+} from "@clerk/nextjs/server";
 import { TRPCError, initTRPC } from "@trpc/server";
 import { type NextRequest } from "next/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
-import { currentUser } from "@clerk/nextjs";
 
 import { db } from "@/server/db";
+
+interface AuthContext {
+  auth: SignedInAuthObject | SignedOutAuthObject;
+}
 
 /**
  * 1. CONTEXT
@@ -36,10 +44,14 @@ interface CreateContextOptions {
  *
  * @see https://create.t3.gg/en/usage/trpc#-serverapitrpcts
  */
-export const createInnerTRPCContext = (opts: CreateContextOptions) => {
+export const createInnerTRPCContext = (
+  opts: CreateContextOptions,
+  { auth }: AuthContext,
+) => {
   return {
     headers: opts.headers,
     db,
+    auth,
   };
 };
 
@@ -51,10 +63,11 @@ export const createInnerTRPCContext = (opts: CreateContextOptions) => {
  */
 export const createTRPCContext = (opts: { req: NextRequest }) => {
   // Fetch stuff that depends on the request
+  const authContext = { auth: getAuth(opts.req) };
 
   return createInnerTRPCContext({
     headers: opts.req.headers,
-  });
+  }, authContext);
 };
 
 /**
@@ -104,9 +117,8 @@ export const publicProcedure = t.procedure;
 
 const isAuthed = t.middleware(async (opts) => {
   const { ctx } = opts;
-  const user = await currentUser();
   
-  if (!user) {
+  if (!ctx.auth.userId) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
   return opts.next({

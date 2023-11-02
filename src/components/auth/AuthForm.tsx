@@ -341,7 +341,7 @@ const AuthForm = ({ type }: AuthPageProps) => {
             lastName: result.lastName!,
           };
 
-          const addData = await addUser.mutateAsync(userData);
+          await addUser.mutateAsync(userData);
 
           await mySignup.setActive({ session: result.createdSessionId });
           router.push("/");
