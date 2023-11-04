@@ -66,7 +66,7 @@ const UserProfile = ({
     },
   });
 
-  const unfollow = api.user.unfollowUser.useMutation({
+  const unfollow = api.user.followUser.useMutation({
     onMutate: () => {
       const previousState = follows;
       const previousFollowData = userFollowData.followers;
@@ -108,13 +108,15 @@ const UserProfile = ({
           // Unfollow user
           console.log(currentUser.user!.id);
           await unfollow.mutateAsync({
-            user_id: currentUser.user!.id,
+            followerId: currentUser.user!.id,
+            action: "unfollow"
           });
         } else {
           // Follow user
           await followUser.mutateAsync({
             followerId: currentUser.user!.id,
             followingId: userData[0]!.id,
+            action: "follow"
           });
         }
       }

@@ -61,40 +61,6 @@ export const userRouter = createTRPCRouter({
       }
       return null;
     }),
-  getdata: privateProcedure
-    .input(
-      z.object({
-        username: z.string(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const userSelect = await ctx.db
-        .select({
-          id: users.id,
-        })
-        .from(users)
-        .where(eq(users.username, input.username));
-
-      if (userSelect[0]) {
-        const data = await ctx.db.query.users.findMany({
-          where: (users, { eq }) => eq(users.username, input.username),
-          extras: {
-            followers:
-              sql`(SELECT count(*) from ${followership} WHERE following_id = ${userSelect[0].id})`.as(
-                "followers",
-              ),
-
-            following:
-              sql`(SELECT count(*) from ${followership} WHERE follower_id = ${userSelect[0].id})`.as(
-                "following",
-              ),
-          },
-        });
-
-        return data;
-      }
-      return null;
-    }),
   checkFollowing: privateProcedure
     .input(
       z.object({
@@ -148,7 +114,8 @@ export const userRouter = createTRPCRouter({
     .input(
       z.object({
         followerId: z.string(),
-        followingId: z.string(),
+        followingId: z.string().optional(),
+        action: z.enum(["follow", "unfollow"]),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -164,34 +131,42 @@ export const userRouter = createTRPCRouter({
         })
         .prepare();
 
-      await followPrepare.execute({
-        follower_id: input.followerId,
-        following_id: input.followingId,
-      });
-
-      return {
-        success: true,
-      };
-    }),
-  unfollowUser: privateProcedure
-
-    .input(z.object({ user_id: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const { success } = await rateLimiter.limit(ctx.auth.userId as string);
-      if (!success) {
-        throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
-      }
       const deletePrepare = ctx.db
         .delete(followership)
         .where(eq(followership.follower_id, sql.placeholder("user_id")))
         .prepare();
 
-      const query = await deletePrepare.execute({
-        user_id: input.user_id,
-      });
-      console.log(query);
+      if (input.action === "follow") {
+        await followPrepare.execute({
+          follower_id: input.followerId,
+          following_id: input.followingId,
+        });
 
-      return query;
+        return {
+          success: true,
+        };
+      } else if (input.action === "unfollow") {
+        await deletePrepare.execute({
+          user_id: input.followerId,
+        });
+
+        return {
+          success: true,
+        };
+      }
+    }),
+  getFollowers: privateProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        limit: z.number().min(1).max(10).nullish(),
+        cursor: z.number().nullish(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const limit = input.limit ?? 10;
+
+      const followers = await ctx.db.select().from(followership).where(eq(followership.following_id, input.userId))
     }),
 });
 
