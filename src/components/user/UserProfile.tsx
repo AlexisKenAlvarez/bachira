@@ -155,11 +155,11 @@ const UserProfile = ({
                     </h3>
                     {inProfile ? (
                       <Button
-                        className="mt-2 gap-x-2 px-6 text-sm font-semibold"
+                        className="mt-2 gap-x-2 px-6 text-sm font-semibold group"
                         disabled={!currentUser.isLoaded}
                         variant="secondary"
                       >
-                        <Settings size={18} />
+                        <Settings size={18} className="group-hover:rotate-180 ease-in-out duration-500" />
                         Edit Profile
                       </Button>
                     ) : (

@@ -1,0 +1,2 @@
+- DROP ALL DATABASE
+DROP TABLE gchat_users,gchat_followership,gchat_notifications;

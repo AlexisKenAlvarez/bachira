@@ -69,6 +69,8 @@ const CustomVerify = () => {
       if (completeSignUp.status === "complete") {
         const userData: signupType = {
           id: completeSignUp.createdUserId!,
+          image: null,
+          bio: null,
           username: completeSignUp.username!,
           email: completeSignUp.emailAddress!,
           firstName: completeSignUp.firstName!,
