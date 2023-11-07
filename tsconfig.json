@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "es2017",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
+    "checkJs": true,
     "skipLibCheck": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
@@ -30,8 +31,5 @@
     "**/*.mjs",
     ".next/types/**/*.ts"
   ],
-  "exclude": ["node_modules"],
-  // Place to specify ESLint rules. Can be used to overwrite rules specified from the extended configs
-  // e.g. "@typescript-eslint/explicit-function-return-type": "off",
-  // "rules": { "@typescript-eslint/no-empty-interface": true }
+  "exclude": ["node_modules"]
 }

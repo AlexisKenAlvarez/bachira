@@ -1,7 +1,7 @@
 import { signupSchema } from "@/lib/zodSchema";
 import { createTRPCRouter, privateProcedure, publicProcedure } from "@/server/api/trpc";
 import { followership, users } from "@/server/db/schema";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, gt, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { Ratelimit } from "@upstash/ratelimit";
@@ -39,11 +39,11 @@ export const userRouter = createTRPCRouter({
           id: users.id,
         })
         .from(users)
-        .where(eq(users.username, input.username));
+        .where(eq(users.name, input.username));
 
       if (userSelect[0]) {
         const data = await ctx.db.query.users.findMany({
-          where: (users, { eq }) => eq(users.username, input.username),
+          where: (users, { eq }) => eq(users.name, input.username),
           extras: {
             followers:
               sql`(SELECT count(*) from ${followership} WHERE following_id = ${userSelect[0].id})`.as(
@@ -119,7 +119,7 @@ export const userRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { success } = await rateLimiter.limit(ctx.auth.userId as string);
+      const { success } = await rateLimiter.limit(ctx.session.user.id);
       if (!success) {
         throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
       }
@@ -166,7 +166,7 @@ export const userRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const limit = input.limit ?? 10;
 
-      const followers = await ctx.db.select().from(followership).where(eq(followership.following_id, input.userId))
+      const followers = await ctx.db.select().from(followership).where(and(eq(followership.following_id, input.userId), gt(followership.id, input.cursor ?? 0))).limit(limit)
     }),
 });
 

@@ -31,7 +31,7 @@ module.exports = {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       fontFamily: {
-        primary: ["var(--font-lalezar)"],
+        primary: ['var(--font-geist-sans)'],
         secondary: ["var(--font-montserrat)"],
       },
       colors: {

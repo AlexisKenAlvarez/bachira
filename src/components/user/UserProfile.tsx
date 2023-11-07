@@ -2,7 +2,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { userDataOutput } from "@/lib/routerTypes";
 import { api } from "@/trpc/react";
-import { useUser } from "@clerk/nextjs";
 import { Settings, UserCheck2, UserPlus2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from 'sonner';
@@ -23,7 +22,7 @@ const UserProfile = ({
   inProfile: boolean;
   isFollowing: boolean;
 }) => {
-  const currentUser = useUser();
+
   const [follows, setFollow] = useState<boolean>(isFollowing);
   const [userFollowData, setFollowData] = useState<FollowData>({
     followers: Number(userData[0]!.followers as number),
@@ -102,27 +101,27 @@ const UserProfile = ({
   });
 
   const handleFollow = async () => {
-    try {
-      if (userData && currentUser.isLoaded) {
-        if (follows) {
-          // Unfollow user
-          console.log(currentUser.user!.id);
-          await unfollow.mutateAsync({
-            followerId: currentUser.user!.id,
-            action: "unfollow"
-          });
-        } else {
-          // Follow user
-          await followUser.mutateAsync({
-            followerId: currentUser.user!.id,
-            followingId: userData[0]!.id,
-            action: "follow"
-          });
-        }
-      }
-    } catch (error) {
-      console.log(error);
-    }
+    // try {
+    //   if (userData) {
+    //     if (follows) {
+    //       // Unfollow user
+
+    //       await unfollow.mutateAsync({
+    //         followerId: currentUser.user!.id,
+    //         action: "unfollow"
+    //       });
+    //     } else {
+    //       // Follow user
+    //       await followUser.mutateAsync({
+    //         followerId: currentUser.user!.id,
+    //         followingId: userData[0]!.id,
+    //         action: "follow"
+    //       });
+    //     }
+    //   }
+    // } catch (error) {
+    //   console.log(error);
+    // }
   };
 
   return (
@@ -156,7 +155,7 @@ const UserProfile = ({
                     {inProfile ? (
                       <Button
                         className="mt-2 gap-x-2 px-6 text-sm font-semibold group"
-                        disabled={!currentUser.isLoaded}
+                        // disabled={!currentUser.isLoaded}
                         variant="secondary"
                       >
                         <Settings size={18} className="group-hover:rotate-180 ease-in-out duration-500" />
@@ -166,7 +165,7 @@ const UserProfile = ({
                       <Button
                         className="px-7 mt-2"
                         onClick={handleFollow}
-                        disabled={!currentUser.isLoaded}
+                        // disabled={!currentUser.isLoaded}
                         variant={follows ? "secondary" : "default"}
                       >
                         {follows ? (

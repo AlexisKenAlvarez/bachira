@@ -1,56 +1,54 @@
-import "@/app/styles/globals.css";
+import "@/styles/globals.css";
+import { cookies } from "next/headers";
 
-import { ClerkProvider, SignedIn, SignedOut } from "@clerk/nextjs";
-import { Lalezar, Montserrat } from "next/font/google";
-import { headers } from "next/headers";
-import type { Metadata } from "next";
-import { Toaster } from "sonner";
 import { TRPCReactProvider } from "@/trpc/react";
+import { GeistSans } from "geist/font";
+import type { Metadata } from "next";
+import { Montserrat } from "next/font/google";
+import { Toaster } from "sonner";
 import Nav from "../components/Nav";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/server/auth";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
   display: "swap",
 });
-
-const lalezar = Lalezar({
-  subsets: ["latin"],
-  weight: ["400"],
-  variable: "--font-lalezar",
-});
-
 export const metadata: Metadata = {
   title: "GChat",
   description: "Globally chat without worrying on language barriers.",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getServerSession(authOptions);
+
   return (
-    <ClerkProvider>
-      <TRPCReactProvider headers={headers()}>
-        <html lang="en">
-          <body
-            className={`${montserrat.variable} ${lalezar.variable} font-sans`}
-          >
-            <SignedIn>
-              <div className="mx-auto flex min-h-screen w-full max-w-[700px] flex-col border-x border-black/10">
-                <Nav />
-                {children}
-                <Toaster toastOptions={{
-                  duration: 5000
-                }} />
-              </div>
-            </SignedIn>
-            <SignedOut>{children}</SignedOut>
-          </body>
-        </html>
-      </TRPCReactProvider>
-    </ClerkProvider>
+    <TRPCReactProvider cookies={cookies().toString()}>
+      <html lang="en">
+        <body
+          className={`${montserrat.variable} ${GeistSans.variable} font-sans`}
+        >
+          {session ? (
+            <div className="mx-auto flex min-h-screen w-full max-w-[700px] flex-col border-x border-black/10">
+              <Nav />
+              {children}
+              <Toaster
+                toastOptions={{
+                  duration: 5000,
+                }}
+              />
+            </div>
+          ) : (
+            <>{children}</>
+          )}
+        </body>
+      </html>
+    </TRPCReactProvider>
   );
 }

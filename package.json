@@ -11,9 +11,10 @@
     "start": "next start"
   },
   "dependencies": {
-    "@clerk/nextjs": "^4.26.1",
+    "@auth/drizzle-adapter": "^0.3.5",
     "@hookform/resolvers": "^3.3.2",
     "@planetscale/database": "^1.11.0",
+    "@radix-ui/react-alert-dialog": "^1.0.5",
     "@radix-ui/react-avatar": "^1.0.4",
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-dropdown-menu": "^2.0.6",
@@ -28,14 +29,17 @@
     "@trpc/server": "^10.37.1",
     "@upstash/ratelimit": "^0.4.4",
     "@upstash/redis": "^1.24.3",
+    "adapters": "link:@auth/core/adapters",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "drizzle-orm": "^0.28.5",
-    "lucide-react": "^0.291.0",
-    "next": "^13.5.4",
+    "geist": "^1.0.0",
+    "lucide-react": "^0.292.0",
+    "next": "^14.0.0",
+    "next-auth": "^4.23.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-hook-form": "^7.47.0",
+    "react-hook-form": "^7.48.2",
     "sonner": "^1.1.0",
     "superjson": "^1.13.1",
     "tailwind-merge": "^2.0.0",
@@ -43,27 +47,26 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@clerk/types": "^3.57.0",
     "@types/eslint": "^8.44.2",
     "@types/node": "^18.16.0",
-    "@types/react": "^18.2.20",
-    "@types/react-dom": "^18.2.7",
+    "@types/react": "^18.2.33",
+    "@types/react-dom": "^18.2.14",
     "@typescript-eslint/eslint-plugin": "^6.3.0",
     "@typescript-eslint/parser": "^6.3.0",
     "autoprefixer": "^10.4.14",
     "dotenv-cli": "^7.3.0",
     "drizzle-kit": "^0.19.13",
     "eslint": "^8.47.0",
-    "eslint-config-next": "^13.5.4",
+    "eslint-config-next": "^14.0.0",
     "mysql2": "^3.6.1",
     "postcss": "^8.4.27",
-    "prettier": "^3.0.0",
-    "prettier-plugin-tailwindcss": "^0.5.1",
+    "prettier": "^3.0.3",
+    "prettier-plugin-tailwindcss": "^0.5.6",
     "tailwindcss": "^3.3.3",
     "typescript": "^5.1.6"
   },
   "ct3aMetadata": {
-    "initVersion": "7.22.0"
+    "initVersion": "7.23.1"
   },
   "packageManager": "pnpm@8.7.6"
 }

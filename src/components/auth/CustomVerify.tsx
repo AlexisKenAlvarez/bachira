@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { useSignUp } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { signupType } from "@/lib/zodSchema";
 import { Loader } from "lucide-react";
@@ -9,7 +8,6 @@ import { api } from "@/trpc/react";
 
 const CustomVerify = () => {
   const router = useRouter();
-  const mySignup = useSignUp();
   const [digits, setDigits] = useState([0, 0, 0, 0, 0, 0]);
   const [error, setError] = useState<string | null>(null);
   const [debounce, setDebounce] = useState(false);
@@ -49,54 +47,10 @@ const CustomVerify = () => {
   };
 
   // This verifies the user using email code that is delivered.
-  const signupVerify = async () => {
-    if (!mySignup.isLoaded) {
-      return;
-    }
-
-    try {
-      const completeSignUp =
-        await mySignup.signUp.attemptEmailAddressVerification({
-          code: digits.toString().replaceAll(",", ""),
-        });
-
-
-      if (completeSignUp.status !== "complete") {
-        /*  investigate the response, to see if there was an error
-         or if the user needs to complete more steps.*/
-        console.log(JSON.stringify(completeSignUp, null, 2));
-      }
-      if (completeSignUp.status === "complete") {
-        const userData: signupType = {
-          id: completeSignUp.createdUserId!,
-          image: null,
-          bio: null,
-          username: completeSignUp.username!,
-          email: completeSignUp.emailAddress!,
-          firstName: completeSignUp.firstName!,
-          lastName: completeSignUp.lastName!,
-        };
-
-        await addUser.mutateAsync(userData);
-
-        await mySignup.setActive({ session: completeSignUp.createdSessionId });
-        router.push("/");
-      }
-    } catch (err) {
-      console.log(err);
-      const error = JSON.parse(JSON.stringify(err, null, 2));
-      setDebounce(false);
-
-      setError(error.errors[0].longMessage);
-    }
+  const signupVerify = () => {
+    // Checks the code if it is valid.
   };
 
-  const onPressVerify = async () => {
-    if (!debounce) {
-      setDebounce(true);
-      await signupVerify();
-    }
-  };
 
   return (
     <div className="h-full sm:rounded-xl sm:shadow-md">
@@ -131,7 +85,7 @@ const CustomVerify = () => {
             <p className="mt-4 text-center text-sm text-red-500">{error}</p>
           )}
 
-          <Button className="mt-5 w-full bg-black" onClick={onPressVerify}>
+          <Button className="mt-5 w-full bg-black">
             {debounce ? (
               <Loader className="animate-spin text-lg " />
             ) : (

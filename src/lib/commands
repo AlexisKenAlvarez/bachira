@@ -1,2 +1,2 @@
 - DROP ALL DATABASE
-DROP TABLE gchat_users,gchat_followership,gchat_notifications;
+DROP TABLE IF EXISTS gchat_account, gchat_followership, gchat_notifications, gchat_session, gchat_user, gchat_verificationToken;

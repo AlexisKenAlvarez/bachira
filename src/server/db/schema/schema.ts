@@ -1,6 +1,7 @@
 // Example model schema from the Drizzle docs
 // https://orm.drizzle.team/docs/sql-schema-declaration
 
+
 import { sql } from "drizzle-orm";
 import {
   index,
@@ -8,31 +9,35 @@ import {
   mysqlEnum,
   mysqlTableCreator,
   timestamp,
-  varchar,
+  varchar
 } from "drizzle-orm/mysql-core";
 
 export const mysqlTable = mysqlTableCreator((name) => `gchat_${name}`);
 
 const NOTIFICATION_TYPE = ["FOLLOW", "LIKE", "COMMENT", "REPLY"] as const;
 
-const updated_at = timestamp("updated_at")
+const updatedAt = timestamp("updatedAt")
   .notNull()
   .default(sql`CURRENT_TIMESTAMP`)
   .onUpdateNow();
 
-export const users = mysqlTable("users", {
-  id: varchar("id", { length: 256 }).primaryKey().unique().notNull(),
-  username: varchar("username", { length: 20 }).notNull().unique(),
-  image: varchar("image", { length: 254 }),
-  bio: varchar("bio", { length: 100 }),
-  email: varchar("email", { length: 254 }).notNull(),
-  firstName: varchar("firstName", { length: 50 }).notNull(),
-  lastName: varchar("lastName", { length: 50 }).notNull(),
-  created_at: timestamp("created_at")
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
+const createdAt = timestamp("createdAt")
+.default(sql`CURRENT_TIMESTAMP`)
+.notNull()
 
-  updated_at,
+export const users = mysqlTable("user", {
+  id: varchar("id", { length: 255 }).notNull().primaryKey(),
+  bio: varchar("bio", { length: 100 }),
+  username: varchar("username", { length: 50 }),
+  email: varchar("email", { length: 255 }).notNull(),
+  name: varchar("name", { length: 255 }),
+  created_at: createdAt,
+  emailVerified: timestamp("emailVerified", {
+    mode: "date",
+    fsp: 3,
+  }).defaultNow(),
+  image: varchar("image", { length: 255 }),
+  updatedAt,
 });
 
 export const followership = mysqlTable(

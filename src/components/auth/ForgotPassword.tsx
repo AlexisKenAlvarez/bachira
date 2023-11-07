@@ -3,7 +3,6 @@ import ImageSmooth from "@/components/shared/ImageSmooth";
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -16,15 +15,11 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useSignIn } from "@clerk/nextjs";
 import { Loader } from "lucide-react";
 
 const ForgotPassword = () => {
   const [debounce, setDebounce] = useState(false);
   const [successfulCreation, setSuccessfulCreation] = useState(false);
-  const router = useRouter();
-
-  const { isLoaded, signIn, setActive } = useSignIn();
 
   const emailSchema = z.object({
     email: z.string().email(),
@@ -66,60 +61,20 @@ const ForgotPassword = () => {
     },
   });
 
-  const emailSubmit = async (data: emailType) => {
+  const emailSubmit = (data: emailType) => {
     if (!debounce) {
       setDebounce(true);
-      await signIn
-        ?.create({
-          strategy: "reset_password_email_code",
-          identifier: data.email,
-        })
-        .then((_) => {
-          setSuccessfulCreation(true);
-        })
-        .catch((err) => {
-          console.error("error", err.errors[0].longMessage);
-        });
-
+      // SEND CODE FOR RESET
       setDebounce(false);
     }
   };
 
-  const resetPassword = async (data: resetType) => {
+  const resetPassword = (data: resetType) => {
     if (!debounce) {
       setDebounce(true);
-      await signIn
-        ?.attemptFirstFactor({
-          strategy: "reset_password_email_code",
-          code: data.code,
-          password: data.password,
-        })
-        .then(async (result) => {
-          if (result.status === "complete") {
-            await setActive({ session: result.createdSessionId });
-
-            router.push("/");
-          } else {
-            console.log(result);
-            setDebounce(false);
-          }
-        })
-        .catch((err) => {
-          form2.setError("code", {
-            message:
-              err.errors[0].code === "form_param_unknown"
-                ? "You don't have any password reset request."
-                : err.errors[0].longMessage,
-            type: "custom",
-          });
-          setDebounce(false);
-        });
+      // RESET PASSWORD
     }
   };
-
-  if (!isLoaded) {
-    return null;
-  }
 
   return (
     <section className="sm:bg-bggrey flex h-auto min-h-screen w-full bg-white pb-20 sm:pb-0">
