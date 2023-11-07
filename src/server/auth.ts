@@ -6,6 +6,9 @@ import {
 
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
+import { users } from "./db/schema";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -17,15 +20,17 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
+      username: string;
       // ...other properties
       // role: UserRole;
     } & DefaultSession["user"];
   }
 
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
+  interface User {
+    // ...other properties
+    // role: UserRole;
+    username: string | null;
+  }
 }
 
 /**
@@ -35,30 +40,51 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    jwt: async ({ token, user }) => {
-      console.log("User from JWT:", user);
+    signIn: async ({ user }) => {
+      if (user) {
+        const userFromDb = await db.query.users.findFirst({
+          where: (users, { eq }) => eq(users.email, user.email as string),
+        });
+
+        if (!userFromDb) {
+          await db.insert(users).values({
+            id: user.id,
+            name: user.name,
+            email: user.email as string,
+            image: user.image,
+          });
+        } else {
+          user.username = userFromDb.username;
+        }
+      }
+
+      return true;
+    },
+    jwt: async ({ token, user, trigger, session }) => {
       if (user) {
         token.id = user.id;
         token.email = user.email;
+        token.username = user.username;
+      }
+
+      if (trigger === "update" && session) {
+        return { ...token, ...session?.user };
       }
 
       return token;
     },
-    session: ({ session, user, token }) => {
-      console.log("Token:", token); // Add this line to log the token
-      console.log("User:", user); // Add this line to log the token
-      console.log("session:", session); // Add this line to log the token
+    session: ({ session, token, trigger }) => {
       return {
         ...session,
         user: {
           ...session.user,
           id: token.id,
+          username: token.username,
         },
       };
     },
   },
-  // 117310600137025621076
-  // 117310600137025621076
+
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID as string,

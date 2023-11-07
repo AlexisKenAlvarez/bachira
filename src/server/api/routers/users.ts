@@ -1,5 +1,9 @@
 import { signupSchema } from "@/lib/zodSchema";
-import { createTRPCRouter, privateProcedure, publicProcedure } from "@/server/api/trpc";
+import {
+  createTRPCRouter,
+  privateProcedure,
+  publicProcedure,
+} from "@/server/api/trpc";
 import { followership, users } from "@/server/db/schema";
 import { and, eq, gt, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -110,6 +114,26 @@ export const userRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       await ctx.db.insert(users).values({ ...input });
     }),
+  updateUsername: privateProcedure
+    .input(
+      z.object({
+        email: z.string(),
+        username: z
+          .string()
+          .min(3, "Must be 3 characters or more")
+          .max(20, "Must not be more than 20 characters"),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .update(users)
+        .set({ username: input.username })
+        .where(eq(users.email, input.email));
+
+      return {
+        success: true,
+      };
+    }),
   followUser: privateProcedure
     .input(
       z.object({
@@ -166,7 +190,16 @@ export const userRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const limit = input.limit ?? 10;
 
-      const followers = await ctx.db.select().from(followership).where(and(eq(followership.following_id, input.userId), gt(followership.id, input.cursor ?? 0))).limit(limit)
+      const followers = await ctx.db
+        .select()
+        .from(followership)
+        .where(
+          and(
+            eq(followership.following_id, input.userId),
+            gt(followership.id, input.cursor ?? 0),
+          ),
+        )
+        .limit(limit);
     }),
 });
 

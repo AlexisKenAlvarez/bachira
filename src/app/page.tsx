@@ -9,8 +9,6 @@ const page = async () => {
     redirect("/api/auth/signin");
   }
 
-  console.log(session);
-
   return (
     <div>
       Enter

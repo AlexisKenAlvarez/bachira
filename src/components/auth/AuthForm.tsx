@@ -144,47 +144,6 @@ const AuthForm = ({ type }: AuthPageProps) => {
     // OAuth logic
   };
 
-  const usernameOnly = (
-    <div className="">
-      <Form {...usernameForm} key="first-form">
-        <form
-          key="first-form"
-          onSubmit={usernameForm.handleSubmit((data) => {
-            console.log(data);
-          })}
-        >
-          <FormField
-            control={usernameForm.control}
-            name="username"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  {usernameForm.formState.errors.username?.message}
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Enter your username"
-                    className="focus-visible:ring-none !mt-[4px] focus-visible:border-blue-200 focus-visible:ring-transparent"
-                    key="first-username"
-                    {...field}
-                    autoFocus
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          <Button className="mt-3 w-full">
-            {userDebounce ? (
-              <Loader className="animate-spin text-lg " />
-            ) : (
-              "Submit"
-            )}
-          </Button>
-        </form>
-      </Form>
-    </div>
-  );
-
   return (
     <section className="flex h-auto min-h-screen w-full bg-white pb-20 sm:bg-bggrey sm:pb-0">
       <div className="w-full place-content-center sm:grid">

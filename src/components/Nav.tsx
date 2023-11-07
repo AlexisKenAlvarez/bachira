@@ -13,6 +13,7 @@ import { Cog, LogOut, User } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Skeleton } from "./ui/skeleton";
+import { signOut } from "next-auth/react";
 
 const Nav = () => {
   const router = useRouter();
@@ -65,7 +66,7 @@ const Nav = () => {
 
           <DropdownMenuSeparator />
           {/* Signout button */}
-          <DropdownMenuItem className="flex items-center gap-[4px]">
+          <DropdownMenuItem className="flex items-center gap-[4px]" onClick={() => {signOut({ callbackUrl: '/signin' })}}>
             <LogOut size={16} />
             Logout
           </DropdownMenuItem>

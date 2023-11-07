@@ -1,14 +1,15 @@
 import "@/styles/globals.css";
 import { cookies } from "next/headers";
 
+import AddUsername from "@/components/auth/AddUsername";
+import { authOptions } from "@/server/auth";
 import { TRPCReactProvider } from "@/trpc/react";
 import { GeistSans } from "geist/font";
 import type { Metadata } from "next";
+import { getServerSession } from "next-auth";
 import { Montserrat } from "next/font/google";
 import { Toaster } from "sonner";
 import Nav from "../components/Nav";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/server/auth";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -27,6 +28,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const session = await getServerSession(authOptions);
+  console.log("🚀 ~ file: layout.tsx:31 ~ session:", session)
 
   return (
     <TRPCReactProvider cookies={cookies().toString()}>
@@ -35,15 +37,19 @@ export default async function RootLayout({
           className={`${montserrat.variable} ${GeistSans.variable} font-sans`}
         >
           {session ? (
-            <div className="mx-auto flex min-h-screen w-full max-w-[700px] flex-col border-x border-black/10">
-              <Nav />
-              {children}
-              <Toaster
-                toastOptions={{
-                  duration: 5000,
-                }}
-              />
-            </div>
+            !session.user.username ? (
+              <AddUsername email={session.user.email!} />
+            ) : (
+              <div className="mx-auto flex min-h-screen w-full max-w-[700px] flex-col border-x border-black/10">
+                <Nav />
+                {children}
+                <Toaster
+                  toastOptions={{
+                    duration: 5000,
+                  }}
+                />
+              </div>
+            )
           ) : (
             <>{children}</>
           )}
