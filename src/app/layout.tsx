@@ -28,7 +28,6 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const session = await getServerSession(authOptions);
-  console.log("🚀 ~ file: layout.tsx:31 ~ session:", session)
 
   return (
     <TRPCReactProvider cookies={cookies().toString()}>
@@ -41,7 +40,10 @@ export default async function RootLayout({
               <AddUsername email={session.user.email!} />
             ) : (
               <div className="mx-auto flex min-h-screen w-full max-w-[700px] flex-col border-x border-black/10">
-                <Nav />
+                <Nav
+                  email={session.user.email!}
+                  username={session.user.username!}
+                />
                 {children}
                 <Toaster
                   toastOptions={{

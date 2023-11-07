@@ -3,7 +3,7 @@ import ImageSmooth from "@/components/shared/ImageSmooth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { signIn } from 'next-auth/react'
+import { signIn } from "next-auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -25,8 +25,6 @@ interface AuthPageProps {
 }
 
 const AuthForm = ({ type }: AuthPageProps) => {
-
-
   const addUser = api.user.addUser.useMutation({
     onSettled: () => {
       console.log("User has been added");
@@ -110,12 +108,12 @@ const AuthForm = ({ type }: AuthPageProps) => {
   const { handleSubmit: handleSubmit2, control: control2 } =
     secondCredentialForm;
 
-  const signupSubmit =  (data: authType) => {
+  const signupSubmit = (data: authType) => {
     console.log(data);
     // Signup with credentials logic
   };
 
-  const signinSubmit =  (data: authType) => {
+  const signinSubmit = (data: authType) => {
     console.log(data);
     // Signin with credentials logic
   };
@@ -167,7 +165,7 @@ const AuthForm = ({ type }: AuthPageProps) => {
                 variant="outline"
                 className="relative w-full py-5"
                 onClick={() => {
-                  signIn('google', {callbackUrl: '/'})
+                  signIn("google", { callbackUrl: "/" });
                 }}
               >
                 <svg
@@ -202,7 +200,11 @@ const AuthForm = ({ type }: AuthPageProps) => {
                 variant="outline"
                 className="relative w-full py-5"
                 onClick={() => {
-                  signIn('github')
+                  try {
+                    signIn("github");
+                  } catch (error) {
+                    console.log(error);
+                  }
                 }}
               >
                 <Github className="absolute left-2 text-2xl" />

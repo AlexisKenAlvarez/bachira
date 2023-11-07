@@ -7,7 +7,6 @@ import {
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
 import { users } from "./db/schema";
 
 /**
@@ -40,7 +39,7 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    signIn: async ({ user }) => {
+    signIn: async ({ user, account }) => {
       if (user) {
         const userFromDb = await db.query.users.findFirst({
           where: (users, { eq }) => eq(users.email, user.email as string),
@@ -51,17 +50,24 @@ export const authOptions: NextAuthOptions = {
             id: user.id,
             name: user.name,
             email: user.email as string,
-            image: user.image,
+            image:
+              account?.provider === "github" || account?.provider === "google"
+                ? user.image
+                : null,
           });
         } else {
           user.username = userFromDb.username;
+          user.id = userFromDb.id
         }
       }
 
       return true;
     },
-    jwt: async ({ token, user, trigger, session }) => {
+    jwt: ({ token, user, trigger, session }) => {
+    
+
       if (user) {
+
         token.id = user.id;
         token.email = user.email;
         token.username = user.username;
@@ -73,7 +79,8 @@ export const authOptions: NextAuthOptions = {
 
       return token;
     },
-    session: ({ session, token, trigger }) => {
+    session: ({ session, token }) => {
+
       return {
         ...session,
         user: {
@@ -91,8 +98,8 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     }),
     GithubProvider({
-      clientId: process.env.GITHUB_ID as string,
-      clientSecret: process.env.GITHUB_SECRET as string,
+      clientId: process.env.GITHUB_CLIENT_ID as string,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
     }),
     // ...add more providers here
   ],

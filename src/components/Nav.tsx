@@ -15,7 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Skeleton } from "./ui/skeleton";
 import { signOut } from "next-auth/react";
 
-const Nav = () => {
+const Nav = ({ email, username }: { email: string; username: string }) => {
   const router = useRouter();
 
   return (
@@ -42,20 +42,16 @@ const Nav = () => {
           <DropdownMenuLabel className="relative">
             <div className="">
               <h1 className="">My Account</h1>
-              <p className="max-w-full truncate overflow-ellipsis">
-                {/* {user?.emailAddresses[0]?.emailAddress} */}
-                nameofuser
-              </p>
+              <p className="max-w-full truncate overflow-ellipsis">{email}</p>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {/* Link to profile of user */}
-          {/* <Link href={`/${user?.username}`}> */}
-          <DropdownMenuItem className="flex items-center gap-[4px]">
-            <User size={16} />
-            Profile
-          </DropdownMenuItem>
-          {/* </Link> */}
+          <Link href={`/${username}`}>
+            <DropdownMenuItem className="flex items-center gap-[4px]">
+              <User size={16} />
+              Profile
+            </DropdownMenuItem>
+          </Link>
 
           <Link href="/settings">
             <DropdownMenuItem className="flex items-center gap-[4px]">
@@ -65,8 +61,12 @@ const Nav = () => {
           </Link>
 
           <DropdownMenuSeparator />
-          {/* Signout button */}
-          <DropdownMenuItem className="flex items-center gap-[4px]" onClick={() => {signOut({ callbackUrl: '/signin' })}}>
+          <DropdownMenuItem
+            className="flex items-center gap-[4px]"
+            onClick={() => {
+              signOut({ callbackUrl: "/signin" });
+            }}
+          >
             <LogOut size={16} />
             Logout
           </DropdownMenuItem>

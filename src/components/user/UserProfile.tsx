@@ -4,10 +4,12 @@ import { userDataOutput } from "@/lib/routerTypes";
 import { api } from "@/trpc/react";
 import { Settings, UserCheck2, UserPlus2 } from "lucide-react";
 import { useState } from "react";
-import { toast } from 'sonner';
+import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import FollowData from "./FollowData";
+import { Session } from "next-auth";
+import { getSession, useSession } from "next-auth/react";
 interface FollowData {
   followers: number;
   following: number;
@@ -17,12 +19,14 @@ const UserProfile = ({
   userData,
   inProfile,
   isFollowing,
+
 }: {
   userData: NonNullable<userDataOutput>;
   inProfile: boolean;
   isFollowing: boolean;
-}) => {
 
+}) => {
+  const { data: session, status } = useSession()
   const [follows, setFollow] = useState<boolean>(isFollowing);
   const [userFollowData, setFollowData] = useState<FollowData>({
     followers: Number(userData[0]!.followers as number),
@@ -38,8 +42,6 @@ const UserProfile = ({
         followers: prevState.followers + 1,
       }));
 
-      console.log(userFollowData);
-
       setFollow(true);
 
       return {
@@ -48,10 +50,10 @@ const UserProfile = ({
       };
     },
     onError(err, _, context) {
-      const errMessage = err.message
+      const errMessage = err.message;
 
-      if (errMessage === 'TOO_MANY_REQUESTS') {
-        toast.error('You are doing that too much. Try again later.')
+      if (errMessage === "TOO_MANY_REQUESTS") {
+        toast.error("You are doing that too much. Try again later.");
       }
 
       setFollow(context!.previousLike);
@@ -75,18 +77,18 @@ const UserProfile = ({
         followers: prevState.followers - 1,
       }));
 
-      setFollow(false)
-      
+      setFollow(false);
+
       return {
         previousLike: previousState,
         previousFollowData: previousFollowData,
       };
     },
     onError: (err, variables, context) => {
-      const errMessage = err.message
+      const errMessage = err.message;
 
-      if (errMessage === 'TOO_MANY_REQUESTS') {
-        toast.error('You are doing that too much. Try again later.')
+      if (errMessage === "TOO_MANY_REQUESTS") {
+        toast.error("You are doing that too much. Try again later.");
       }
 
       setFollow(context!.previousLike);
@@ -101,27 +103,26 @@ const UserProfile = ({
   });
 
   const handleFollow = async () => {
-    // try {
-    //   if (userData) {
-    //     if (follows) {
-    //       // Unfollow user
-
-    //       await unfollow.mutateAsync({
-    //         followerId: currentUser.user!.id,
-    //         action: "unfollow"
-    //       });
-    //     } else {
-    //       // Follow user
-    //       await followUser.mutateAsync({
-    //         followerId: currentUser.user!.id,
-    //         followingId: userData[0]!.id,
-    //         action: "follow"
-    //       });
-    //     }
-    //   }
-    // } catch (error) {
-    //   console.log(error);
-    // }
+    try {
+      if (userData) {
+        if (follows) {
+          // Unfollow user
+          await unfollow.mutateAsync({
+            followerId: session!.user.id,
+            action: "unfollow"
+          });
+        } else {
+          // Follow user
+          await followUser.mutateAsync({
+            followerId: session!.user.id,
+            followingId: userData[0]!.id,
+            action: "follow"
+          });
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -150,22 +151,25 @@ const UserProfile = ({
                       @{userData[0]!.username}
                     </h2>
                     <h3 className="font-medium">
-                      {userData[0]!.firstName} {userData[0]!.lastName}
+                      {userData[0]?.name}
                     </h3>
                     {inProfile ? (
                       <Button
-                        className="mt-2 gap-x-2 px-6 text-sm font-semibold group"
-                        // disabled={!currentUser.isLoaded}
+                        className="group mt-2 gap-x-2 px-6 text-sm font-semibold"
+                        disabled={status === 'loading'}
                         variant="secondary"
                       >
-                        <Settings size={18} className="group-hover:rotate-180 ease-in-out duration-500" />
+                        <Settings
+                          size={18}
+                          className="duration-500 ease-in-out group-hover:rotate-180"
+                        />
                         Edit Profile
                       </Button>
                     ) : (
                       <Button
-                        className="px-7 mt-2"
+                        className="mt-2 px-7"
                         onClick={handleFollow}
-                        // disabled={!currentUser.isLoaded}
+                        disabled={status === 'loading'}
                         variant={follows ? "secondary" : "default"}
                       >
                         {follows ? (

@@ -43,11 +43,11 @@ export const userRouter = createTRPCRouter({
           id: users.id,
         })
         .from(users)
-        .where(eq(users.name, input.username));
+        .where(eq(users.username, input.username));
 
       if (userSelect[0]) {
         const data = await ctx.db.query.users.findMany({
-          where: (users, { eq }) => eq(users.name, input.username),
+          where: (users, { eq }) => eq(users.username, input.username),
           extras: {
             followers:
               sql`(SELECT count(*) from ${followership} WHERE following_id = ${userSelect[0].id})`.as(
