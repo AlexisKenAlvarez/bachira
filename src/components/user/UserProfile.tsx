@@ -147,7 +147,7 @@ const UserProfile = ({
               <div className="w-full">
                 <div className="flex h-auto w-full justify-between font-secondary">
                   <div className="">
-                    <h2 className=" w-44 truncate text-xl font-bold sm:w-60">
+                    <h2 className=" w-44 truncate text-xl font-bold sm:w-60 commit">
                       @{userData[0]!.username}
                     </h2>
                     <h3 className="font-medium">
