@@ -185,6 +185,7 @@ export const userRouter = createTRPCRouter({
         userId: z.string(),
         limit: z.number().min(1).max(10).nullish(),
         cursor: z.number().nullish(),
+        offset: z.number().nullish(),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -199,7 +200,20 @@ export const userRouter = createTRPCRouter({
             gt(followership.id, input.cursor ?? 0),
           ),
         )
-        .limit(limit);
+        .limit(limit + 1);
+
+        let nextCursor
+
+        if (followers.length > limit) {
+          const nextItem = followers.pop(); // return the last item from the array
+          nextCursor = nextItem?.id;
+        }
+
+        return {
+          followers,
+          nextCursor,
+        };
+
     }),
 });
 

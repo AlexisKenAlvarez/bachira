@@ -213,148 +213,30 @@ const AuthForm = ({ type }: AuthPageProps) => {
                 </p>
               </Button>
             </div>
-
-            <div className="flex w-full items-center gap-4">
-              <Separator className="" />
-              <p className="text-black/30">OR</p>
-              <Separator className="" />
-            </div>
-
-            <Form {...authForm}>
-              <form
-                onSubmit={authForm.handleSubmit(formSubmit)}
-                className="flex flex-col gap-y-4"
-                key={type}
-              >
-                <FormField
-                  control={authForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem className="m-0 gap-0">
-                      <FormLabel className="m-0 py-0">
-                        Email{" "}
-                        <span>
-                          {" "}
-                          {authForm.formState.errors.email
-                            ? ` - ${authForm.formState.errors.email.message}`
-                            : null}
-                        </span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="sample@GChat.com"
-                          className="focus-visible:ring-none !mt-[4px] focus-visible:border-blue-200 focus-visible:ring-transparent"
-                          {...field}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={authForm.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem className="m-0 gap-0">
-                      <FormLabel className="m-0 py-0">
-                        Password
-                        <span>
-                          {" "}
-                          {authForm.formState.errors.password
-                            ? ` - ${authForm.formState.errors.password.message}`
-                            : null}
-                        </span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Enter your password"
-                          className="focus-visible:ring-none !mt-[4px] focus-visible:border-blue-200 focus-visible:ring-transparent"
-                          type="password"
-                          {...field}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                {type === "sign up" ? (
-                  <FormField
-                    control={authForm.control}
-                    name="confirmPassword"
-                    render={({ field }) => (
-                      <FormItem className="m-0 gap-0">
-                        <FormLabel className="m-0 py-0">
-                          Confirm Password
-                          <span>
-                            {" "}
-                            {authForm.formState.errors.confirmPassword
-                              ? ` - ${authForm.formState.errors.confirmPassword.message}`
-                              : null}
-                          </span>
-                        </FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Re-type your password"
-                            className="focus-visible:ring-none !mt-[4px] focus-visible:border-blue-200 focus-visible:ring-transparent"
-                            type="password"
-                            {...field}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                ) : null}
-
-                <Button className="mt-2 w-full bg-black">
-                  {debounce ? (
-                    <Loader className="animate-spin text-lg " />
-                  ) : (
-                    type.charAt(0).toUpperCase() + type.slice(1)
-                  )}
-                </Button>
-                <Link
-                  href="/signin/reset-password"
-                  className="text-center text-sm hover:underline"
-                >
-                  <p className="">Trouble signing in?</p>
-                </Link>
-              </form>
-            </Form>
           </div>
           <div className="flex items-center justify-center gap-[5px] bg-white px-7 text-center font-secondary text-sm sm:rounded-xl sm:bg-bggrey sm:py-6">
             <p className="">
-              {type === "sign in"
-                ? "Don't have an account?"
-                : "Already have an account?"}
+              Make sure you agree to our
             </p>
 
-            {type === "sign up" ? (
+        
               <button>
                 <p className="cursor-pointer font-semibold text-blue-500 hover:underline">
-                  Sign in
+                  Terms & Conditions
                 </p>
               </button>
-            ) : (
-              <button>
-                <p className="cursor-pointer font-semibold text-blue-500 hover:underline">
-                  Sign up
-                </p>
-              </button>
-            )}
+           
           </div>
         </div>
       </div>
       <div className="relative hidden w-full overflow-hidden lg:block">
         <Link href="/">
-          <h1 className="transition-text absolute right-0 top-0 z-10 m-auto h-fit font-primary text-[12rem] text-white/20 duration-300 ease-in-out hover:text-white/50 xl:text-[15rem]">
+          <h1 className="transition-text absolute right-0 top-0 z-10 m-auto h-fit font-secondary text-[12rem] font-bold text-white/20 duration-300 ease-in-out hover:text-white/50 xl:text-[15rem]">
             GChat
           </h1>
         </Link>
-        {type === "sign in" ? (
-          <ImageSmooth src="/auth/login.webp" />
-        ) : (
-          <ImageSmooth src="/auth/register.webp" />
-        )}
+
+        <ImageSmooth src="/auth/login.webp" />
       </div>
     </section>
   );

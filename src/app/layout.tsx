@@ -10,6 +10,7 @@ import { getServerSession } from "next-auth";
 import { Montserrat } from "next/font/google";
 import { Toaster } from "sonner";
 import Nav from "../components/Nav";
+import Providers from "./providers";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -42,9 +43,9 @@ export default async function RootLayout({
               <div className="mx-auto flex min-h-screen w-full max-w-[700px] flex-col border-x border-black/10">
                 <Nav
                   email={session.user.email!}
-                  username={session.user.username!}
+                  username={session.user.username}
                 />
-                {children}
+                <Providers>{children}</Providers>
                 <Toaster
                   toastOptions={{
                     duration: 5000,
@@ -53,7 +54,7 @@ export default async function RootLayout({
               </div>
             )
           ) : (
-            <>{children}</>
+            <Providers>{children}</Providers>
           )}
         </body>
       </html>
