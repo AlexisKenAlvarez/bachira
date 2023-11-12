@@ -1,15 +1,7 @@
 "use client";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Separator } from "../ui/separator";
-import { api } from "@/trpc/react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import FollowQueryData from "./FollowQueryData";
 
 const FollowData = ({
   type,
@@ -20,21 +12,6 @@ const FollowData = ({
   value: number;
   userId: string;
 }) => {
-  const { data, fetchNextPage } = api.user.getFollowers.useInfiniteQuery(
-    {
-      limit: 4,
-      userId,
-    },
-    {
-      getNextPageParam: (lastPage, page) => {
-        console.log("🚀 ~ file: FollowData.tsx:30 ~ page:", page);
-        console.log("🚀 ~ file: FollowData.tsx:30 ~ lastPage:", lastPage);
-
-        return lastPage.nextCursor;
-      },
-    },
-  );
-
   return (
     <Dialog>
       <DialogTrigger>
@@ -45,27 +22,8 @@ const FollowData = ({
           </span>
         </h2>
       </DialogTrigger>
-      <DialogContent>
-        <DialogHeader className="space-y-3">
-          <DialogTitle
-            onClick={() => {
-              fetchNextPage();
-            }}
-          >
-            {type}
-          </DialogTitle>
-          <Separator />
-
-          {data?.pages.map((page, i) => (
-            <div className="" key={i}>
-              {page.followers.map((follower) => (
-                <div className="" key={follower.id}>
-                  {follower.follower_id}
-                </div>
-              ))}
-            </div>
-          ))}
-        </DialogHeader>
+      <DialogContent className="w-[95%] md:w-full">
+        <FollowQueryData userId={userId} type={type} />
       </DialogContent>
     </Dialog>
   );

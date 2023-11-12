@@ -1,23 +1,9 @@
 "use client";
 import ImageSmooth from "@/components/shared/ImageSmooth";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { signIn } from "next-auth/react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-} from "@/components/ui/form";
-import { api } from "@/trpc/react";
-import { Github, Loader } from "lucide-react";
+import { Github } from "lucide-react";
 import Link from "next/link";
 
 interface AuthPageProps {
@@ -25,123 +11,6 @@ interface AuthPageProps {
 }
 
 const AuthForm = ({ type }: AuthPageProps) => {
-  const addUser = api.user.addUser.useMutation({
-    onSettled: () => {
-      console.log("User has been added");
-    },
-  });
-
-  const checkEmail = api.user.checkEmail.useMutation();
-
-  const [pending, setPendingVerification] = useState(false);
-  const [debounce, setDebounce] = useState(false);
-  const [userDebounce, setUserDebounce] = useState(false);
-  const [stayLoading, setStayLoading] = useState(false);
-  const [needsUsername, setNeedsUsername] = useState(false);
-  const [transferSignup, setNeedsTransfer] = useState(false);
-  const [signupData, setSignupData] = useState<authType>();
-
-  const authObject = z
-    .object({
-      email: z.string().email(),
-      password: z
-        .string()
-        .min(8, "Must be 8 characters or more")
-        .max(20, "Must not be more than 20 characters"),
-      confirmPassword: z.string().optional(),
-    })
-    .refine(
-      (data) => {
-        if (type === "sign up") {
-          return data.password === data.confirmPassword;
-        }
-        return true; // Return true to bypass the refine when type is not "sign up"
-      },
-      { message: "Password does not match", path: ["confirmPassword"] },
-    );
-
-  const usernameObject = z.object({
-    username: z
-      .string()
-      .min(3, "Must be 3 characters or more")
-      .max(20, "Must not be more than 20 characters"),
-  });
-
-  const secondaryObject = z.object({
-    username: z
-      .string()
-      .min(3, "Must be 3 characters or more")
-      .max(20, "Must not be more than 20 characters"),
-    firstName: z.string().max(40, "Your first name is too long"),
-    lastName: z.string().max(30, "Your last name is too long"),
-  });
-
-  type authType = z.infer<typeof authObject>;
-  type usernameType = z.infer<typeof usernameObject>;
-  type secondaryType = z.infer<typeof secondaryObject>;
-
-  const authForm = useForm<authType>({
-    resolver: zodResolver(authObject),
-    defaultValues: {
-      email: "",
-      password: "",
-      confirmPassword: "",
-    },
-  });
-
-  const usernameForm = useForm<usernameType>({
-    resolver: zodResolver(usernameObject),
-    defaultValues: {
-      username: "",
-    },
-  });
-
-  const secondCredentialForm = useForm<secondaryType>({
-    resolver: zodResolver(usernameObject),
-    defaultValues: {
-      username: "",
-      firstName: "",
-      lastName: "",
-    },
-  });
-
-  const { handleSubmit: handleSubmit2, control: control2 } =
-    secondCredentialForm;
-
-  const signupSubmit = (data: authType) => {
-    console.log(data);
-    // Signup with credentials logic
-  };
-
-  const signinSubmit = (data: authType) => {
-    console.log(data);
-    // Signin with credentials logic
-  };
-
-  const formSubmit = async (data: authType) => {
-    if (!debounce) {
-      setDebounce(true);
-      const existing = await checkEmail.mutateAsync({ email: data.email });
-
-      if (type === "sign up") {
-        if (existing) {
-          authForm.setError("email", {
-            type: "custom",
-            message: "Email already exists",
-          });
-          // Do the signup logic
-          setDebounce(false);
-        }
-      } else {
-        // Do the signin
-      }
-    }
-  };
-
-  const signInWith = (strategy: "github" | "google") => {
-    // OAuth logic
-  };
-
   return (
     <section className="flex h-auto min-h-screen w-full bg-white pb-20 sm:bg-bggrey sm:pb-0">
       <div className="w-full place-content-center sm:grid">
@@ -216,16 +85,11 @@ const AuthForm = ({ type }: AuthPageProps) => {
           </div>
           <div className="flex items-center justify-center gap-[5px] bg-white px-7 text-center font-secondary text-sm sm:rounded-xl sm:bg-bggrey sm:py-6">
             <p className="">
-              Make sure you agree to our
+              Make sure you agree to our{" "}
+              <span className="cursor-pointer font-semibold text-blue-500 hover:underline">
+                Terms and Conditions
+              </span>
             </p>
-
-        
-              <button>
-                <p className="cursor-pointer font-semibold text-blue-500 hover:underline">
-                  Terms & Conditions
-                </p>
-              </button>
-           
           </div>
         </div>
       </div>

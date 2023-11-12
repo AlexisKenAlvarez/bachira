@@ -127,7 +127,7 @@ export const userRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       await ctx.db
         .update(users)
-        .set({ username: input.username })
+        .set({ username: input.username.trim() })
         .where(eq(users.email, input.email));
 
       return {
@@ -186,36 +186,37 @@ export const userRouter = createTRPCRouter({
         limit: z.number().min(1).max(10).nullish(),
         cursor: z.number().nullish(),
         offset: z.number().nullish(),
+        type: z.enum(["followers", "following"])
       }),
     )
     .query(async ({ ctx, input }) => {
       const limit = input.limit ?? 10;
-      console.log("Cursor", input.cursor);
 
-      const followers = await ctx.db
-        .select()
-        .from(followership)
-        .where(
+      const followers = await ctx.db.query.followership.findMany({
+        where: (followership, { eq, gt, and }) =>
           and(
-            eq(followership.following_id, input.userId),
+            eq(input.type === "followers" ? followership.following_id : followership.follower_id, input.userId),
             gt(followership.id, input.cursor ?? 0),
           ),
-        )
-        .limit(limit + 1)
-        .orderBy(asc(followership.id))
-
-        let nextCursor
-
-        if (followers.length > limit) {
-          const nextItem = followers.pop(); // return the last item from the array
-          nextCursor = nextItem?.id;
+        orderBy: asc(followership.id),
+        limit: limit + 1,
+        with: {
+          follower: true,
+          following: true
         }
+      });
 
-        return {
-          followers,
-          nextCursor,
-        };
+      let nextCursor;
 
+      if (followers.length > limit) {
+        const nextItem = followers.pop(); // return the last item from the array
+        nextCursor = nextItem?.id;
+      }
+
+      return {
+        followers,
+        nextCursor,
+      };
     }),
 });
 

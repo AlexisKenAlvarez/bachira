@@ -44,6 +44,7 @@ export default async function RootLayout({
                 <Nav
                   email={session.user.email!}
                   username={session.user.username}
+                  image={session.user.image!}
                 />
                 <Providers>{children}</Providers>
                 <Toaster

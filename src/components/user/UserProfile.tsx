@@ -138,7 +138,7 @@ const UserProfile = ({
           <div className="h-full w-full flex-1 rounded-tl-3xl rounded-tr-3xl border-l border-r border-t border-black/10 bg-white p-5">
             <div className="flex gap-4">
               <Avatar className="h-24 w-24">
-                <AvatarImage src="/fox.webp" />
+                <AvatarImage src={userData[0]?.image as string} />
                 <AvatarFallback>
                   <Skeleton className="h-full w-full rounded-full" />
                 </AvatarFallback>
@@ -186,7 +186,7 @@ const UserProfile = ({
                 </div>
               </div>
             </div>
-            <div className="mt-4 flex gap-x-5 font-secondary">
+            <div className="mt-4 flex gap-x-5 font-secondary relative">
               <FollowData type="Following" value={userFollowData.following} userId={userData[0]!.id} />
               <FollowData type="Followers" value={userFollowData.followers} userId={userData[0]!.id} />
             </div>

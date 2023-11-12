@@ -15,7 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Skeleton } from "./ui/skeleton";
 import { signOut } from "next-auth/react";
 
-const Nav = ({ email, username }: { email: string; username: string }) => {
+const Nav = ({ email, username, image }: { email: string; username: string, image: string }) => {
   const router = useRouter();
 
   return (
@@ -29,7 +29,7 @@ const Nav = ({ email, username }: { email: string; username: string }) => {
       <DropdownMenu>
         <DropdownMenuTrigger className="">
           <Avatar className="">
-            <AvatarImage src="/fox.webp" />
+            <AvatarImage src={image} />
             <AvatarFallback>
               <Skeleton className="h-full w-full rounded-full" />
             </AvatarFallback>
