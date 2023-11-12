@@ -15,6 +15,7 @@ import {
 export const mysqlTable = mysqlTableCreator((name) => `gchat_${name}`);
 
 const NOTIFICATION_TYPE = ["FOLLOW", "LIKE", "COMMENT", "REPLY"] as const;
+const NOTIFICATION_STATUS = ["READ", "UNREAD"] as const;
 
 const updatedAt = timestamp("updatedAt")
   .notNull()
@@ -60,4 +61,5 @@ export const notification = mysqlTable("notifications", {
   notificationFor: varchar("userId", { length: 100 }).notNull(),
   notificationFrom: varchar("notificationFrom", { length: 100 }).notNull(),
   type: mysqlEnum("type", NOTIFICATION_TYPE).notNull(),
+  status: mysqlEnum("status", NOTIFICATION_STATUS).default("UNREAD")
 });

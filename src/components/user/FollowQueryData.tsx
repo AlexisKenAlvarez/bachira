@@ -7,6 +7,7 @@ import Link from "next/link";
 import { UIEvent } from "react";
 import { Separator } from "../ui/separator";
 import { Skeleton } from "../ui/skeleton";
+import React from "react";
 
 const FollowQueryData = ({
   type,
@@ -42,7 +43,6 @@ const FollowQueryData = ({
           },
         );
 
-
   const handleScroll = (event: UIEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement;
 
@@ -72,7 +72,11 @@ const FollowQueryData = ({
           <div className="space-y-4" key={i}>
             {page.followers.map((follower, i) => (
               <div className="flex gap-3" key={follower.id}>
-                <Link href={`/${follower.follower.username}`}>
+                <Link href={`/${
+                      type === "Followers"
+                        ? follower.follower.username
+                        : follower.following.username
+                    }`}>
                   <img
                     src={
                       type === "Followers"

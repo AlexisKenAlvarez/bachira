@@ -2,6 +2,7 @@
 
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import FollowQueryData from "./FollowQueryData";
+import { cn } from "@/lib/utils";
 
 const FollowData = ({
   type,
@@ -14,7 +15,11 @@ const FollowData = ({
 }) => {
   return (
     <Dialog>
-      <DialogTrigger>
+      <DialogTrigger
+        className={cn("pointer-events-auto", {
+          "pointer-events-none": value === 0,
+        })}
+      >
         <h2 className="group cursor-pointer font-medium">
           <span className="text-xl font-bold">{value}</span>{" "}
           <span className="underline-offset-2 group-hover:underline">

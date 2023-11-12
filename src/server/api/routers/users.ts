@@ -4,7 +4,7 @@ import {
   privateProcedure,
   publicProcedure,
 } from "@/server/api/trpc";
-import { followership, users } from "@/server/db/schema";
+import { followership, notification, users } from "@/server/db/schema";
 import { and, asc, eq, gt, sql } from "drizzle-orm";
 import { z } from "zod";
 
@@ -152,6 +152,15 @@ export const userRouter = createTRPCRouter({
         .values({
           follower_id: sql.placeholder("follower_id"),
           following_id: sql.placeholder("following_id"),
+        })
+        .prepare();
+
+      const notificationPrepare = ctx.db
+        .insert(notification)
+        .values({
+          notificationFrom: sql.placeholder("follower_id"),
+          notificationFor: sql.placeholder("following_id"),
+          type: "FOLLOW",
         })
         .prepare();
 
