@@ -5,7 +5,7 @@ import {
   publicProcedure,
 } from "@/server/api/trpc";
 import { followership, users } from "@/server/db/schema";
-import { and, eq, gt, sql } from "drizzle-orm";
+import { and, asc, eq, gt, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { Ratelimit } from "@upstash/ratelimit";
@@ -190,6 +190,7 @@ export const userRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const limit = input.limit ?? 10;
+      console.log("Cursor", input.cursor);
 
       const followers = await ctx.db
         .select()
@@ -200,7 +201,8 @@ export const userRouter = createTRPCRouter({
             gt(followership.id, input.cursor ?? 0),
           ),
         )
-        .limit(limit + 1);
+        .limit(limit + 1)
+        .orderBy(asc(followership.id))
 
         let nextCursor
 

@@ -9,14 +9,32 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Separator } from "../ui/separator";
+import { api } from "@/trpc/react";
 
 const FollowData = ({
   type,
   value,
+  userId,
 }: {
   type: "Following" | "Followers";
   value: number;
+  userId: string;
 }) => {
+  const { data, fetchNextPage } = api.user.getFollowers.useInfiniteQuery(
+    {
+      limit: 4,
+      userId,
+    },
+    {
+      getNextPageParam: (lastPage, page) => {
+        console.log("🚀 ~ file: FollowData.tsx:30 ~ page:", page);
+        console.log("🚀 ~ file: FollowData.tsx:30 ~ lastPage:", lastPage);
+
+        return lastPage.nextCursor;
+      },
+    },
+  );
+
   return (
     <Dialog>
       <DialogTrigger>
@@ -29,12 +47,24 @@ const FollowData = ({
       </DialogTrigger>
       <DialogContent>
         <DialogHeader className="space-y-3">
-          <DialogTitle>{type}</DialogTitle>
+          <DialogTitle
+            onClick={() => {
+              fetchNextPage();
+            }}
+          >
+            {type}
+          </DialogTitle>
           <Separator />
-          <DialogDescription>
-            This action cannot be undone. This will permanently delete your
-            account and remove your data from our servers.
-          </DialogDescription>
+
+          {data?.pages.map((page, i) => (
+            <div className="" key={i}>
+              {page.followers.map((follower) => (
+                <div className="" key={follower.id}>
+                  {follower.follower_id}
+                </div>
+              ))}
+            </div>
+          ))}
         </DialogHeader>
       </DialogContent>
     </Dialog>

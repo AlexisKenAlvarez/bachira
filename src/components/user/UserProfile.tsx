@@ -3,13 +3,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { userDataOutput } from "@/lib/routerTypes";
 import { api } from "@/trpc/react";
 import { Settings, UserCheck2, UserPlus2 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import FollowData from "./FollowData";
-import { Session } from "next-auth";
-import { getSession, useSession } from "next-auth/react";
 interface FollowData {
   followers: number;
   following: number;
@@ -188,8 +187,8 @@ const UserProfile = ({
               </div>
             </div>
             <div className="mt-4 flex gap-x-5 font-secondary">
-              <FollowData type="Following" value={userFollowData.following} />
-              <FollowData type="Followers" value={userFollowData.followers} />
+              <FollowData type="Following" value={userFollowData.following} userId={userData[0]!.id} />
+              <FollowData type="Followers" value={userFollowData.followers} userId={userData[0]!.id} />
             </div>
           </div>
         </div>
