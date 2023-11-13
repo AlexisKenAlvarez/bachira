@@ -45,6 +45,7 @@ export default async function RootLayout({
                   email={session.user.email!}
                   username={session.user.username}
                   image={session.user.image!}
+                  userId={session.user.id}
                 />
                 <Providers>{children}</Providers>
                 <Toaster

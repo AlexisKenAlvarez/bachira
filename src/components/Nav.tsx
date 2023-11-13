@@ -14,17 +14,46 @@ import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Skeleton } from "./ui/skeleton";
 import { signOut } from "next-auth/react";
+import { useEffect } from "react";
+import { pusherClient } from "@/lib/pusher";
+import { toPusherKey } from "@/lib/utils";
 
 const Nav = ({
   email,
   username,
   image,
+  userId,
 }: {
   email: string;
   username: string;
   image: string;
+  userId: string;
 }) => {
-  const router = useRouter();
+
+  
+  useEffect(() => {
+    pusherClient.subscribe(toPusherKey(`user:${userId}:incoming_follow`));
+    pusherClient.subscribe(toPusherKey(`user:${userId}:incoming_unfollow`));
+
+    const followHandler = () => {
+      alert("Followed");
+    };
+
+    const unfollowHandler = () => {
+      alert("Followed");
+    };
+
+    pusherClient.bind("incoming_follow", followHandler);
+    pusherClient.bind("incoming_unfollow", unfollowHandler);
+
+    return () => {
+      pusherClient.unsubscribe(toPusherKey(`user:${userId}:incoming_follow`));
+      pusherClient.unsubscribe(toPusherKey(`user:${userId}:incoming_unfollow`));
+
+      pusherClient.unbind("incoming_follow", followHandler);
+      pusherClient.unbind("incoming_unfollow", unfollowHandler);
+    };
+  }, []);
 
   return (
     <nav className="flex items-center justify-between border-b border-black/10 p-4 font-primary">
@@ -38,9 +67,8 @@ const Nav = ({
 
       <div className="flex gap-2">
         <button>
-          <div className="h-10 w-10 rounded-full bg-black/5 grid place-content-center">
+          <div className="grid h-10 w-10 place-content-center rounded-full bg-black/5">
             <Bell size={18} strokeWidth={3} fill="black" />
-
           </div>
         </button>
         <DropdownMenu>
@@ -65,7 +93,7 @@ const Nav = ({
             <DropdownMenuSeparator />
             <Link href={`/${username}`}>
               <DropdownMenuItem className="flex items-center gap-[4px]">
-                <User size={16}  fill="black" />
+                <User size={16} fill="black" />
                 Profile
               </DropdownMenuItem>
             </Link>
@@ -84,6 +112,7 @@ const Nav = ({
                 signOut({ callbackUrl: "/signin" });
               }}
             >
+              <LogOut size={16} />
               <LogOut size={16} />
               Logout
             </DropdownMenuItem>

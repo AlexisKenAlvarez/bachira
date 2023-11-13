@@ -11,6 +11,8 @@ import { z } from "zod";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { TRPCError } from "@trpc/server";
+import { pusherServer } from "@/lib/pusher";
+import { toPusherKey } from "@/lib/utils";
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL as string,
@@ -140,6 +142,7 @@ export const userRouter = createTRPCRouter({
         followerId: z.string(),
         followingId: z.string().optional(),
         action: z.enum(["follow", "unfollow"]),
+        image: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -158,8 +161,8 @@ export const userRouter = createTRPCRouter({
       const notificationPrepare = ctx.db
         .insert(notification)
         .values({
-          notificationFrom: sql.placeholder("follower_id"),
-          notificationFor: sql.placeholder("following_id"),
+          notificationFrom: sql.placeholder("notificationFrom"),
+          notificationFor: sql.placeholder("notificationFor"),
           type: "FOLLOW",
         })
         .prepare();
@@ -174,6 +177,19 @@ export const userRouter = createTRPCRouter({
           follower_id: input.followerId,
           following_id: input.followingId,
         });
+
+        await notificationPrepare.execute({
+          notificationFrom: input.followerId,
+          notificationFor: input.followingId,
+        })
+
+        pusherServer.trigger(toPusherKey(`user:${input.followingId}:incoming_follow`), 
+        'incoming_follow', {
+          notificationFrom: input.followerId,
+          type: "FOLLOW",
+          image: input.image
+        }
+        )
 
         return {
           success: true,
