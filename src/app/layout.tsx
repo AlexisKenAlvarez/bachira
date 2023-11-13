@@ -8,9 +8,11 @@ import { GeistSans } from "geist/font";
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { Montserrat } from "next/font/google";
-import { Toaster } from "sonner";
+
 import Nav from "../components/Nav";
 import Providers from "./providers";
+import { Toaster } from "react-hot-toast";
+import { api } from "@/trpc/server";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -30,6 +32,13 @@ export default async function RootLayout({
 }) {
   const session = await getServerSession(authOptions);
 
+  const countData =
+    session &&
+    (await api.notifications.countNotifications.query({
+      userId: session?.user.id as string,
+      type: "UNREAD",
+    }));
+
   return (
     <TRPCReactProvider cookies={cookies().toString()}>
       <html lang="en">
@@ -41,18 +50,21 @@ export default async function RootLayout({
               <AddUsername email={session.user.email!} />
             ) : (
               <div className="mx-auto flex min-h-screen w-full max-w-[700px] flex-col border-x border-black/10">
+                <Toaster
+                  position="bottom-left"
+                  gutter={10}
+                  toastOptions={{
+                    duration: 5000,
+                  }}
+                />
                 <Nav
                   email={session.user.email!}
                   username={session.user.username}
                   image={session.user.image!}
                   userId={session.user.id}
+                  notifCount={countData ? (countData[0]?.count as number) : 0}
                 />
                 <Providers>{children}</Providers>
-                <Toaster
-                  toastOptions={{
-                    duration: 5000,
-                  }}
-                />
               </div>
             )
           ) : (

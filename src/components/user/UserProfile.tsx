@@ -5,7 +5,7 @@ import { api } from "@/trpc/react";
 import { Settings, UserCheck2, UserPlus2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
-import { toast } from "sonner";
+import toast from "react-hot-toast";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import FollowData from "./FollowData";
@@ -108,11 +108,13 @@ const UserProfile = ({
           // Unfollow user
           await unfollow.mutateAsync({
             followerId: session!.user.id,
+            followingId: userData[0]!.id,
             action: "unfollow"
           });
         } else {
           // Follow user
           await followUser.mutateAsync({
+            followerName: session?.user.username!,
             followerId: session!.user.id,
             followingId: userData[0]!.id,
             action: "follow",

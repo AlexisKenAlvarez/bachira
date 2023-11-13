@@ -58,8 +58,9 @@ export const followership = mysqlTable(
 
 export const notification = mysqlTable("notifications", {
   id: int("id").primaryKey().notNull().autoincrement(),
-  notificationFor: varchar("userId", { length: 100 }).notNull(),
+  notificationFor: varchar("notificationFor", { length: 100 }).notNull(),
   notificationFrom: varchar("notificationFrom", { length: 100 }).notNull(),
   type: mysqlEnum("type", NOTIFICATION_TYPE).notNull(),
-  status: mysqlEnum("status", NOTIFICATION_STATUS).default("UNREAD")
+  status: mysqlEnum("status", NOTIFICATION_STATUS).default("UNREAD"),
+  createdAt
 });

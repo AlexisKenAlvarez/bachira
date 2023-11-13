@@ -5,7 +5,7 @@ import {
   publicProcedure,
 } from "@/server/api/trpc";
 import { followership, notification, users } from "@/server/db/schema";
-import { and, asc, eq, gt, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { Ratelimit } from "@upstash/ratelimit";
@@ -94,28 +94,6 @@ export const userRouter = createTRPCRouter({
 
       return null;
     }),
-  checkEmail: publicProcedure
-    .input(
-      z.object({
-        email: z.string(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const data = await ctx.db.query.users.findFirst({
-        where: (users, { eq }) => eq(users.email, input.email),
-      });
-
-      if (data) {
-        return true;
-      }
-
-      return null;
-    }),
-  addUser: publicProcedure
-    .input(signupSchema)
-    .mutation(async ({ ctx, input }) => {
-      await ctx.db.insert(users).values({ ...input });
-    }),
   updateUsername: privateProcedure
     .input(
       z.object({
@@ -139,6 +117,7 @@ export const userRouter = createTRPCRouter({
   followUser: privateProcedure
     .input(
       z.object({
+        followerName: z.string().optional(),
         followerId: z.string(),
         followingId: z.string().optional(),
         action: z.enum(["follow", "unfollow"]),
@@ -169,7 +148,23 @@ export const userRouter = createTRPCRouter({
 
       const deletePrepare = ctx.db
         .delete(followership)
-        .where(eq(followership.follower_id, sql.placeholder("user_id")))
+        .where(
+          and(
+            eq(followership.follower_id, sql.placeholder("user_id")),
+            eq(followership.following_id, sql.placeholder("followingId")),
+          ),
+        )
+        .prepare();
+
+      const deleteNotifPrepare = ctx.db
+        .delete(notification)
+        .where(
+          and(
+            eq(notification.notificationFrom, sql.placeholder("user_id")),
+            eq(notification.notificationFor, sql.placeholder("followingId")),
+            eq(notification.type, sql.placeholder("type")),
+          ),
+        )
         .prepare();
 
       if (input.action === "follow") {
@@ -181,15 +176,17 @@ export const userRouter = createTRPCRouter({
         await notificationPrepare.execute({
           notificationFrom: input.followerId,
           notificationFor: input.followingId,
-        })
+        });
 
-        pusherServer.trigger(toPusherKey(`user:${input.followingId}:incoming_follow`), 
-        'incoming_follow', {
-          notificationFrom: input.followerId,
-          type: "FOLLOW",
-          image: input.image
-        }
-        )
+        pusherServer.trigger(
+          toPusherKey(`user:${input.followingId}:incoming_follow`),
+          "incoming_follow",
+          {
+            notificationFrom: input.followerName,
+            type: "FOLLOW",
+            image: input.image,
+          },
+        );
 
         return {
           success: true,
@@ -197,12 +194,19 @@ export const userRouter = createTRPCRouter({
       } else if (input.action === "unfollow") {
         await deletePrepare.execute({
           user_id: input.followerId,
+          followingId: input.followingId,
         });
 
-        return {
-          success: true,
-        };
+        await deleteNotifPrepare.execute({
+          user_id: input.followerId,
+          followingId: input.followingId,
+          type: "FOLLOW",
+        });
       }
+
+      return {
+        success: true,
+      };
     }),
   getFollowers: privateProcedure
     .input(
@@ -211,7 +215,7 @@ export const userRouter = createTRPCRouter({
         limit: z.number().min(1).max(10).nullish(),
         cursor: z.number().nullish(),
         offset: z.number().nullish(),
-        type: z.enum(["followers", "following"])
+        type: z.enum(["followers", "following"]),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -220,15 +224,20 @@ export const userRouter = createTRPCRouter({
       const followers = await ctx.db.query.followership.findMany({
         where: (followership, { eq, gt, and }) =>
           and(
-            eq(input.type === "followers" ? followership.following_id : followership.follower_id, input.userId),
+            eq(
+              input.type === "followers"
+                ? followership.following_id
+                : followership.follower_id,
+              input.userId,
+            ),
             gt(followership.id, input.cursor ?? 0),
           ),
         orderBy: asc(followership.id),
         limit: limit + 1,
         with: {
           follower: true,
-          following: true
-        }
+          following: true,
+        },
       });
 
       let nextCursor;

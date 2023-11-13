@@ -17,7 +17,7 @@ import {
 import { api } from "@/trpc/react";
 import { Loader } from "lucide-react";
 import Link from "next/link";
-import { toast } from "sonner";
+import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
