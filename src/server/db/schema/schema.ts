@@ -3,6 +3,7 @@
 
 import { sql } from "drizzle-orm";
 import {
+  boolean,
   index,
   int,
   mysqlEnum,
@@ -67,5 +68,6 @@ export const notification = mysqlTable("notifications", {
   notificationFrom: varchar("notificationFrom", { length: 100 }).notNull(),
   type: mysqlEnum("type", NOTIFICATION_TYPE).notNull(),
   status: mysqlEnum("status", NOTIFICATION_STATUS).default("UNREAD"),
+  seen: boolean("seen").default(false),
   createdAt
 });

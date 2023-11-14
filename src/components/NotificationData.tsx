@@ -27,8 +27,8 @@ const NotificationData = ({
 }) => {
   const sheetRef = useRef<HTMLDivElement>(null);
 
-  const [read, setRead] = useState(false)
-  const { data, fetchNextPage, isFetching } =
+  const read = api.notifications.readNotifications.useMutation();
+  const { data, fetchNextPage, isFetching, isFetched } =
     api.notifications.getNotifications.useInfiniteQuery(
       {
         limit: 10,
@@ -40,7 +40,6 @@ const NotificationData = ({
         },
         refetchOnMount: true,
         
-
       },
     );
 
@@ -57,9 +56,13 @@ const NotificationData = ({
   };
 
   useEffect(() => {
-    console.log(read);
-    setRead(true)
-  }, [read])
+    if (open && isFetched) {
+      // read.mutateAsync({
+      //   userId,
+      //   type: "FOLLOW"
+      // })
+    }
+  }, [open, isFetched])
   
 
   useEffect(() => {

@@ -25,7 +25,6 @@ const Notifications = ({
   userId: string;
   notifCount: number;
 }) => {
-  const read = api.notifications.readNotifications.useMutation()
   const [count, setCount] = useState<number>(Number(notifCount));
   const [recentNotif, setRecentNotif] = useState<NotificationType[]>([]);
   const [open, setOpen] = useState(false)
@@ -86,7 +85,6 @@ const Notifications = ({
         onClick={async () => {
           setRecentNotif([]);
           setCount(0);
-          await read.mutateAsync({ userId, type: "FOLLOW" })
         }}
       >
         <div className="relative grid h-10 w-10 place-content-center rounded-full bg-black/5">
