@@ -9,6 +9,8 @@ import { pusherClient } from "@/lib/pusher";
 import { toPusherKey } from "@/lib/utils";
 import { X } from "lucide-react";
 import toast from "react-hot-toast";
+import { api } from "@/trpc/react";
+import Image from "next/image";
 
 interface NotificationType {
   image: string;
@@ -23,33 +25,44 @@ const Notifications = ({
   userId: string;
   notifCount: number;
 }) => {
+  const read = api.notifications.readNotifications.useMutation()
   const [count, setCount] = useState<number>(Number(notifCount));
+  const [recentNotif, setRecentNotif] = useState<NotificationType[]>([]);
+  const [open, setOpen] = useState(false)
 
   const followHandler = (data: NotificationType) => {
-    toast.dismiss("follow_toast");
-    toast(
-      <div className=" flex gap-3">
-        <button className="absolute -right-[3px] -top-[3px] rounded-full border border-black/50 p-[2px] opacity-60">
-          <X size={10} />
-        </button>
-        <img
-          src={data.image}
-          alt="Follower Image"
-          className="ml-0 w-12 shrink-0 rounded-full"
-        />
-
-        <div className="flex flex-col justify-center gap-0">
-          <h1 className=" max-w-20 inline-block truncate overflow-ellipsis font-primary font-bold md:max-w-[14rem]">
-            {data.notificationFrom}
-          </h1>
-          <p className="-mt-[5px]">is now following you.</p>
-        </div>
-      </div>
+    const alreadyNotified = recentNotif.some(
+      (el) => el.notificationFrom === data.notificationFrom,
     );
-    setCount((prev) => (prev += 1));
-  };
 
-  console.log(count);
+    if (alreadyNotified) {
+      console.log("Not sending notification, already notified");
+    } else {
+      setRecentNotif((prev) => [...prev, data]);
+
+      toast.dismiss("follow_toast");
+      toast(
+        <div className=" flex gap-3">
+          <button className="absolute -right-[3px] -top-[3px] rounded-full border border-black/50 p-[2px] opacity-60">
+            <X size={10} />
+          </button>
+          <Image
+            src={data.image}
+            alt="Follower Image"
+            className="ml-0 w-12 shrink-0 rounded-full"
+          />
+
+          <div className="flex flex-col justify-center gap-0">
+            <h1 className=" max-w-20 inline-block truncate overflow-ellipsis font-primary font-bold md:max-w-[14rem]">
+              {data.notificationFrom}
+            </h1>
+            <p className="-mt-[5px]">is now following you.</p>
+          </div>
+        </div>,
+      );
+      setCount((prev) => (prev += 1));
+    }
+  };
 
   useEffect(() => {
     pusherClient.subscribe(toPusherKey(`user:${userId}:incoming_follow`));
@@ -63,11 +76,17 @@ const Notifications = ({
 
       pusherClient.unbind("incoming_follow", followHandler);
     };
-  }, []);
+  }, [recentNotif]);
 
   return (
-    <Sheet>
-      <SheetTrigger>
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger
+        onClick={async () => {
+          setRecentNotif([]);
+          setCount(0);
+          await read.mutateAsync({ userId, type: "FOLLOW" })
+        }}
+      >
         <div className="relative grid h-10 w-10 place-content-center rounded-full bg-black/5">
           {count > 0 && (
             <div className="absolute -right-[4px] -top-[4px] h-fit w-fit rounded-full bg-red-500 p-[9px] font-secondary text-[10px] text-white">
@@ -79,7 +98,7 @@ const Notifications = ({
           <Bell size={18} strokeWidth={3} fill="black" />
         </div>
       </SheetTrigger>
-      <NotificationData userId={userId} />
+      <NotificationData userId={userId} setOpen={setOpen} />
     </Sheet>
   );
 };

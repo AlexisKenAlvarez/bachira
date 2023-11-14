@@ -1,2 +1,1 @@
-Fix the unlimited increment on follow on notif
-Add the notification data
+Make the infinite query for notifications functional

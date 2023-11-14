@@ -1,18 +1,16 @@
-import { signupSchema } from "@/lib/zodSchema";
 import {
   createTRPCRouter,
-  privateProcedure,
-  publicProcedure,
+  privateProcedure
 } from "@/server/api/trpc";
 import { followership, notification, users } from "@/server/db/schema";
-import { and, asc, desc, eq, gt, sql } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
-import { Ratelimit } from "@upstash/ratelimit";
-import { Redis } from "@upstash/redis";
-import { TRPCError } from "@trpc/server";
 import { pusherServer } from "@/lib/pusher";
 import { toPusherKey } from "@/lib/utils";
+import { TRPCError } from "@trpc/server";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL as string,

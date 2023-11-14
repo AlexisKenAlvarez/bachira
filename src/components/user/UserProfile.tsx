@@ -114,7 +114,7 @@ const UserProfile = ({
         } else {
           // Follow user
           await followUser.mutateAsync({
-            followerName: session?.user.username!,
+            followerName: session!.user.username,
             followerId: session!.user.id,
             followingId: userData[0]!.id,
             action: "follow",

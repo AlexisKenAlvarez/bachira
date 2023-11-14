@@ -14,8 +14,8 @@ import {
 
 export const mysqlTable = mysqlTableCreator((name) => `gchat_${name}`);
 
-const NOTIFICATION_TYPE = ["FOLLOW", "LIKE", "COMMENT", "REPLY"] as const;
-const NOTIFICATION_STATUS = ["READ", "UNREAD"] as const;
+export const NOTIFICATION_TYPE = ["FOLLOW", "LIKE", "COMMENT", "REPLY"] as const;
+export const NOTIFICATION_STATUS = ["READ", "UNREAD"] as const;
 
 const updatedAt = timestamp("updatedAt")
   .notNull()

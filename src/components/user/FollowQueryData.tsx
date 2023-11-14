@@ -8,6 +8,7 @@ import { UIEvent } from "react";
 import { Separator } from "../ui/separator";
 import { Skeleton } from "../ui/skeleton";
 import React from "react";
+import Image from "next/image";
 
 const FollowQueryData = ({
   type,
@@ -70,14 +71,14 @@ const FollowQueryData = ({
       >
         {data?.pages.map((page, i) => (
           <div className="space-y-4" key={i}>
-            {page.followers.map((follower, i) => (
+            {page.followers.map((follower) => (
               <div className="flex gap-3" key={follower.id}>
                 <Link href={`/${
                       type === "Followers"
                         ? follower.follower.username
                         : follower.following.username
                     }`}>
-                  <img
+                  <Image
                     src={
                       type === "Followers"
                         ? follower.follower.image!

@@ -1,5 +1,5 @@
 import { createTRPCRouter, privateProcedure } from "@/server/api/trpc";
-import { notification } from "@/server/db/schema";
+import { NOTIFICATION_TYPE, notification } from "@/server/db/schema";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
@@ -50,20 +50,32 @@ export const notificationRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      // const count = await ctx.db.execute(
-      //   sql`(SELECT count(*) as count from ${notification} WHERE notificationFor = ${input.userId} AND STATUS = ${input.type})`.as(
-      //     "count",
-      //   ),
-      // );
-
-      const count = await ctx.db.select({ count: sql`COUNT(*)` })
-      .from(notification)
-      .where(and(
-        eq(notification.notificationFor, input.userId),
-        eq(notification.status, input.type)
-      ))
+      const count = await ctx.db
+        .select({ count: sql`COUNT(*)` })
+        .from(notification)
+        .where(
+          and(
+            eq(notification.notificationFor, input.userId),
+            eq(notification.status, input.type),
+          ),
+        );
 
       return count;
+    }),
+  readNotifications: privateProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        type: z.enum(NOTIFICATION_TYPE),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .update(notification)
+        .set({
+          status: "READ",
+        })
+        .where(eq(notification.notificationFor, input.userId));
     }),
 });
 

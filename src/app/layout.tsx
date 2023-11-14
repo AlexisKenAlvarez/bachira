@@ -35,7 +35,7 @@ export default async function RootLayout({
   const countData =
     session &&
     (await api.notifications.countNotifications.query({
-      userId: session?.user.id as string,
+      userId: session.user.id,
       type: "UNREAD",
     }));
 
