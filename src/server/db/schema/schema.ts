@@ -1,7 +1,6 @@
 // Example model schema from the Drizzle docs
 // https://orm.drizzle.team/docs/sql-schema-declaration
 
-
 import { sql } from "drizzle-orm";
 import {
   index,
@@ -9,22 +8,28 @@ import {
   mysqlEnum,
   mysqlTableCreator,
   timestamp,
-  varchar
+  varchar,
 } from "drizzle-orm/mysql-core";
 
 export const mysqlTable = mysqlTableCreator((name) => `gchat_${name}`);
 
-export const NOTIFICATION_TYPE = ["FOLLOW", "LIKE", "COMMENT", "REPLY"] as const;
+export const NOTIFICATION_TYPE = [
+  "FOLLOW",
+  "LIKE",
+  "COMMENT",
+  "REPLY",
+] as const;
+
 export const NOTIFICATION_STATUS = ["READ", "UNREAD"] as const;
 
-const updatedAt = timestamp("updatedAt")
+const updatedAt = timestamp("updatedAt", { mode: 'date' })
   .notNull()
   .default(sql`CURRENT_TIMESTAMP`)
   .onUpdateNow();
 
-const createdAt = timestamp("createdAt")
-.default(sql`CURRENT_TIMESTAMP`)
-.notNull()
+const createdAt = timestamp("createdAt", { mode: 'date' })
+  .default(sql`CURRENT_TIMESTAMP`)
+  .notNull();
 
 export const users = mysqlTable("user", {
   id: varchar("id", { length: 255 }).notNull().primaryKey(),

@@ -1,6 +1,6 @@
 import { createTRPCRouter, privateProcedure } from "@/server/api/trpc";
 import { NOTIFICATION_TYPE, notification } from "@/server/db/schema";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
 export const notificationRouter = createTRPCRouter({
@@ -17,10 +17,11 @@ export const notificationRouter = createTRPCRouter({
       const limit = input.limit ?? 10;
 
       const notifications = await ctx.db.query.notification.findMany({
-        where: (notification, { eq, and, gt }) =>
+        where: (notification, { eq, and, gt, lt }) =>
           and(
             eq(notification.notificationFor, input.userId),
-            gt(notification.id, input.cursor ?? 0),
+            input.cursor ? lt(notification.id, input.cursor ?? 0) : gt(notification.id, input.cursor ?? 0),
+            
           ),
         with: {
           notificationFrom: true,

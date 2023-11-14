@@ -50,6 +50,8 @@ const Notifications = ({
             src={data.image}
             alt="Follower Image"
             className="ml-0 w-12 shrink-0 rounded-full"
+            width={500}
+            height={500}
           />
 
           <div className="flex flex-col justify-center gap-0">
@@ -98,7 +100,7 @@ const Notifications = ({
           <Bell size={18} strokeWidth={3} fill="black" />
         </div>
       </SheetTrigger>
-      <NotificationData userId={userId} setOpen={setOpen} />
+      <NotificationData userId={userId} setOpen={setOpen} open={open} />
     </Sheet>
   );
 };

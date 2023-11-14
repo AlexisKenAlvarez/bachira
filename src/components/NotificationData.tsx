@@ -4,28 +4,61 @@ import { Separator } from "@radix-ui/react-dropdown-menu";
 import { User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Dispatch, SetStateAction, useEffect } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useRef,
+  UIEvent,
+  useEffect,
+  useState,
+} from "react";
 import { SheetContent, SheetHeader, SheetTitle } from "./ui/sheet";
+import UserSkeleton from "./skeleton/UserSkeleton";
+import { timeAgo } from "@/lib/utils";
 
 const NotificationData = ({
   userId,
   setOpen,
+  open,
 }: {
   userId: string;
   setOpen: Dispatch<SetStateAction<boolean>>;
+  open: boolean;
 }) => {
-  const { data, fetchNextPage } =
-    api.notifications.getNotifications.useInfiniteQuery({
-      limit: 10,
-      userId,
-    });
+  const sheetRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    console.log(data?.pages);
-  }, []);
+  const { data, fetchNextPage, isFetching } =
+    api.notifications.getNotifications.useInfiniteQuery(
+      {
+        limit: 5,
+        userId,
+      },
+      {
+        getNextPageParam: (lastPage) => {
+          return lastPage.nextCursor;
+        },
+      },
+    );
+
+  const handleScroll = (event: UIEvent<HTMLDivElement>) => {
+    const target = event.target as HTMLElement;
+
+    const scrollPercentage =
+      (target.scrollTop / (target.scrollHeight - target.clientHeight)) * 100;
+
+    if (scrollPercentage > 75) {
+      console.log("Fetching next page");
+      fetchNextPage();
+    }
+  };
+
 
   return (
-    <SheetContent className="overflow-y-scroll p-0 px-2 pb-5">
+    <SheetContent
+      className="overflow-y-scroll p-0 px-2 pb-5"
+      onScroll={handleScroll}
+      ref={sheetRef}
+    >
       <SheetHeader>
         <SheetTitle className="m-5">Notifications</SheetTitle>
         <Separator />
@@ -47,13 +80,15 @@ const NotificationData = ({
                   <div className="rounded-md px-5 py-3 transition-all duration-300 ease-in-out hover:bg-gchat/5">
                     <div className=" flex gap-3">
                       <div className="relative h-fit w-fit rounded-full">
-                        <div className="w-fit h-fit absolute rounded-full bg-gchat bottom-[-4px] right-[-4px] p-[5px]">
+                        <div className="absolute bottom-[-4px] right-[-4px] h-fit w-fit rounded-full bg-gchat p-[5px]">
                           <User fill="white" stroke="white" size={13} />
                         </div>
                         <Image
                           src={notif.notificationFrom.image ?? "/fox.webp"}
                           alt={notif.notificationFrom.username ?? "User Image"}
                           className="ml-0 w-12 shrink-0 rounded-full"
+                          width={500}
+                          height={500}
                         />
                       </div>
 
@@ -62,6 +97,7 @@ const NotificationData = ({
                           {notif.notificationFrom.username}
                         </h1>
                         <p className="-mt-[5px]">is now following you.</p>
+                        <p className="-mt-[5px]">{timeAgo(notif.createdAt.toString())}</p>
                       </div>
                     </div>
                   </div>
@@ -69,6 +105,13 @@ const NotificationData = ({
               ))}
             </div>
           ))}
+
+          {isFetching &&
+            [...new Array(4)].map((_, i) => (
+              <div className="px-5 py-3" key={i}>
+                <UserSkeleton imageSize="12" />
+              </div>
+            ))}
         </div>
       </SheetHeader>
     </SheetContent>

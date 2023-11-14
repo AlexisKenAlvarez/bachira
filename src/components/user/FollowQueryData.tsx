@@ -9,6 +9,7 @@ import { Separator } from "../ui/separator";
 import { Skeleton } from "../ui/skeleton";
 import React from "react";
 import Image from "next/image";
+import UserSkeleton from "../skeleton/UserSkeleton";
 
 const FollowQueryData = ({
   type,
@@ -73,11 +74,13 @@ const FollowQueryData = ({
           <div className="space-y-4" key={i}>
             {page.followers.map((follower) => (
               <div className="flex gap-3" key={follower.id}>
-                <Link href={`/${
-                      type === "Followers"
-                        ? follower.follower.username
-                        : follower.following.username
-                    }`}>
+                <Link
+                  href={`/${
+                    type === "Followers"
+                      ? follower.follower.username
+                      : follower.following.username
+                  }`}
+                >
                   <Image
                     src={
                       type === "Followers"
@@ -116,13 +119,7 @@ const FollowQueryData = ({
         {isFetching && (
           <div className="space-y-4">
             {[...new Array(4)].map((_, i) => (
-              <div className="flex gap-3" key={i}>
-                <Skeleton className="h-14 w-14 rounded-full"></Skeleton>
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-28"></Skeleton>
-                  <Skeleton className="h-3 w-16"></Skeleton>
-                </div>
-              </div>
+              <UserSkeleton key={i} />
             ))}
           </div>
         )}

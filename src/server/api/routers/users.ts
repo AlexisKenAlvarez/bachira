@@ -123,6 +123,7 @@ export const userRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      
       const { success } = await rateLimiter.limit(ctx.session.user.id);
       if (!success) {
         throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
@@ -132,6 +133,7 @@ export const userRouter = createTRPCRouter({
         .values({
           follower_id: sql.placeholder("follower_id"),
           following_id: sql.placeholder("following_id"),
+  
         })
         .prepare();
 
