@@ -100,7 +100,7 @@ const Notifications = ({
           <Bell size={18} strokeWidth={3} fill="black" />
         </div>
       </SheetTrigger>
-      <NotificationData userId={userId} setOpen={setOpen} open={open} />
+      <NotificationData userId={userId} setOpen={setOpen} open={open}/>
     </Sheet>
   );
 };

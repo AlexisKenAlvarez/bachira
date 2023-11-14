@@ -27,16 +27,20 @@ const NotificationData = ({
 }) => {
   const sheetRef = useRef<HTMLDivElement>(null);
 
+  const [read, setRead] = useState(false)
   const { data, fetchNextPage, isFetching } =
     api.notifications.getNotifications.useInfiniteQuery(
       {
-        limit: 5,
+        limit: 10,
         userId,
       },
       {
         getNextPageParam: (lastPage) => {
           return lastPage.nextCursor;
         },
+        refetchOnMount: true,
+        
+
       },
     );
 
@@ -52,6 +56,23 @@ const NotificationData = ({
     }
   };
 
+  useEffect(() => {
+    console.log(read);
+    setRead(true)
+  }, [read])
+  
+
+  useEffect(() => {
+    setTimeout(() => {
+      var hasVerticalScrollbar = sheetRef.current
+        ? sheetRef.current.scrollHeight > sheetRef.current.clientHeight
+        : false;
+
+      if (open && !hasVerticalScrollbar) {
+        fetchNextPage();
+      }
+    }, 200);
+  }, [open]);
 
   return (
     <SheetContent
@@ -78,7 +99,7 @@ const NotificationData = ({
                   }}
                 >
                   <div className="rounded-md px-5 py-3 transition-all duration-300 ease-in-out hover:bg-gchat/5">
-                    <div className=" flex gap-3">
+                    <div className=" flex gap-3 items-center">
                       <div className="relative h-fit w-fit rounded-full">
                         <div className="absolute bottom-[-4px] right-[-4px] h-fit w-fit rounded-full bg-gchat p-[5px]">
                           <User fill="white" stroke="white" size={13} />
@@ -97,7 +118,9 @@ const NotificationData = ({
                           {notif.notificationFrom.username}
                         </h1>
                         <p className="-mt-[5px]">is now following you.</p>
-                        <p className="-mt-[5px]">{timeAgo(notif.createdAt.toString())}</p>
+                        <p className="-mt-[2px] text-xs font-semibold text-gchat font-primary">
+                          {timeAgo(notif.createdAt.toString())}
+                        </p>
                       </div>
                     </div>
                   </div>
