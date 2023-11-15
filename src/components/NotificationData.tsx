@@ -5,13 +5,7 @@ import { Separator } from "@radix-ui/react-dropdown-menu";
 import { User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  Dispatch,
-  SetStateAction,
-  UIEvent,
-  useEffect,
-  useRef
-} from "react";
+import { Dispatch, SetStateAction, UIEvent, useEffect, useRef } from "react";
 import UserSkeleton from "./skeleton/UserSkeleton";
 import { SheetContent, SheetHeader, SheetTitle } from "./ui/sheet";
 
@@ -26,8 +20,7 @@ const NotificationData = ({
 }) => {
   const sheetRef = useRef<HTMLDivElement>(null);
 
-  const read = api.notifications.readNotifications.useMutation();
-  const { data, fetchNextPage, isFetching } =
+  const { data, fetchNextPage, isFetching, refetch } =
     api.notifications.getNotifications.useInfiniteQuery(
       {
         limit: 10,
@@ -40,6 +33,12 @@ const NotificationData = ({
         refetchOnMount: true,
       },
     );
+
+  const read = api.notifications.readNotifications.useMutation({
+    onSuccess: () => {
+      refetch();
+    },
+  });
 
   const handleScroll = (event: UIEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement;
@@ -85,11 +84,11 @@ const NotificationData = ({
                       ? `/${notif.notificationFrom.username}`
                       : ""
                   }
-                  onClick={async() => {
-                    setOpen(false)
+                  onClick={async () => {
+                    setOpen(false);
                     await read.mutateAsync({
-                      notificationId: notif.id
-                    })
+                      notificationId: notif.id,
+                    });
                   }}
                 >
                   <div className="relative rounded-md px-5 py-3 text-left transition-all duration-300 ease-in-out hover:bg-gchat/5">
