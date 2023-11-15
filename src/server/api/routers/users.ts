@@ -1,7 +1,4 @@
-import {
-  createTRPCRouter,
-  privateProcedure
-} from "@/server/api/trpc";
+import { createTRPCRouter, privateProcedure } from "@/server/api/trpc";
 import { followership, notification, users } from "@/server/db/schema";
 import { and, asc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -123,7 +120,6 @@ export const userRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      
       const { success } = await rateLimiter.limit(ctx.session.user.id);
       if (!success) {
         throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
@@ -133,7 +129,6 @@ export const userRouter = createTRPCRouter({
         .values({
           follower_id: sql.placeholder("follower_id"),
           following_id: sql.placeholder("following_id"),
-  
         })
         .prepare();
 
@@ -250,6 +245,23 @@ export const userRouter = createTRPCRouter({
       return {
         followers,
         nextCursor,
+      };
+    }),
+  uploadImage: privateProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        image: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .update(users)
+        .set({ image: input.image })
+        .where(eq(users.id, input.userId));
+
+      return {
+        success: true,
       };
     }),
 });

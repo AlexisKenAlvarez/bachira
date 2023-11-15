@@ -2,7 +2,14 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { userDataOutput } from "@/lib/routerTypes";
 import { api } from "@/trpc/react";
-import { Settings, UserCheck2, UserPlus2 } from "lucide-react";
+import {
+  Camera,
+  ImagePlus,
+  Settings,
+  Trash2,
+  UserCheck2,
+  UserPlus2,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -11,6 +18,16 @@ import { Skeleton } from "../ui/skeleton";
 import FollowData from "./FollowData";
 import { UploadButton } from "@uploadthing/react";
 import { OurFileRouter } from "@/app/api/uploadthing/core";
+import { Image } from "lucide-react";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 interface FollowData {
   followers: number;
   following: number;
@@ -26,6 +43,8 @@ const UserProfile = ({
   isFollowing: boolean;
 }) => {
   const { data: session, status } = useSession();
+  const [open, setOpen] = useState<boolean>(false);
+  const [uploading, setUploading] = useState<boolean>(false);
   const [follows, setFollow] = useState<boolean>(isFollowing);
   const [userFollowData, setFollowData] = useState<FollowData>({
     followers: Number(userData[0]!.followers as number),
@@ -133,30 +152,60 @@ const UserProfile = ({
         <div className="flex w-full flex-1 flex-col">
           <div className="-mb-5 flex h-64 w-full items-end justify-end bg-[#EDEDED]">
             {inProfile && (
-              <Button className="m-5 mb-8 relative px-0" variant="outline">
-                <p className="absolute left-0 right-0 bottom-0 top-0 m-auto w-fit h-fit">Edit cover</p>
-                <UploadButton<OurFileRouter, "imageUploader"> 
-                  endpoint="imageUploader"
-                  className="w-full block opacity-0"
-                  
-                  appearance={{
-                    allowedContent: {
-                      display: "none",
-                    },
-                    container: {
-                      width: "100%", 
-                      
-                    }
-
-                  }}
-                  onUploadBegin={(name) => {
-                    // Do something once upload begins
-                    console.log("Uploading: ", name);
-                  }}
-                  onClientUploadComplete={(res: any) => console.log(res)}
-                  onUploadError={(err: any) => console.log(err)}
-                />
-              </Button>
+              <DropdownMenu onOpenChange={(e) => {
+                setOpen(e)
+              }} open={open}>
+                <DropdownMenuTrigger className="relative m-5 mb-8 rounded-md bg-white px-5 py-2 font-secondary text-sm font-semibold">
+                  <p className="flex items-center gap-x-2">
+                    <Camera
+                      className="inline-block"
+                      size={21}
+                      fill="black"
+                      stroke="white"
+                    />
+                    Edit cover
+                  </p>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent side="bottom" align="end" className="w-44">
+                  <DropdownMenuItem className="relative space-x-2">
+                    <Image className="inline-block" size="16" />
+                    <p className="">Upload Photo</p>
+                    <UploadButton<OurFileRouter, "imageUploader">
+                      endpoint="imageUploader"
+                      className="absolute left-0 top-0 block h-full w-full opacity-0"
+                      appearance={{
+                        allowedContent: {
+                          display: "none",
+                        },
+                        container: {
+                          width: "100%",
+                        },
+                      }}
+                      onUploadBegin={() => {
+                        toast.loading("Uploading image...", {
+                          id: "cover_upload",
+                        });
+                      }}
+                      onClientUploadComplete={(res: any) => {
+                        console.log(res);
+                        toast.success("Image uploaded successfully!", {
+                          id: "cover_upload",
+                        });
+                      }}
+                      onUploadError={(err: any) => {
+                        console.log(err);
+                        toast.error(
+                          "Error uploading image. Please try again later.",
+                        );
+                      }}
+                    />
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="space-x-2">
+                    <Trash2 size={16} />
+                    <p className="">Delete photo</p>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
           <div className="h-full w-full flex-1 rounded-tl-3xl rounded-tr-3xl border-l border-r border-t border-black/10 bg-white p-5">
