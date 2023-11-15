@@ -9,6 +9,8 @@ import toast from "react-hot-toast";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import FollowData from "./FollowData";
+import { UploadButton } from "@uploadthing/react";
+import { OurFileRouter } from "@/app/api/uploadthing/core";
 interface FollowData {
   followers: number;
   following: number;
@@ -18,14 +20,12 @@ const UserProfile = ({
   userData,
   inProfile,
   isFollowing,
-
 }: {
   userData: NonNullable<userDataOutput>;
   inProfile: boolean;
   isFollowing: boolean;
-
 }) => {
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession();
   const [follows, setFollow] = useState<boolean>(isFollowing);
   const [userFollowData, setFollowData] = useState<FollowData>({
     followers: Number(userData[0]!.followers as number),
@@ -109,7 +109,7 @@ const UserProfile = ({
           await unfollow.mutateAsync({
             followerId: session!.user.id,
             followingId: userData[0]!.id,
-            action: "unfollow"
+            action: "unfollow",
           });
         } else {
           // Follow user
@@ -118,7 +118,7 @@ const UserProfile = ({
             followerId: session!.user.id,
             followingId: userData[0]!.id,
             action: "follow",
-            image: session!.user.image!
+            image: session!.user.image!,
           });
         }
       }
@@ -133,8 +133,29 @@ const UserProfile = ({
         <div className="flex w-full flex-1 flex-col">
           <div className="-mb-5 flex h-64 w-full items-end justify-end bg-[#EDEDED]">
             {inProfile && (
-              <Button className="m-5 mb-8" variant="outline">
-                Edit cover photo
+              <Button className="m-5 mb-8 relative px-0" variant="outline">
+                <p className="absolute left-0 right-0 bottom-0 top-0 m-auto w-fit h-fit">Edit cover</p>
+                <UploadButton<OurFileRouter, "imageUploader"> 
+                  endpoint="imageUploader"
+                  className="w-full block opacity-0"
+                  
+                  appearance={{
+                    allowedContent: {
+                      display: "none",
+                    },
+                    container: {
+                      width: "100%", 
+                      
+                    }
+
+                  }}
+                  onUploadBegin={(name) => {
+                    // Do something once upload begins
+                    console.log("Uploading: ", name);
+                  }}
+                  onClientUploadComplete={(res: any) => console.log(res)}
+                  onUploadError={(err: any) => console.log(err)}
+                />
               </Button>
             )}
           </div>
@@ -149,16 +170,14 @@ const UserProfile = ({
               <div className="w-full">
                 <div className="flex h-auto w-full justify-between font-secondary">
                   <div className="">
-                    <h2 className=" w-44 truncate text-xl font-bold sm:w-60 commit">
+                    <h2 className=" commit w-44 truncate text-xl font-bold sm:w-60">
                       @{userData[0]!.username}
                     </h2>
-                    <h3 className="font-medium">
-                      {userData[0]?.name}
-                    </h3>
+                    <h3 className="font-medium">{userData[0]?.name}</h3>
                     {inProfile ? (
                       <Button
                         className="group mt-2 gap-x-2 px-6 text-sm font-semibold"
-                        disabled={status === 'loading'}
+                        disabled={status === "loading"}
                         variant="secondary"
                       >
                         <Settings
@@ -171,7 +190,7 @@ const UserProfile = ({
                       <Button
                         className="mt-2 px-7"
                         onClick={handleFollow}
-                        disabled={status === 'loading'}
+                        disabled={status === "loading"}
                         variant={follows ? "secondary" : "default"}
                       >
                         {follows ? (
@@ -189,9 +208,17 @@ const UserProfile = ({
                 </div>
               </div>
             </div>
-            <div className="mt-4 flex gap-x-5 font-secondary relative">
-              <FollowData type="Following" value={userFollowData.following} userId={userData[0]!.id} />
-              <FollowData type="Followers" value={userFollowData.followers} userId={userData[0]!.id} />
+            <div className="relative mt-4 flex gap-x-5 font-secondary">
+              <FollowData
+                type="Following"
+                value={userFollowData.following}
+                userId={userData[0]!.id}
+              />
+              <FollowData
+                type="Followers"
+                value={userFollowData.followers}
+                userId={userData[0]!.id}
+              />
             </div>
           </div>
         </div>

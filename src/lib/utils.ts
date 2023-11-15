@@ -1,11 +1,11 @@
-import { type ClassValue, clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
- 
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 export function toPusherKey(key: string) {
-  return key.replace(/:/g, '__')
+  return key.replace(/:/g, "__");
 }
 
 export const timeAgo = (created: string) => {
@@ -15,7 +15,7 @@ export const timeAgo = (created: string) => {
   const seconds = Math.floor((now.getTime() - createdAt.getTime()) / 1000);
 
   if (seconds < 60) {
-    return (`${seconds} seconds ago`);
+    return `${seconds} seconds ago`;
   } else if (seconds < 3600) {
     const minutes = Math.floor(seconds / 60);
     return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;

@@ -1,14 +1,14 @@
-import { withUt } from "uploadthing/tw";
+
+const { withUt } = require("uploadthing/tw");
 
 /** @type {import('tailwindcss').Config} */
-export default withUt({
+module.exports = withUt({
   darkMode: ["class"],
   content: [
-    './pages/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
-    './src/**/*.{ts,tsx}',
-    "./src/**/*.{ts,tsx,mdx}"
+    './pages/**/*.{ts,tsx,mdx}',
+    './components/**/*.{ts,tsx,mdx}',
+    './app/**/*.{ts,tsx,mdx}',
+    './src/**/*.{ts,tsx,mdx}',
 	],
   theme: {
     container: {
