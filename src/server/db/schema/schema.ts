@@ -35,6 +35,7 @@ const createdAt = timestamp("createdAt", { mode: 'date' })
 export const users = mysqlTable("user", {
   id: varchar("id", { length: 255 }).notNull().primaryKey(),
   bio: varchar("bio", { length: 100 }),
+  coverPhoto: varchar("coverPhoto", { length: 255 }),
   username: varchar("username", { length: 50 }),
   email: varchar("email", { length: 255 }).notNull(),
   name: varchar("name", { length: 255 }),
@@ -45,6 +46,7 @@ export const users = mysqlTable("user", {
   }).defaultNow(),
   image: varchar("image", { length: 255 }),
   updatedAt,
+
 });
 
 export const followership = mysqlTable(

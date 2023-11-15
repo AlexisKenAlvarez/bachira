@@ -27,7 +27,9 @@ const Notifications = ({
 }) => {
   const [count, setCount] = useState<number>(Number(notifCount));
   const [recentNotif, setRecentNotif] = useState<NotificationType[]>([]);
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false);
+
+  const seen = api.notifications.seenNotifications.useMutation();
 
   const followHandler = (data: NotificationType) => {
     const alreadyNotified = recentNotif.some(
@@ -85,6 +87,8 @@ const Notifications = ({
         onClick={async () => {
           setRecentNotif([]);
           setCount(0);
+
+          await seen.mutateAsync({ userId: userId });
         }}
       >
         <div className="relative grid h-10 w-10 place-content-center rounded-full bg-black/5">
@@ -98,7 +102,7 @@ const Notifications = ({
           <Bell size={18} strokeWidth={3} fill="black" />
         </div>
       </SheetTrigger>
-      <NotificationData userId={userId} setOpen={setOpen} open={open}/>
+      <NotificationData userId={userId} setOpen={setOpen} open={open} />
     </Sheet>
   );
 };

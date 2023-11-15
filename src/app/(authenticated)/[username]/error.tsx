@@ -15,7 +15,7 @@ const Error = ({ error }: { error: Error & { digest?: string } }) => {
   return (
     <div className="grid h-[calc(100vh-73px)] w-full place-content-center text-center text-2xl">
       <Bird className="text-center mx-auto text-5xl" />
-      <p className="">This user does not exist.</p>
+      <p className="">Sorry, there was an error</p>
       <Button
         onClick={() => {
           router.push("/");

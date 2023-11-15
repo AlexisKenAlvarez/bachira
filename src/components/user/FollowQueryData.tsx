@@ -3,13 +3,11 @@
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 import { api } from "@/trpc/react";
+import Image from "next/image";
 import Link from "next/link";
 import { UIEvent } from "react";
-import { Separator } from "../ui/separator";
-import { Skeleton } from "../ui/skeleton";
-import React from "react";
-import Image from "next/image";
 import UserSkeleton from "../skeleton/UserSkeleton";
+import { Separator } from "../ui/separator";
 
 const FollowQueryData = ({
   type,
@@ -89,6 +87,8 @@ const FollowQueryData = ({
                     }
                     alt={follower.follower.name!}
                     className="w-14 rounded-full"
+                    width={500}
+                    height={500}
                   />
                 </Link>
 

@@ -19,7 +19,7 @@ const redis = new Redis({
 
 const rateLimiter = new Ratelimit({
   redis,
-  limiter: Ratelimit.fixedWindow(5, "10 s"),
+  limiter: Ratelimit.fixedWindow(3, "10 s"),
 });
 
 export const userRouter = createTRPCRouter({

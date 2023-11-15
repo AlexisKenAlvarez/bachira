@@ -1,4 +1,5 @@
 "use client";
+import { timeAgo } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { Separator } from "@radix-ui/react-dropdown-menu";
 import { User } from "lucide-react";
@@ -7,14 +8,12 @@ import Link from "next/link";
 import {
   Dispatch,
   SetStateAction,
-  useRef,
   UIEvent,
   useEffect,
-  useState,
+  useRef
 } from "react";
-import { SheetContent, SheetHeader, SheetTitle } from "./ui/sheet";
 import UserSkeleton from "./skeleton/UserSkeleton";
-import { timeAgo } from "@/lib/utils";
+import { SheetContent, SheetHeader, SheetTitle } from "./ui/sheet";
 
 const NotificationData = ({
   userId,
@@ -28,7 +27,7 @@ const NotificationData = ({
   const sheetRef = useRef<HTMLDivElement>(null);
 
   const read = api.notifications.readNotifications.useMutation();
-  const { data, fetchNextPage, isFetching, isFetched } =
+  const { data, fetchNextPage, isFetching } =
     api.notifications.getNotifications.useInfiniteQuery(
       {
         limit: 10,
@@ -39,7 +38,6 @@ const NotificationData = ({
           return lastPage.nextCursor;
         },
         refetchOnMount: true,
-        
       },
     );
 
@@ -56,18 +54,8 @@ const NotificationData = ({
   };
 
   useEffect(() => {
-    if (open && isFetched) {
-      // read.mutateAsync({
-      //   userId,
-      //   type: "FOLLOW"
-      // })
-    }
-  }, [open, isFetched])
-  
-
-  useEffect(() => {
     setTimeout(() => {
-      var hasVerticalScrollbar = sheetRef.current
+      const hasVerticalScrollbar = sheetRef.current
         ? sheetRef.current.scrollHeight > sheetRef.current.clientHeight
         : false;
 
@@ -79,12 +67,12 @@ const NotificationData = ({
 
   return (
     <SheetContent
-      className="overflow-y-scroll p-0 px-2 pb-5"
+      className="overflow-y-scroll p-0 px-2 pb-5 text-left"
       onScroll={handleScroll}
       ref={sheetRef}
     >
       <SheetHeader>
-        <SheetTitle className="m-5">Notifications</SheetTitle>
+        <SheetTitle className="m-5 text-left">Notifications</SheetTitle>
         <Separator />
         <div className="mt-2">
           {data?.pages.map((page, i) => (
@@ -97,12 +85,19 @@ const NotificationData = ({
                       ? `/${notif.notificationFrom.username}`
                       : ""
                   }
-                  onClick={() => {
-                    setOpen(false);
+                  onClick={async() => {
+                    setOpen(false)
+                    await read.mutateAsync({
+                      notificationId: notif.id
+                    })
                   }}
                 >
-                  <div className="rounded-md px-5 py-3 transition-all duration-300 ease-in-out hover:bg-gchat/5">
-                    <div className=" flex gap-3 items-center">
+                  <div className="relative rounded-md px-5 py-3 text-left transition-all duration-300 ease-in-out hover:bg-gchat/5">
+                    {notif.status === "UNREAD" && (
+                      <div className="absolute bottom-0 right-4 top-0 my-auto h-2 w-2 rounded-full bg-gchat"></div>
+                    )}
+
+                    <div className=" flex items-center gap-3">
                       <div className="relative h-fit w-fit rounded-full">
                         <div className="absolute bottom-[-4px] right-[-4px] h-fit w-fit rounded-full bg-gchat p-[5px]">
                           <User fill="white" stroke="white" size={13} />
@@ -121,7 +116,7 @@ const NotificationData = ({
                           {notif.notificationFrom.username}
                         </h1>
                         <p className="-mt-[5px]">is now following you.</p>
-                        <p className="-mt-[2px] text-xs font-semibold text-gchat font-primary">
+                        <p className="-mt-[2px] font-primary text-xs font-semibold text-gchat">
                           {timeAgo(notif.createdAt.toString())}
                         </p>
                       </div>
