@@ -2,32 +2,27 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { userDataOutput } from "@/lib/routerTypes";
 import { api } from "@/trpc/react";
+import type { FileWithPath } from "@uploadthing/react";
+import { useDropzone } from "@uploadthing/react/hooks";
+import { generateClientDropzoneAccept } from "uploadthing/client";
+
+import { useUploadThing } from "@/utils/uploadthing";
+
 import {
   Camera,
-  ImagePlus,
+  Image,
   Settings,
   Trash2,
   UserCheck2,
   UserPlus2,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import FollowData from "./FollowData";
-import { UploadButton } from "@uploadthing/react";
-import { OurFileRouter } from "@/app/api/uploadthing/core";
-import { Image } from "lucide-react";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 interface FollowData {
   followers: number;
   following: number;
@@ -44,8 +39,38 @@ const UserProfile = ({
 }) => {
   const { data: session, status } = useSession();
   const [open, setOpen] = useState<boolean>(false);
-  const [uploading, setUploading] = useState<boolean>(false);
   const [follows, setFollow] = useState<boolean>(isFollowing);
+  const [files, setFiles] = useState<File[]>([]);
+  const onDrop = useCallback((acceptedFiles: FileWithPath[]) => {
+    setFiles(acceptedFiles);
+  }, []);
+
+  const { startUpload, permittedFileInfo } = useUploadThing("imageUploader", {
+    onClientUploadComplete: () => {
+      toast.success("Image uploaded!", { id: "uploadToast", duration: 3000 });
+    },
+    onUploadError: () => {
+      toast.error("Sorry there was an error", {
+        id: "uploadToast",
+        duration: 3000,
+      });
+    },
+    onUploadBegin: () => {
+      console.log("UPLOAD BEGUN");
+    },
+  });
+
+  const fileTypes = permittedFileInfo?.config
+    ? Object.keys(permittedFileInfo?.config)
+    : [];
+
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    accept: fileTypes ? generateClientDropzoneAccept(fileTypes) : undefined,
+    multiple: false,
+    noDrag: true,
+  });
+
   const [userFollowData, setFollowData] = useState<FollowData>({
     followers: Number(userData[0]!.followers as number),
     following: Number(userData[0]!.following as number),
@@ -146,16 +171,29 @@ const UserProfile = ({
     }
   };
 
+  useEffect(() => {
+    if (files.length > 0) {
+      setOpen(false)
+      startUpload(files);
+      toast.loading("Uploading image. Do not leave the page", {
+        id: "uploadToast",
+        duration: Infinity,
+      });
+    }
+  }, [files]);
+
   return (
     <>
       {userData && (
         <div className="flex w-full flex-1 flex-col">
           <div className="-mb-5 flex h-64 w-full items-end justify-end bg-[#EDEDED]">
             {inProfile && (
-              <DropdownMenu onOpenChange={(e) => {
-                setOpen(e)
-              }} open={open}>
-                <DropdownMenuTrigger className="relative m-5 mb-8 rounded-md bg-white px-5 py-2 font-secondary text-sm font-semibold">
+              <div className="relative m-5 mb-8 h-fit w-fit border-2 ">
+                <Button
+                  variant="ghost"
+                  className="rounded-md bg-white px-5  py-2 font-secondary text-sm font-semibold text-black"
+                  onClick={() => {setOpen(true)}}
+                >
                   <p className="flex items-center gap-x-2">
                     <Camera
                       className="inline-block"
@@ -165,47 +203,25 @@ const UserProfile = ({
                     />
                     Edit cover
                   </p>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent side="bottom" align="end" className="w-44">
-                  <DropdownMenuItem className="relative space-x-2">
-                    <Image className="inline-block" size="16" />
-                    <p className="">Upload Photo</p>
-                    <UploadButton<OurFileRouter, "imageUploader">
-                      endpoint="imageUploader"
-                      className="absolute left-0 top-0 block h-full w-full opacity-0"
-                      appearance={{
-                        allowedContent: {
-                          display: "none",
-                        },
-                        container: {
-                          width: "100%",
-                        },
-                      }}
-                      onUploadBegin={() => {
-                        toast.loading("Uploading image...", {
-                          id: "cover_upload",
-                        });
-                      }}
-                      onClientUploadComplete={(res: any) => {
-                        console.log(res);
-                        toast.success("Image uploaded successfully!", {
-                          id: "cover_upload",
-                        });
-                      }}
-                      onUploadError={(err: any) => {
-                        console.log(err);
-                        toast.error(
-                          "Error uploading image. Please try again later.",
-                        );
-                      }}
-                    />
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="space-x-2">
-                    <Trash2 size={16} />
-                    <p className="">Delete photo</p>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                </Button>
+                {open && (
+                  <div className="font-regular absolute -bottom-[4px] right-[2px] h-fit w-44 translate-y-full overflow-hidden rounded-md border bg-white text-sm shadow-sm">
+                    <button className="relative w-full space-x-2 bg-white p-2 hover:bg-slate-100">
+                      <div {...getRootProps()}>
+                        <input {...getInputProps()} />
+                        <div className="flex items-center space-x-2">
+                          <Image className="" size="16" />
+                          <p className="">Upload Photo</p>
+                        </div>
+                      </div>
+                    </button>
+                    <button className="flex w-full items-center space-x-2 bg-white p-2 hover:bg-slate-100">
+                      <Trash2 size={16} />
+                      <p className="">Delete photo</p>
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
           <div className="h-full w-full flex-1 rounded-tl-3xl rounded-tr-3xl border-l border-r border-t border-black/10 bg-white p-5">
