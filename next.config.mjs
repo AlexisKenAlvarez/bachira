@@ -7,8 +7,14 @@ await import("./src/env.mjs");
 /** @type {import("next").NextConfig} */
 const config = {
   images: {
-    domains:['lh3.googleusercontent.com']
+    domains: ["lh3.googleusercontent.com", "utfs.io"],
   },
+
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '2mb',
+    }
+  }
 };
 
 export default config;

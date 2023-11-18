@@ -32,12 +32,15 @@ export default async function RootLayout({
 }) {
   const session = await getServerSession(authOptions);
 
+
   const countData =
     session &&
     (await api.notifications.countNotifications.query({
       userId: session.user.id,
       seen: false
     }));
+
+
 
   return (
     <TRPCReactProvider cookies={cookies().toString()}>

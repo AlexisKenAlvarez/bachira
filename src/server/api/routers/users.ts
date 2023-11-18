@@ -8,6 +8,7 @@ import { toPusherKey } from "@/lib/utils";
 import { TRPCError } from "@trpc/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { utapi } from "@/server/uploadthing";
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL as string,
@@ -247,7 +248,7 @@ export const userRouter = createTRPCRouter({
         nextCursor,
       };
     }),
-  uploadImage: privateProcedure
+  uploadCover: privateProcedure
     .input(
       z.object({
         userId: z.string(),
@@ -257,13 +258,22 @@ export const userRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       await ctx.db
         .update(users)
-        .set({ image: input.image })
+        .set({ coverPhoto: input.image })
         .where(eq(users.id, input.userId));
 
       return {
         success: true,
       };
     }),
+  deleteCover: privateProcedure.input(z.object({
+    imageKey: z.string()
+  })).mutation(async ({ input }) => {
+    await utapi.deleteFiles(input.imageKey)
+
+    return {
+      sucess: true
+    }
+  })
 });
 
 export type UserRouter = typeof userRouter;

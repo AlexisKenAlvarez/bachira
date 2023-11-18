@@ -13,6 +13,7 @@
   "dependencies": {
     "@auth/drizzle-adapter": "^0.3.5",
     "@hookform/resolvers": "^3.3.2",
+    "@plaiceholder/next": "^3.0.0",
     "@planetscale/database": "^1.11.0",
     "@radix-ui/react-alert-dialog": "^1.0.5",
     "@radix-ui/react-avatar": "^1.0.4",
@@ -35,6 +36,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "drizzle-orm": "^0.28.5",
+    "framer-motion": "^10.16.5",
     "geist": "^1.0.0",
     "lucide-react": "^0.292.0",
     "next": "^14.0.0",

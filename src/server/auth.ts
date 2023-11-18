@@ -20,6 +20,7 @@ declare module "next-auth" {
     user: {
       id: string;
       username: string;
+      coverPhoto: string;
       // ...other properties
       // role: UserRole;
     } & DefaultSession["user"];
@@ -29,6 +30,7 @@ declare module "next-auth" {
     // ...other properties
     // role: UserRole;
     username: string | null;
+    coverPhoto: string | null;
   }
 }
 
@@ -57,20 +59,21 @@ export const authOptions: NextAuthOptions = {
           });
         } else {
           user.username = userFromDb.username;
-          user.id = userFromDb.id
+          user.id = userFromDb.id;
+          user.image = userFromDb.image
+          user.coverPhoto = userFromDb.coverPhoto
         }
       }
 
       return true;
     },
     jwt: ({ token, user, trigger, session }) => {
-    
-
       if (user) {
-
         token.id = user.id;
         token.email = user.email;
         token.username = user.username;
+        token.coverPhoto = user.coverPhoto;
+        token.image = user.image
       }
 
       if (trigger === "update" && session) {
@@ -80,13 +83,13 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     session: ({ session, token }) => {
-
       return {
         ...session,
         user: {
           ...session.user,
           id: token.id,
           username: token.username,
+          coverPhoto: token.coverPhoto,
         },
       };
     },
