@@ -46,7 +46,6 @@ export const users = mysqlTable("user", {
   }).defaultNow(),
   image: varchar("image", { length: 255 }),
   updatedAt,
-
 });
 
 export const followership = mysqlTable(

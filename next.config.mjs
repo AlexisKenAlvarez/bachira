@@ -9,12 +9,6 @@ const config = {
   images: {
     domains: ["lh3.googleusercontent.com", "utfs.io"],
   },
-
-  experimental: {
-    serverActions: {
-      bodySizeLimit: '2mb',
-    }
-  }
 };
 
 export default config;

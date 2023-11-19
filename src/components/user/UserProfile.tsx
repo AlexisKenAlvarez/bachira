@@ -2,13 +2,12 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { userDataOutput } from "@/lib/routerTypes";
 import { api } from "@/trpc/react";
+import { useUploadThing } from "@/utils/uploadthing";
+import { useOutsideClick } from "@/utils/useOutsideClick";
+import { TRPCError } from "@trpc/server";
 import type { FileWithPath } from "@uploadthing/react";
 import { useDropzone } from "@uploadthing/react/hooks";
-import { generateClientDropzoneAccept } from "uploadthing/client";
-import { useOutsideClick } from "@/utils/useOutsideClick";
-import { useUploadThing } from "@/utils/uploadthing";
 import { AnimatePresence, motion } from "framer-motion";
-import Image from "next/image";
 import {
   Camera,
   Image as ImageIcon,
@@ -18,12 +17,14 @@ import {
   UserPlus2,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useState, useRef } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import { generateClientDropzoneAccept } from "uploadthing/client";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import FollowData from "./FollowData";
-import { useRouter } from "next/navigation";
 
 interface FollowData {
   followers: number;
@@ -45,6 +46,7 @@ const UserProfile = ({
   const [open, setOpen] = useState<boolean>(false);
   const [follows, setFollow] = useState<boolean>(isFollowing);
   const [files, setFiles] = useState<File[]>([]);
+  const [coverLoaded, setCoverLoaded] = useState(false);
   const onDrop = useCallback((acceptedFiles: FileWithPath[]) => {
     setFiles(acceptedFiles);
   }, []);
@@ -56,7 +58,7 @@ const UserProfile = ({
   });
 
   const { startUpload, permittedFileInfo } = useUploadThing("imageUploader", {
-    onClientUploadComplete: async (data) => {
+    onClientUploadComplete: () => {
       toast.success("Image uploaded!", { id: "uploadToast", duration: 3000 });
       router.refresh();
     },
@@ -179,14 +181,62 @@ const UserProfile = ({
     }
   };
 
+  const deleteImage = async ({
+    image,
+    refresh,
+    withToast,
+    deleteFromDb,
+    userId,
+  }: {
+    image: string;
+    refresh?: boolean;
+    withToast?: boolean;
+    deleteFromDb: boolean;
+    userId?: string;
+  }) => {
+    const deletePromise = new Promise(async (resolve, reject) => {
+      if (image) {
+        const filekey = image.substring(image.lastIndexOf("/") + 1);
+        const data = await deleteCover.mutateAsync({
+          imageKey: filekey,
+          deleteFromDb,
+          userId,
+        });
+
+        if (data.sucess) {
+          if (refresh) router.refresh();
+          resolve(data);
+        } else {
+          reject(new Error("Failed to delete."));
+        }
+        return data;
+      } else {
+        reject(new Error("No image to delete"));
+      }
+    });
+
+    try {
+      if (withToast) {
+        toast.promise(deletePromise, {
+          loading: "Deleting image...",
+          success: "Image deleted!",
+          error: "Error deleting image",
+        });
+      } else {
+        await deletePromise;
+      }
+
+      return { success: true };
+    } catch (error) {
+      if (error instanceof TRPCError) {
+        console.log(error);
+      }
+    }
+  };
+
   useEffect(() => {
     if (files.length > 0) {
-      if (userData[0]?.coverPhoto) {
-        var filekey = userData[0]?.coverPhoto.substring(userData[0]?.coverPhoto.lastIndexOf("/") + 1);
-        deleteCover.mutateAsync({
-          imageKey: filekey!,
-        });
-      }
+      deleteImage({ image: userData[0]?.coverPhoto as string, deleteFromDb: false });
 
       setOpen(false);
       startUpload(files);
@@ -202,13 +252,19 @@ const UserProfile = ({
       {userData && (
         <div className="flex w-full flex-1 flex-col">
           <div className="relative -mb-5 flex h-[18rem] w-full items-end justify-end bg-[#EDEDED]">
+            {!coverLoaded && (
+              <Skeleton className="absolute left-0 top-0 h-full w-full" />
+            )}
+
             {userData[0]?.coverPhoto && (
               <Image
                 width={2000}
                 height={2000}
-                src={userData[0]?.coverPhoto!}
+                src={userData[0]?.coverPhoto}
                 alt="Cover Photo"
-                placeholder="blur"
+                onLoad={() => {
+                  setCoverLoaded(true);
+                }}
                 className="absolute bottom-0 left-0 top-0 my-auto h-full w-full object-cover object-center"
               />
             )}
@@ -250,7 +306,18 @@ const UserProfile = ({
                           </div>
                         </div>
                       </button>
-                      <button className="flex w-full items-center space-x-2 bg-white p-2 hover:bg-slate-100">
+                      <button
+                        className="flex w-full items-center space-x-2 bg-white p-2 hover:bg-slate-100"
+                        onClick={async () => {
+                          await deleteImage({
+                            image: userData[0]?.coverPhoto as string,
+                            refresh: true,
+                            withToast: true,
+                            deleteFromDb: true,
+                            userId: userData[0]?.id,
+                          });
+                        }}
+                      >
                         <Trash2 size={16} />
                         <p className="">Delete photo</p>
                       </button>

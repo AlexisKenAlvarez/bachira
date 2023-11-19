@@ -265,15 +265,34 @@ export const userRouter = createTRPCRouter({
         success: true,
       };
     }),
-  deleteCover: privateProcedure.input(z.object({
-    imageKey: z.string()
-  })).mutation(async ({ input }) => {
-    await utapi.deleteFiles(input.imageKey)
+  deleteCover: privateProcedure
+    .input(
+      z.object({
+        userId: z.string().optional(),
+        imageKey: z.string(),
+        deleteFromDb: z.boolean(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (input.deleteFromDb && input.userId) {
+        await ctx.db
+          .update(users)
+          .set({ coverPhoto: null })
+          .where(eq(users.id, input.userId));
 
-    return {
-      sucess: true
-    }
-  })
+        await utapi.deleteFiles(input.imageKey);
+
+        return {
+          sucess: true,
+        };
+      } else {
+        await utapi.deleteFiles(input.imageKey);
+
+        return {
+          sucess: true,
+        };
+      }
+    }),
 });
 
 export type UserRouter = typeof userRouter;
