@@ -2,29 +2,16 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { userDataOutput } from "@/lib/routerTypes";
 import { api } from "@/trpc/react";
-import { useUploadThing } from "@/utils/uploadthing";
-import { useOutsideClick } from "@/utils/useOutsideClick";
-import { TRPCError } from "@trpc/server";
-import type { FileWithPath } from "@uploadthing/react";
-import { useDropzone } from "@uploadthing/react/hooks";
-import { AnimatePresence, motion } from "framer-motion";
-import {
-  Camera,
-  Image as ImageIcon,
-  Settings,
-  Trash2,
-  UserCheck2,
-  UserPlus2,
-} from "lucide-react";
+import { Settings, UserCheck2, UserPlus2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
-import { generateClientDropzoneAccept } from "uploadthing/client";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
+import CoverButton from "./CoverButton";
 import FollowData from "./FollowData";
+import Link from "next/link";
 
 interface FollowData {
   followers: number;
@@ -41,46 +28,8 @@ const UserProfile = ({
   isFollowing: boolean;
 }) => {
   const { data: session, status } = useSession();
-  const router = useRouter();
-  const deleteCover = api.user.deleteCover.useMutation();
-  const [open, setOpen] = useState<boolean>(false);
   const [follows, setFollow] = useState<boolean>(isFollowing);
-  const [files, setFiles] = useState<File[]>([]);
   const [coverLoaded, setCoverLoaded] = useState(false);
-  const onDrop = useCallback((acceptedFiles: FileWithPath[]) => {
-    setFiles(acceptedFiles);
-  }, []);
-
-  const ref = useOutsideClick(() => {
-    if (open) {
-      setOpen(false);
-    }
-  });
-
-  const { startUpload, permittedFileInfo } = useUploadThing("imageUploader", {
-    onClientUploadComplete: () => {
-      toast.success("Image uploaded!", { id: "uploadToast", duration: 3000 });
-      router.refresh();
-    },
-    onUploadError: () => {
-      toast.error("Sorry there was an error", {
-        id: "uploadToast",
-        duration: 3000,
-      });
-    },
-  });
-
-  const fileTypes = permittedFileInfo?.config
-    ? Object.keys(permittedFileInfo?.config)
-    : [];
-
-  const { getRootProps, getInputProps } = useDropzone({
-    onDrop,
-    accept: fileTypes ? generateClientDropzoneAccept(fileTypes) : undefined,
-    multiple: false,
-    noDrag: true,
-  });
-
   const [userFollowData, setFollowData] = useState<FollowData>({
     followers: Number(userData[0]!.followers as number),
     following: Number(userData[0]!.following as number),
@@ -181,72 +130,6 @@ const UserProfile = ({
     }
   };
 
-  const deleteImage = async ({
-    image,
-    refresh,
-    withToast,
-    deleteFromDb,
-    userId,
-  }: {
-    image: string;
-    refresh?: boolean;
-    withToast?: boolean;
-    deleteFromDb: boolean;
-    userId?: string;
-  }) => {
-    const deletePromise = new Promise(async (resolve, reject) => {
-      if (image) {
-        const filekey = image.substring(image.lastIndexOf("/") + 1);
-        const data = await deleteCover.mutateAsync({
-          imageKey: filekey,
-          deleteFromDb,
-          userId,
-        });
-
-        if (data.sucess) {
-          if (refresh) router.refresh();
-          resolve(data);
-        } else {
-          reject(new Error("Failed to delete."));
-        }
-        return data;
-      } else {
-        reject(new Error("No image to delete"));
-      }
-    });
-
-    try {
-      if (withToast) {
-        toast.promise(deletePromise, {
-          loading: "Deleting image...",
-          success: "Image deleted!",
-          error: "Error deleting image",
-        });
-      } else {
-        await deletePromise;
-      }
-
-      return { success: true };
-    } catch (error) {
-      if (error instanceof TRPCError) {
-        console.log(error);
-      }
-    }
-  };
-
-  useEffect(() => {
-    if (files.length > 0) {
-      deleteImage({ image: userData[0]?.coverPhoto as string, deleteFromDb: false });
-
-      setOpen(false);
-      startUpload(files);
-      toast.loading("Uploading image. Do not leave the page", {
-        id: "uploadToast",
-        duration: Infinity,
-      });
-    }
-  }, [files]);
-
   return (
     <>
       {userData && (
@@ -258,74 +141,17 @@ const UserProfile = ({
 
             {userData[0]?.coverPhoto && (
               <Image
-                width={2000}
-                height={2000}
+                width={800}
+                height={800}
                 src={userData[0]?.coverPhoto}
                 alt="Cover Photo"
-                onLoad={() => {
+                onLoadingComplete={() => {
                   setCoverLoaded(true);
                 }}
                 className="absolute bottom-0 left-0 top-0 my-auto h-full w-full object-cover object-center"
               />
             )}
-            {inProfile && (
-              <div className="relative m-5 mb-8 h-fit w-fit ">
-                <Button
-                  variant="ghost"
-                  className="rounded-md bg-white px-5  py-2 font-secondary text-sm font-semibold text-black"
-                  onClick={() => {
-                    setOpen(true);
-                  }}
-                >
-                  <p className="flex items-center gap-x-2">
-                    <Camera
-                      className="inline-block"
-                      size={21}
-                      fill="black"
-                      stroke="white"
-                    />
-                    Edit cover
-                  </p>
-                </Button>
-                <AnimatePresence>
-                  {open && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.5, y: 3 }}
-                      animate={{ opacity: 100, scale: 1 }}
-                      transition={{ duration: 0.2 }}
-                      exit={{ opacity: 0, scale: 0.5, y: 3 }}
-                      className="font-regular absolute right-0 z-20 h-fit w-44 origin-top translate-y-full overflow-hidden rounded-md border bg-white text-sm shadow-sm"
-                      ref={ref}
-                    >
-                      <button className="relative w-full space-x-2 bg-white p-2 hover:bg-slate-100">
-                        <div {...getRootProps()}>
-                          <input {...getInputProps()} />
-                          <div className="flex items-center space-x-2">
-                            <ImageIcon className="" size="16" />
-                            <p className="">Upload Photo</p>
-                          </div>
-                        </div>
-                      </button>
-                      <button
-                        className="flex w-full items-center space-x-2 bg-white p-2 hover:bg-slate-100"
-                        onClick={async () => {
-                          await deleteImage({
-                            image: userData[0]?.coverPhoto as string,
-                            refresh: true,
-                            withToast: true,
-                            deleteFromDb: true,
-                            userId: userData[0]?.id,
-                          });
-                        }}
-                      >
-                        <Trash2 size={16} />
-                        <p className="">Delete photo</p>
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            )}
+            {inProfile && <CoverButton userData={userData} />}
           </div>
           <div className="relative z-10 h-full w-full flex-1 rounded-tl-3xl rounded-tr-3xl border-l border-r border-t border-black/10 bg-white p-5">
             <div className="flex gap-4">
@@ -336,24 +162,26 @@ const UserProfile = ({
                 </AvatarFallback>
               </Avatar>
               <div className="w-full">
-                <div className="flex h-auto w-full justify-between font-secondary">
+                <div className="flex h-auto w-full justify-between font-primary">
                   <div className="">
                     <h2 className=" commit w-44 truncate text-xl font-bold sm:w-60">
                       @{userData[0]!.username}
                     </h2>
                     <h3 className="font-medium">{userData[0]?.name}</h3>
                     {inProfile ? (
-                      <Button
-                        className="group mt-2 gap-x-2 px-6 text-sm font-semibold"
-                        disabled={status === "loading"}
-                        variant="secondary"
-                      >
-                        <Settings
-                          size={18}
-                          className="duration-500 ease-in-out group-hover:rotate-180"
-                        />
-                        Edit Profile
-                      </Button>
+                      <Link href={"/profile/edit"}>
+                        <Button
+                          className="group mt-2 gap-x-2 px-6 text-sm font-semibold"
+                          disabled={status === "loading"}
+                          variant="secondary"
+                        >
+                          <Settings
+                            size={18}
+                            className="duration-500 ease-in-out group-hover:rotate-180"
+                          />
+                          Edit Profile
+                        </Button>
+                      </Link>
                     ) : (
                       <Button
                         className="mt-2 px-7"
@@ -376,7 +204,7 @@ const UserProfile = ({
                 </div>
               </div>
             </div>
-            <div className="relative mt-4 flex gap-x-5 font-secondary">
+            <div className="relative mt-4 flex gap-x-5 font-primary">
               <FollowData
                 type="Following"
                 value={userFollowData.following}

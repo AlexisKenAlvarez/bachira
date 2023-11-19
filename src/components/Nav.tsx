@@ -32,7 +32,7 @@ const Nav = ({
     <nav className="flex items-center justify-between border-b border-black/10 p-4 font-primary">
       <div className="-mb-2 flex items-center gap-2">
         <Link href="/">
-          <h1 className="font-secondary text-4xl font-bold md:text-5xl">
+          <h1 className="font-primary text-4xl font-bold md:text-5xl">
             GChat
           </h1>
         </Link>
@@ -51,7 +51,7 @@ const Nav = ({
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className=" relative w-[14rem] font-secondary"
+            className=" relative w-[14rem] font-primary"
           >
             <DropdownMenuLabel className="relative">
               <div className="">

@@ -67,7 +67,7 @@ const AddUsername = ({ email }: { email: string }) => {
     <section className="flex h-auto min-h-screen w-full bg-white pb-20 sm:bg-bggrey sm:pb-0">
       <div className="w-full place-content-center sm:grid">
         <div className="h-full sm:rounded-xl sm:shadow-md">
-          <div className="sm:min-h-20 flex w-full flex-col space-y-4 bg-white px-7 py-10 font-secondary sm:w-[26rem] sm:rounded-xl">
+          <div className="sm:min-h-20 flex w-full flex-col space-y-4 bg-white px-7 py-10 font-primary sm:w-[26rem] sm:rounded-xl">
             <div className="text-center">
               <h1 className="text-2xl font-bold">Enter username</h1>
               <h2 className="">

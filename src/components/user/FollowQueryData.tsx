@@ -106,7 +106,7 @@ const FollowQueryData = ({
                         : follower.following.username}
                     </h1>
                   </Link>
-                  <h2 className="max-w-[8rem] truncate font-secondary text-sm md:max-w-[10rem]">
+                  <h2 className="max-w-[8rem] truncate font-primary text-sm md:max-w-[10rem]">
                     {type === "Followers"
                       ? follower.follower.name
                       : follower.following.name}

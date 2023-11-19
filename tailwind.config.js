@@ -33,8 +33,7 @@ module.exports = ({
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       fontFamily: {
-        primary: ['var(--font-geist-sans)'],
-        secondary: ["var(--font-montserrat)"],
+        primary: ["var(--font-montserrat)"],
       },
       colors: {
         bggrey: '#F7F7F8',

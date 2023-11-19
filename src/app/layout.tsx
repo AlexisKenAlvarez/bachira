@@ -4,7 +4,6 @@ import { cookies } from "next/headers";
 import AddUsername from "@/components/auth/AddUsername";
 import { authOptions } from "@/server/auth";
 import { TRPCReactProvider } from "@/trpc/react";
-import { GeistSans } from "geist/font";
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { Montserrat } from "next/font/google";
@@ -32,21 +31,18 @@ export default async function RootLayout({
 }) {
   const session = await getServerSession(authOptions);
 
-
   const countData =
     session &&
     (await api.notifications.countNotifications.query({
       userId: session.user.id,
-      seen: false
+      seen: false,
     }));
-
-
 
   return (
     <TRPCReactProvider cookies={cookies().toString()}>
       <html lang="en">
         <body
-          className={`${montserrat.variable} ${GeistSans.variable} font-sans`}
+          className={`${montserrat.variable} font-sans`}
         >
           {session ? (
             !session.user.username ? (
