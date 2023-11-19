@@ -36,9 +36,9 @@ const EditProfile = ({
   userData: NonNullable<userDataOutput>;
 }) => {
   const formSchema = z.object({
-    website: z.string().url().optional(),
+    website: z.string().optional(),
     bio: z.string().optional(),
-    gender: z.enum(["male", "female", "idk"]).optional(),
+    gender: z.enum(["MALE", "FEMALE", "IDK"]).optional(),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -46,6 +46,7 @@ const EditProfile = ({
     defaultValues: {
       website: "",
       bio: "",
+      gender: "IDK",
     },
   });
 
@@ -78,7 +79,10 @@ const EditProfile = ({
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className=" max-w-lg space-y-4">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className=" max-w-lg space-y-4"
+        >
           <FormField
             control={form.control}
             name="website"
@@ -102,7 +106,7 @@ const EditProfile = ({
             name="bio"
             render={({ field }) => (
               <FormItem className="flex items-start">
-                <FormLabel className="w-32 font-semibold mt-2">Bio</FormLabel>
+                <FormLabel className="mt-2 w-32 font-semibold">Bio</FormLabel>
                 <FormControl>
                   <div className="w-full flex-col">
                     <Textarea
@@ -128,20 +132,25 @@ const EditProfile = ({
 
           <FormField
             control={form.control}
-            name="bio"
+            name="gender"
             render={({ field }) => (
               <FormItem className="flex items-start">
-                <FormLabel className="w-32 font-semibold mt-2">Gender</FormLabel>
+                <FormLabel className="mt-2 w-32 font-semibold">
+                  Gender
+                </FormLabel>
                 <FormControl>
                   <div className="w-full flex-col">
-                    <Select className="mt-0 pt-0">
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
                       <SelectTrigger className="w-[180px]">
                         <SelectValue placeholder="Gender" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="idk">Prefer not to say</SelectItem>
-                        <SelectItem value="male">Male</SelectItem>
-                        <SelectItem value="female">Female</SelectItem>
+                        <SelectItem value="IDK">Prefer not to say</SelectItem>
+                        <SelectItem value="MALE">Male</SelectItem>
+                        <SelectItem value="FEMALE">Female</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormDescription>
