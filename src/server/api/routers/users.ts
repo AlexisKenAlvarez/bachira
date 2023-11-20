@@ -279,7 +279,7 @@ export const userRouter = createTRPCRouter({
       const deleteIfUtf = async (imageUrl: string) => {
         const newUrl = new URL(imageUrl);
 
-        if (newUrl.hostname === "utfs.io") {
+        if (newUrl.hostname === "utfs.io" || newUrl.hostname === 'uploadthing.com') {
           const filekey = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
           await utapi.deleteFiles(filekey);
         }
