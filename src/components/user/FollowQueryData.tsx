@@ -71,21 +71,21 @@ const FollowQueryData = ({
         {data?.pages.map((page, i) => (
           <div className="space-y-4" key={i}>
             {page.followers.map((follower) => (
-              <div className="flex gap-3" key={follower.id}>
+              <div className="flex gap-3" key={follower?.id}>
                 <Link
                   href={`/${
                     type === "Followers"
-                      ? follower.follower.username
-                      : follower.following.username
+                      ? follower.follower?.username
+                      : follower.following?.username
                   }`}
                 >
                   <Image
                     src={
                       type === "Followers"
-                        ? follower.follower.image!
-                        : follower.following.image!
+                        ? follower.follower?.image as string
+                        : follower.following?.image as string
                     }
-                    alt={follower.follower.name!}
+                    alt={follower.follower?.name as string}
                     className="w-14 rounded-full"
                     width={500}
                     height={500}
@@ -96,20 +96,20 @@ const FollowQueryData = ({
                   <Link
                     href={`/${
                       type === "Followers"
-                        ? follower.follower.username
-                        : follower.following.username
+                        ? follower.follower?.username
+                        : follower.following?.username
                     }`}
                   >
                     <h1 className="max-w-[6rem] truncate font-primary font-bold md:max-w-[14rem]">
                       {type === "Followers"
-                        ? follower.follower.username
-                        : follower.following.username}
+                        ? follower.follower?.username
+                        : follower.following?.username}
                     </h1>
                   </Link>
                   <h2 className="max-w-[8rem] truncate font-primary text-sm md:max-w-[10rem]">
                     {type === "Followers"
-                      ? follower.follower.name
-                      : follower.following.name}
+                      ? follower.follower?.name
+                      : follower.following?.name}
                   </h2>
                 </div>
               </div>

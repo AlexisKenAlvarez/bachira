@@ -81,7 +81,7 @@ const NotificationData = ({
                   key={notif.id}
                   href={
                     notif.type === "FOLLOW"
-                      ? `/${notif.notificationFrom.username}`
+                      ? `/${notif.notificationFrom?.username}`
                       : ""
                   }
                   onClick={async () => {
@@ -102,8 +102,8 @@ const NotificationData = ({
                           <User fill="white" stroke="white" size={13} />
                         </div>
                         <Image
-                          src={notif.notificationFrom.image ?? "/fox.webp"}
-                          alt={notif.notificationFrom.username ?? "User Image"}
+                          src={notif.notificationFrom?.image ?? "/fox.webp"}
+                          alt={notif.notificationFrom?.username ?? "User Image"}
                           className="ml-0 w-12 shrink-0 rounded-full"
                           width={500}
                           height={500}
@@ -112,7 +112,7 @@ const NotificationData = ({
 
                       <div className="flex flex-col justify-center gap-0">
                         <h1 className=" max-w-20 inline-block truncate overflow-ellipsis font-primary font-bold md:max-w-[14rem]">
-                          {notif.notificationFrom.username}
+                          {notif.notificationFrom?.username}
                         </h1>
                         <p className="-mt-[5px]">is now following you.</p>
                         <p className="-mt-[2px] font-primary text-xs font-semibold text-gchat">

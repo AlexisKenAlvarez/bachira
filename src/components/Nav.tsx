@@ -32,9 +32,7 @@ const Nav = ({
     <nav className="flex items-center justify-between border-b border-black/10 p-4 font-primary">
       <div className="-mb-2 flex items-center gap-2">
         <Link href="/">
-          <h1 className="font-primary text-4xl font-bold md:text-5xl">
-            GChat
-          </h1>
+          <h1 className="font-primary text-4xl font-bold md:text-5xl">GChat</h1>
         </Link>
       </div>
 

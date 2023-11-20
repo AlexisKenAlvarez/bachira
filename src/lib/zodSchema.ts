@@ -10,4 +10,10 @@ export const signupSchema = z.object({
   lastName: z.string(),
 })
 
-export type signupType = z.infer<typeof signupSchema>
+export const editProfileSchema = z.object({
+  website: z.string().url().optional().or(z.literal("")),
+  bio: z.string().max(150).optional(),
+  gender: z.enum(["MALE", "FEMALE", 'IDK']).optional(),
+});
+
+export type signupType = z.infer<typeof signupSchema>;

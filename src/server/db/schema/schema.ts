@@ -22,7 +22,7 @@ export const NOTIFICATION_TYPE = [
 ] as const;
 
 export const NOTIFICATION_STATUS = ["READ", "UNREAD"] as const;
-export const GENDER = ['MALE', 'FEMALE'] as const
+export const GENDER = ['MALE', 'FEMALE', 'IDK'] as const
 
 const updatedAt = timestamp("updatedAt", { mode: 'date' })
   .notNull()
@@ -35,13 +35,13 @@ const createdAt = timestamp("createdAt", { mode: 'date' })
 
 export const users = mysqlTable("user", {
   id: varchar("id", { length: 255 }).notNull().primaryKey(),
-  bio: varchar("bio", { length: 100 }),
+  bio: varchar("bio", { length: 160 }).default(''),
   coverPhoto: varchar("coverPhoto", { length: 255 }),
   username: varchar("username", { length: 50 }),
   email: varchar("email", { length: 255 }).notNull(),
   name: varchar("name", { length: 255 }),
-  website: varchar("website", { length: 255 }),
-  gender: mysqlEnum("gender", GENDER),
+  website: varchar("website", { length: 255 }).default(''),
+  gender: mysqlEnum("gender", GENDER).default("IDK"),
   created_at: createdAt,
   emailVerified: timestamp("emailVerified", {
     mode: "date",

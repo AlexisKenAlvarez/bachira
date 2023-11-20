@@ -44,6 +44,8 @@ import { useRouter } from "next/navigation";
 import { useDeleteImage } from "@/hooks/useDeleteImage";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { useSession } from "next-auth/react";
+import { api } from "@/trpc/react";
+import { editProfileSchema } from "@/lib/zodSchema";
 
 const EditProfile = ({
   userData,
@@ -51,9 +53,11 @@ const EditProfile = ({
   userData: NonNullable<userDataOutput>;
 }) => {
   const { data: session, update } = useSession();
+  const [disabled, setDisabled] = useState(true);
   const { deleteImage } = useDeleteImage();
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const saveProfile = api.user.saveProfile.useMutation({});
   const [files, setFiles] = useState<File[]>([]);
   const onDrop = useCallback((acceptedFiles: FileWithPath[]) => {
     setFiles(acceptedFiles);
@@ -92,18 +96,12 @@ const EditProfile = ({
     noDrag: true,
   });
 
-  const formSchema = z.object({
-    website: z.string().url().optional().or(z.literal("")),
-    bio: z.string().max(150).optional(),
-    gender: z.enum(["MALE", "FEMALE", "IDK"]).optional(),
-  });
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof editProfileSchema>>({
+    resolver: zodResolver(editProfileSchema),
     defaultValues: {
-      website: "",
-      bio: "",
-      gender: "IDK",
+      website: userData[0]?.website ?? '',
+      bio: userData[0]?.bio ?? '',
+      gender: userData[0]?.gender ?? 'IDK',
     },
   });
 
@@ -119,7 +117,7 @@ const EditProfile = ({
 
       setOpen(false);
       startUpload(files, {
-        update: "profile"
+        update: "profile",
       });
       toast.loading("Uploading image. Do not leave the page", {
         id: "uploadToast",
@@ -128,8 +126,28 @@ const EditProfile = ({
     }
   }, [files]);
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof editProfileSchema>) {
     console.log(values);
+    toast.loading("Saving profile...", {
+      id: "saveProfile",
+      duration: Infinity,
+    });
+    const data = await saveProfile.mutateAsync({
+      id: userData[0]?.id as string,
+      userData: {
+        bio: userData[0]?.bio ?? "",
+        gender: userData[0]?.gender as "MALE" | "FEMALE" | "IDK" | undefined,
+        website: userData[0]?.website ?? "",
+      },
+      newData: values,
+    });
+
+    if (data.success) {
+      toast.success("Changes saved!", { id: "saveProfile", duration: 3000 });
+      setDisabled(true)
+      router.refresh()
+    }
+     
   }
 
   function mapToPercentage(value: number) {
@@ -137,6 +155,24 @@ const EditProfile = ({
   }
 
   const bioLength = form.watch("bio")?.length ?? 0;
+
+  useEffect(() => {
+
+    if (form.getValues("bio") !== userData[0]?.bio) {
+      setDisabled(false);
+    } else if (form.getValues("gender") !== userData[0]?.gender) {
+      setDisabled(false);
+    } else if (form.getValues('website') !== userData[0]?.website) {
+      setDisabled(false)
+    } else {
+      setDisabled(true)
+    }
+
+  }, [
+    form.watch("bio"),
+    form.watch("gender"),
+    form.watch("website"),
+  ]);
 
   return (
     <div className="p-5 font-primary sm:p-10">
@@ -218,7 +254,7 @@ const EditProfile = ({
                                 ...session,
                                 user: {
                                   ...session?.user,
-                                  image: '',
+                                  image: "",
                                 },
                               };
 
@@ -266,7 +302,6 @@ const EditProfile = ({
                     {...field}
                   />
                 </FormControl>
-                <FormMessage />
               </FormItem>
             )}
           />
@@ -334,7 +369,7 @@ const EditProfile = ({
             )}
           />
 
-          <Button type="submit" className="!mt-10 ml-[6.5rem]">
+          <Button type="submit" className="!mt-10 ml-[6.5rem]" disabled={disabled}>
             Save changes
           </Button>
         </form>

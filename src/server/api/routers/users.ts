@@ -5,10 +5,11 @@ import { z } from "zod";
 
 import { pusherServer } from "@/lib/pusher";
 import { toPusherKey } from "@/lib/utils";
+import { editProfileSchema } from "@/lib/zodSchema";
+import { utapi } from "@/server/uploadthing";
 import { TRPCError } from "@trpc/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
-import { utapi } from "@/server/uploadthing";
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL as string,
@@ -305,6 +306,33 @@ export const userRouter = createTRPCRouter({
         return {
           sucess: true,
         };
+      }
+    }),
+
+  saveProfile: privateProcedure
+    .input(z.object({
+      id: z.string(),
+      userData: editProfileSchema,
+      newData: editProfileSchema
+    }))
+    .mutation(async ({ ctx, input }) => {
+
+      const { userData, newData, id } = input
+
+      if (userData.bio !== newData.bio) {
+        await ctx.db.update(users).set({ bio: newData.bio }).where(eq(users.id, id))
+      }
+
+      if (userData.gender !== newData.gender) {
+        await ctx.db.update(users).set({gender: newData.gender}).where(eq(users.id, id))
+      }
+
+      if (userData.website !== newData.website) {
+        await ctx.db.update(users).set({website: newData.website}).where(eq(users.id, id))
+      }
+
+      return {
+        success: true
       }
     }),
 });

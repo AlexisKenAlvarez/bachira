@@ -2,7 +2,12 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { userDataOutput } from "@/lib/routerTypes";
 import { api } from "@/trpc/react";
-import { Settings, UserCheck2, UserPlus2 } from "lucide-react";
+import {
+  Settings,
+  UserCheck2,
+  UserPlus2,
+  Link as LinkIcon,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useState } from "react";
@@ -216,6 +221,25 @@ const UserProfile = ({
                 userId={userData[0]!.id}
               />
             </div>
+
+            <div className="mt-2">
+              <pre className="font-primary text-sm">{userData[0]?.bio}</pre>
+            </div>
+
+            {userData[0]?.website && (
+              <div className="mt-2 font-primary flex items-center gap-2">
+                <LinkIcon size="14" className="text-gchat font-bold" strokeWidth={2.5} />
+                <Link
+                  href={userData[0]?.website ?? ""}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <p className="text-sm font-semibold text-gchat">
+                    {userData[0]?.website}
+                  </p>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}

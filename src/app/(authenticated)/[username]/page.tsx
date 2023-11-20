@@ -26,7 +26,6 @@ const page = async ({ params }: { params: { username: string } }) => {
 
   return (
     <UserProfile
-
       userData={userData}
       inProfile={inProfile}
       isFollowing={data ? data?.isFollowing : false}
