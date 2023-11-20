@@ -1,26 +1,24 @@
-import { Camera, ImageIcon, Trash2 } from "lucide-react";
-import { Button } from "../ui/button";
-import { useCallback, useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { useOutsideClick } from "@/utils/useOutsideClick";
-import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
-import { api } from "@/trpc/react";
-import { TRPCError } from "@trpc/server";
+import { useDeleteImage } from "@/hooks/useDeleteImage";
+import { useOutsideClick } from "@/hooks/useOutsideClick";
 import { userDataOutput } from "@/lib/routerTypes";
 import { useUploadThing } from "@/utils/uploadthing";
-import { generateClientDropzoneAccept } from "uploadthing/client";
 import { FileWithPath } from "@uploadthing/react";
 import { useDropzone } from "@uploadthing/react/hooks";
+import { AnimatePresence, motion } from "framer-motion";
+import { Camera, ImageIcon, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { generateClientDropzoneAccept } from "uploadthing/client";
+import { Button } from "../ui/button";
 
 const CoverButton = ({
   userData,
 }: {
   userData: NonNullable<userDataOutput>;
 }) => {
-  
+  const  { deleteImage }  = useDeleteImage()
   const [open, setOpen] = useState(false);
-  const deleteCover = api.user.deleteCover.useMutation();
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
   const onDrop = useCallback((acceptedFiles: FileWithPath[]) => {
@@ -57,68 +55,18 @@ const CoverButton = ({
     }
   });
 
-  const deleteImage = async ({
-    image,
-    refresh,
-    withToast,
-    deleteFromDb,
-    userId,
-  }: {
-    image: string;
-    refresh?: boolean;
-    withToast?: boolean;
-    deleteFromDb: boolean;
-    userId?: string;
-  }) => {
-    const deletePromise = new Promise(async (resolve, reject) => {
-      if (image) {
-        const filekey = image.substring(image.lastIndexOf("/") + 1);
-        const data = await deleteCover.mutateAsync({
-          imageKey: filekey,
-          deleteFromDb,
-          userId,
-        });
-
-        if (data.sucess) {
-          if (refresh) router.refresh();
-          resolve(data);
-        } else {
-          reject(new Error("Failed to delete."));
-        }
-        return data;
-      } else {
-        reject(new Error("No image to delete"));
-      }
-    });
-
-    try {
-      if (withToast) {
-        toast.promise(deletePromise, {
-          loading: "Deleting image...",
-          success: "Image deleted!",
-          error: "Error deleting image",
-        });
-      } else {
-        await deletePromise;
-      }
-
-      return { success: true };
-    } catch (error) {
-      if (error instanceof TRPCError) {
-        console.log(error);
-      }
-    }
-  };
-
   useEffect(() => {
     if (files.length > 0) {
       deleteImage({
         image: userData[0]?.coverPhoto as string,
         deleteFromDb: false,
+        deleteFrom: 'cover'
       });
 
       setOpen(false);
-      startUpload(files);
+      startUpload(files, {
+        update: 'cover'
+      });
       toast.loading("Uploading image. Do not leave the page", {
         id: "uploadToast",
         duration: Infinity,
@@ -172,6 +120,7 @@ const CoverButton = ({
                   withToast: true,
                   deleteFromDb: true,
                   userId: userData[0]?.id,
+                  deleteFrom: "cover"
                 });
               }}
             >

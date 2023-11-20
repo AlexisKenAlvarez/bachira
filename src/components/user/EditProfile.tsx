@@ -36,16 +36,22 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { useDeleteImage } from "@/hooks/useDeleteImage";
+import { DialogClose } from "@radix-ui/react-dialog";
+import { useSession } from "next-auth/react";
 
 const EditProfile = ({
   userData,
 }: {
   userData: NonNullable<userDataOutput>;
 }) => {
+  const { data: session, update } = useSession();
+  const { deleteImage } = useDeleteImage();
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
@@ -54,8 +60,17 @@ const EditProfile = ({
   }, []);
 
   const { startUpload, permittedFileInfo } = useUploadThing("imageUploader", {
-    onClientUploadComplete: () => {
+    onClientUploadComplete: async (data) => {
       toast.success("Image uploaded!", { id: "uploadToast", duration: 3000 });
+      const newSession = {
+        ...session,
+        user: {
+          ...session?.user,
+          image: data[0]?.url as string,
+        },
+      };
+
+      await update(newSession);
       router.refresh();
     },
     onUploadError: () => {
@@ -91,6 +106,27 @@ const EditProfile = ({
       gender: "IDK",
     },
   });
+
+  useEffect(() => {
+    if (files.length > 0) {
+      deleteImage({
+        deleteFrom: "profile",
+        image: userData[0]?.image as string,
+        userId: userData[0]?.id,
+        withToast: false,
+        deleteFromDb: true,
+      });
+
+      setOpen(false);
+      startUpload(files, {
+        update: "profile"
+      });
+      toast.loading("Uploading image. Do not leave the page", {
+        id: "uploadToast",
+        duration: Infinity,
+      });
+    }
+  }, [files]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
@@ -143,22 +179,68 @@ const EditProfile = ({
                 <div className="!mt-4 flex gap-2">
                   <Button
                     variant="secondary"
-                    className="hover:bg-gchat hover:text-white relative"
+                    className="relative hover:bg-gchat hover:text-white"
                   >
-                    <div {...getRootProps()} className="w-full absolute top-0 left-0 h-full">
-                      <input {...getInputProps()} /> 
+                    <div
+                      {...getRootProps()}
+                      className="absolute left-0 top-0 h-full w-full"
+                    >
+                      <input {...getInputProps()} />
                     </div>
                     Upload New
                   </Button>
-                  <Button variant="destructive">Delete Current</Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setOpen(false);
-                    }}
-                  >
-                    Cancel
-                  </Button>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="destructive">Delete Current</Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Are you sure absolutely sure?</DialogTitle>
+                        <DialogDescription>
+                          This action cannot be undone. This will permanently
+                          delete your profile photo and remove its data from our
+                          servers.
+                        </DialogDescription>
+
+                        <div className="!mt-4 flex gap-2">
+                          <Button
+                            variant="destructive"
+                            onClick={async () => {
+                              await deleteImage({
+                                deleteFrom: "profile",
+                                image: userData[0]?.image as string,
+                                userId: userData[0]?.id,
+                                withToast: true,
+                                deleteFromDb: true,
+                              });
+
+                              const newSession = {
+                                ...session,
+                                user: {
+                                  ...session?.user,
+                                  image: '',
+                                },
+                              };
+
+                              await update(newSession);
+
+                              router.refresh();
+                              setOpen(false);
+                            }}
+                          >
+                            Delete Image
+                          </Button>
+                          <DialogClose asChild>
+                            <Button variant="outline">Cancel</Button>
+                          </DialogClose>
+                        </div>
+                      </DialogHeader>
+                    </DialogContent>
+                  </Dialog>
+
+                  <DialogClose asChild>
+                    <Button variant="outline">Cancel</Button>
+                  </DialogClose>
                 </div>
               </DialogHeader>
             </DialogContent>

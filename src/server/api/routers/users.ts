@@ -265,28 +265,42 @@ export const userRouter = createTRPCRouter({
         success: true,
       };
     }),
-  deleteCover: privateProcedure
+  deleteImage: privateProcedure
     .input(
       z.object({
         userId: z.string().optional(),
         imageKey: z.string(),
         deleteFromDb: z.boolean(),
+        deleteFrom: z.enum(["cover", "profile"]),
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const deleteIfUtf = async (imageUrl: string) => {
+        const newUrl = new URL(imageUrl);
+
+        if (newUrl.hostname === "utfs.io") {
+          const filekey = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
+          await utapi.deleteFiles(filekey);
+        }
+      };
+
       if (input.deleteFromDb && input.userId) {
         await ctx.db
           .update(users)
-          .set({ coverPhoto: null })
+          .set(
+            input.deleteFrom === "cover"
+              ? { coverPhoto: null }
+              : { image: null },
+          )
           .where(eq(users.id, input.userId));
 
-        await utapi.deleteFiles(input.imageKey);
+        await deleteIfUtf(input.imageKey);
 
         return {
           sucess: true,
         };
       } else {
-        await utapi.deleteFiles(input.imageKey);
+        await deleteIfUtf(input.imageKey);
 
         return {
           sucess: true,

@@ -21,6 +21,7 @@ declare module "next-auth" {
       id: string;
       username: string;
       coverPhoto: string;
+      image: string | null;
       // ...other properties
       // role: UserRole;
     } & DefaultSession["user"];
@@ -31,6 +32,7 @@ declare module "next-auth" {
     // role: UserRole;
     username: string | null;
     coverPhoto: string | null;
+    image: string | null;
   }
 }
 
@@ -60,8 +62,8 @@ export const authOptions: NextAuthOptions = {
         } else {
           user.username = userFromDb.username;
           user.id = userFromDb.id;
-          user.image = userFromDb.image
-          user.coverPhoto = userFromDb.coverPhoto
+          user.image = userFromDb.image;
+          user.coverPhoto = userFromDb.coverPhoto;
         }
       }
 
@@ -73,11 +75,13 @@ export const authOptions: NextAuthOptions = {
         token.email = user.email;
         token.username = user.username;
         token.coverPhoto = user.coverPhoto;
-        token.image = user.image
+        token.image = user.image;
       }
 
       if (trigger === "update" && session) {
-        return { ...token, ...session?.user };
+        console.log("🚀 ~ file: auth.ts:80 ~ session:", session);
+
+        return { ...token, ...session.user };
       }
 
       return token;
@@ -90,6 +94,7 @@ export const authOptions: NextAuthOptions = {
           id: token.id,
           username: token.username,
           coverPhoto: token.coverPhoto,
+          image: token.image as string
         },
       };
     },

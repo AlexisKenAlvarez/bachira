@@ -8,7 +8,7 @@ const page = async ({ params }: { params: { page: string } }) => {
 
   const session = await getServerSession(authOptions);
   const userData = await api.user.getUser.query({
-    username: session?.user.username!,
+    username: session?.user.username as string,
   });
 
   const pages = [

@@ -39,7 +39,8 @@ module.exports = ({
         bggrey: '#F7F7F8',
         primary: '#2C7DB7',
         gchat: '#007cff',
-        hover: '#f1f5f9'
+        hover: '#f1f5f9',
+        rd: '#ef4444'
       }
     },
   },

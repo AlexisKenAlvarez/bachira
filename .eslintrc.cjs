@@ -25,6 +25,8 @@ const config = {
     "@typescript-eslint/non-nullable-type-assertion-style": "off",
     "@typescript-eslint/no-floating-promises": "off",
     "@typescript-eslint/no-unsafe-return": "off",
+    '@typescript-eslint/prefer-nullish-coalescing': 'off',
+    
   },
 };
 
