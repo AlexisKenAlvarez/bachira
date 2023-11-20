@@ -37,9 +37,6 @@ export const ourFileRouter = {
             : { image: file.url },
         )
         .where(eq(users.id, metadata.userId));
-
-      // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
-      return { success: true, fileUrl: file.url, fileKey: file.key };
     }),
 } satisfies FileRouter;
 

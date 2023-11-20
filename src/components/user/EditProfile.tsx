@@ -70,7 +70,7 @@ const EditProfile = ({
         ...session,
         user: {
           ...session?.user,
-          image: data[0]?.url as string,
+          image: data ? data[0]?.url : ''
         },
       };
 

@@ -70,7 +70,6 @@ const Notifications = ({
   useEffect(() => {
     pusherClient.subscribe(toPusherKey(`user:${userId}:incoming_follow`));
     pusherClient.subscribe(toPusherKey(`user:${userId}:incoming_unfollow`));
-
     pusherClient.bind("incoming_follow", followHandler);
 
     return () => {
