@@ -2,35 +2,30 @@ import { Camera, ImageIcon, Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useDropzone } from "@uploadthing/react/hooks";
-import { FileWithPath } from "@uploadthing/react";
 import { useOutsideClick } from "@/utils/useOutsideClick";
-import { useUploadThing } from "@/utils/uploadthing";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { generateClientDropzoneAccept } from "uploadthing/client";
 import { api } from "@/trpc/react";
 import { TRPCError } from "@trpc/server";
 import { userDataOutput } from "@/lib/routerTypes";
+import { useUploadThing } from "@/utils/uploadthing";
+import { generateClientDropzoneAccept } from "uploadthing/client";
+import { FileWithPath } from "@uploadthing/react";
+import { useDropzone } from "@uploadthing/react/hooks";
 
 const CoverButton = ({
   userData,
 }: {
   userData: NonNullable<userDataOutput>;
 }) => {
-  const [files, setFiles] = useState<File[]>([]);
+  
   const [open, setOpen] = useState(false);
   const deleteCover = api.user.deleteCover.useMutation();
   const router = useRouter();
+  const [files, setFiles] = useState<File[]>([]);
   const onDrop = useCallback((acceptedFiles: FileWithPath[]) => {
     setFiles(acceptedFiles);
   }, []);
-
-  const ref = useOutsideClick(() => {
-    if (open) {
-      setOpen(false);
-    }
-  });
 
   const { startUpload, permittedFileInfo } = useUploadThing("imageUploader", {
     onClientUploadComplete: () => {
@@ -54,6 +49,12 @@ const CoverButton = ({
     accept: fileTypes ? generateClientDropzoneAccept(fileTypes) : undefined,
     multiple: false,
     noDrag: true,
+  });
+
+  const ref = useOutsideClick(() => {
+    if (open) {
+      setOpen(false);
+    }
   });
 
   const deleteImage = async ({

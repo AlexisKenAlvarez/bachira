@@ -67,7 +67,7 @@ const Nav = ({
               </DropdownMenuItem>
             </Link>
 
-            <Link href="/settings">
+            <Link href="/profile/edit">
               <DropdownMenuItem className="flex items-center gap-[4px]">
                 <Cog size={16} />
                 Manage Account
