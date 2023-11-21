@@ -16,7 +16,7 @@ export function generateImageMetadata() {
   ]
 }
 
-export default  function Image({ params }: { params: { username: string } }) {
+export default  function og({ params }: { params: { username: string } }) {
   const username = params.username;
 
   return new ImageResponse(
