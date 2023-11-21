@@ -13,12 +13,8 @@ const page = async ({ params }: { params: { username: string } }) => {
     notFound();
   }
 
-  if (!session || !session?.user) {
-    redirect("/signin");
-  }
-
   const data = await api.user.checkFollowing.query({
-    user_id: session?.user.id,
+    user_id: session?.user.id as string,
     following_id: userData[0]!.id,
   });
 
