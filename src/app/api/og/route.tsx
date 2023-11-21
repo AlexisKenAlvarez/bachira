@@ -7,10 +7,13 @@ export function GET(request: Request) {
 
   try {
     const { searchParams } = new URL(request.url);
+    console.log("🚀 ~ file: route.tsx:10 ~ GET ~ searchParams:", searchParams)
+
+
 
     const hasusername = searchParams.has("username");
     const username = hasusername
-      ? searchParams.get("title")?.slice(0, 100)
+      ? searchParams.get("username")?.slice(0, 100)
       : "Default username";
 
     return new ImageResponse(
