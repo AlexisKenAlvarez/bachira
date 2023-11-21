@@ -1,5 +1,5 @@
 
-export default async function authLayout({
+export default function authLayout({
   children, // will be a page or nested layout
 }: {
   children: React.ReactNode;
