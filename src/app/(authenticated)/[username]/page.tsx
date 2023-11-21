@@ -3,7 +3,6 @@ import { authOptions } from "@/server/auth";
 import { api } from "@/trpc/server";
 import { getServerSession } from "next-auth";
 import { notFound } from "next/navigation";
-import { redirect } from "next/navigation";
 
 const page = async ({ params }: { params: { username: string } }) => {
   const userData = await api.user.getUser.query({ username: params.username });
