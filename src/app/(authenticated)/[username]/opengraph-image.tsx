@@ -6,6 +6,16 @@ export const size = {
 export const alt = "Bachira";
 export const contentType = "image/png";
 
+export function generateImageMetadata() {
+  return [
+    {
+      contentType: 'image/png',
+      size: { width: 1200, height: 500 },
+      alt: "Bachira"
+    },
+  ]
+}
+
 export default function og({ params }: { params: { username: string } }) {
   const username = params.username;
 
