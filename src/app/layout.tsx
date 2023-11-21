@@ -19,8 +19,8 @@ const montserrat = Montserrat({
   display: "swap",
 });
 export const metadata: Metadata = {
-  title: "BAI",
-  description: "Globally chat without worrying on language barriers.",
+  title: "Bachira",
+  description: "Say more with Bachira",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
