@@ -7,11 +7,6 @@ export default async function authLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
-
-  if (!session) {
-    redirect('/signin')
-  }
 
   return <section>{children}</section>;
 }
