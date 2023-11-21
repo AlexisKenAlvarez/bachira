@@ -14,6 +14,7 @@ import Link from "next/link";
 import Notifications from "./Notifications";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Skeleton } from "./ui/skeleton";
+import Image from 'next/image';
 
 const Nav = ({
   email,
@@ -32,7 +33,7 @@ const Nav = ({
     <nav className="flex items-center justify-between border-b border-black/10 p-4 font-primary">
       <div className="-mb-2 flex items-center gap-2">
         <Link href="/">
-          <h1 className="font-primary text-4xl font-bold md:text-5xl">GChat</h1>
+          <Image src="/logo.png" width={500} height={500} alt="Logo" className="w-10" />
         </Link>
       </div>
 

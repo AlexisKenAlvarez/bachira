@@ -4,10 +4,28 @@
  */
 await import("./src/env.mjs");
 
+// ["lh3.googleusercontent.com", "utfs.io", "uploadthing.com"]
+
 /** @type {import("next").NextConfig} */
 const config = {
   images: {
-    domains: ["lh3.googleusercontent.com", "utfs.io", "uploadthing.com"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "utfs.io",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "uploadthing.com",
+        pathname: "/**",
+      },
+    ],
   },
 };
 

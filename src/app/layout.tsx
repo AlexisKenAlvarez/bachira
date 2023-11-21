@@ -19,7 +19,7 @@ const montserrat = Montserrat({
   display: "swap",
 });
 export const metadata: Metadata = {
-  title: "GChat",
+  title: "BAI",
   description: "Globally chat without worrying on language barriers.",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
