@@ -30,7 +30,7 @@
     "@trpc/next": "^10.37.1",
     "@trpc/react-query": "^10.37.1",
     "@trpc/server": "^10.37.1",
-    "@uploadthing/react": "^6.0.0",
+    "@uploadthing/react": "^6.0.1",
     "@upstash/ratelimit": "^0.4.4",
     "@upstash/redis": "^1.24.3",
     "adapters": "link:@auth/core/adapters",
@@ -51,7 +51,7 @@
     "superjson": "^1.13.1",
     "tailwind-merge": "^2.0.0",
     "tailwindcss-animate": "^1.0.7",
-    "uploadthing": "^6.0.1",
+    "uploadthing": "^6.0.2",
     "zod": "^3.22.4"
   },
   "devDependencies": {
