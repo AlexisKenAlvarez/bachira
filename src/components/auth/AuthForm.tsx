@@ -15,17 +15,17 @@ const AuthForm = ({ type }: AuthPageProps) => {
     <section className="flex h-auto min-h-screen w-full bg-white pb-20 sm:bg-bggrey sm:pb-0">
       <div className="w-full place-content-center sm:grid">
         <div className="h-full sm:rounded-xl sm:shadow-md">
-          <div className="sm:min-h-20 flex w-full flex-col space-y-4 bg-white px-7 py-10 font-primary sm:w-[26rem] sm:rounded-xl">
+          <div className="sm:min-h-20 flex w-full flex-col space-y-4 bg-white px-7 py-8 font-primary sm:w-[26rem] sm:rounded-xl">
             <div className=" text-center">
               <h1 className="text-2xl font-bold">
                 {type === "sign in"
-                  ? "Welcome back to GChat"
+                  ? "Welcome back to Bachira"
                   : "Create your account"}{" "}
               </h1>
               <p className="text-black/70">
                 {type === "sign in"
-                  ? "Login to your account and start downloading."
-                  : "Create an account and start downloading."}
+                  ? "Login to your account and experience the social media built on NextJS."
+                  : "Create an account and start socializing."}
               </p>
             </div>
 
@@ -95,8 +95,8 @@ const AuthForm = ({ type }: AuthPageProps) => {
       </div>
       <div className="relative hidden w-full overflow-hidden lg:block">
         <Link href="/">
-          <h1 className="transition-text absolute right-0 top-0 z-10 m-auto h-fit font-primary text-[12rem] font-bold text-white/20 duration-300 ease-in-out hover:text-white/50 xl:text-[15rem]">
-            GChat
+          <h1 className="transition-text absolute right-0 top-0 z-10 m-auto h-fit font-primary text-[12rem] font-bold text-white/20 duration-300 ease-in-out hover:text-white/50 xl:text-[13rem]">
+            Bachira
           </h1>
         </Link>
 

@@ -1,6 +1,6 @@
 Work on user profile
 
 In progress
-- Edit Profile
+- Search button
 
-- Make user profile to edit all user details
+- Make search user functional with infinite query

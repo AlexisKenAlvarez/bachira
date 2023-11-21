@@ -18,11 +18,11 @@ const montserrat = Montserrat({
   variable: "--font-montserrat",
   display: "swap",
 });
-// export const metadata: Metadata = {
-//   title: "Bachira",
-//   description: "Say more with Bachira",
-//   icons: [{ rel: "icon", url: "/favicon.ico" }],
-// };
+export const metadata: Metadata = {
+  title: "Bachira",
+  description: "Say more with Bachira",
+  icons: [{ rel: "icon", url: "/favicon.ico" }],
+};
 
 export default async function RootLayout({
   children,

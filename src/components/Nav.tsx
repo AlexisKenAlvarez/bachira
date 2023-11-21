@@ -14,7 +14,11 @@ import Link from "next/link";
 import Notifications from "./Notifications";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Skeleton } from "./ui/skeleton";
-import Image from 'next/image';
+import Image from "next/image";
+import { Input } from "./ui/input";
+import { useState } from "react";
+import { ScrollArea } from "./ui/scroll-area";
+import { AnimatePresence, motion } from "framer-motion";
 
 const Nav = ({
   email,
@@ -29,12 +33,47 @@ const Nav = ({
   userId: string;
   notifCount: number;
 }) => {
+  const [searching, setSearching] = useState(false);
+  const [searchValue, setValue] = useState('')
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setValue(event.target.value);
+  };
+
   return (
-    <nav className="flex items-center justify-between border-b border-black/10 p-4 font-primary">
-      <div className="-mb-2 flex items-center gap-2">
+    <nav className="flex items-center justify-between gap-3 border-b border-black/10 p-4 font-primary z-50">
+      <div className="relative flex items-center gap-2">
         <Link href="/">
-          <Image src="/logo.png" width={500} height={500} alt="Logo" className="w-10" />
+          <Image
+            src="/logo.png"
+            width={500}
+            height={500}
+            alt="Logo"
+            className="w-10"
+          />
         </Link>
+        <div className="relative h-fit w-fit">
+          <Input
+            id="search"
+            name="search"
+            placeholder="Search users..."
+            className="focus-visible:ring-transparent"
+            autoComplete="off"
+            onChange={handleSearch}
+          />
+          <AnimatePresence>
+            {searchValue !== '' && (
+              <motion.div
+                key="SearchInput"
+                initial={{ maxHeight: "0px" }}
+                animate={{ maxHeight: "200px" }}
+                transition={{ duration: 0.4, ease: [0.16, 0.77, 0.47, 0.97] }}
+                exit={{ maxHeight: "0px" }}
+                className="!absolute h-[20rem] w-[300px] -translate-x-12 translate-y-2 overflow-hidden rounded-md border bg-white"
+              ></motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       <div className="flex gap-2">
@@ -42,7 +81,7 @@ const Nav = ({
         <DropdownMenu>
           <DropdownMenuTrigger className="">
             <Avatar className="">
-              <AvatarImage src={image} />
+              <AvatarImage src={image} className="object-cover" />
               <AvatarFallback>
                 <Skeleton className="h-full w-full rounded-full" />
               </AvatarFallback>

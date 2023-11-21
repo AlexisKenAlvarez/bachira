@@ -161,7 +161,7 @@ const UserProfile = ({
           <div className="relative z-10 h-full w-full flex-1 rounded-tl-3xl rounded-tr-3xl border-l border-r border-t border-black/10 bg-white p-5">
             <div className="flex gap-4">
               <Avatar className="h-24 w-24">
-                <AvatarImage src={userData[0]?.image as string} />
+                <AvatarImage src={userData[0]?.image as string} className="object-cover" />
                 <AvatarFallback>
                   <Skeleton className="h-full w-full rounded-full" />
                 </AvatarFallback>
