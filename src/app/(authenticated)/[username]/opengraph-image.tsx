@@ -16,8 +16,14 @@ export function generateImageMetadata() {
   ]
 }
 
-export default function og({ params }: { params: { username: string } }) {
+export default async function Image({ params }: { params: { username: string } }) {
   const username = params.username;
+
+  const interSemiBold = fetch(
+    new URL('./Inter-SemiBold.ttf', import.meta.url)
+  ).then((res) => res.arrayBuffer())
+
+  console.log(interSemiBold);
 
   return new ImageResponse(
     (
