@@ -40,7 +40,7 @@
     "framer-motion": "^10.16.5",
     "lucide-react": "^0.292.0",
     "next": "^14.0.0",
-    "next-auth": "^4.23.0",
+    "next-auth": "^4.24.5",
     "next13-progressbar": "^1.0.4",
     "pusher": "^5.1.3",
     "pusher-js": "^8.3.0",
