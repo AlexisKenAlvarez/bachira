@@ -41,9 +41,7 @@ export default async function RootLayout({
   return (
     <TRPCReactProvider cookies={cookies().toString()}>
       <html lang="en">
-        <body
-          className={`${montserrat.variable} font-sans`}
-        >
+        <body className={`${montserrat.variable} font-sans`}>
           {session ? (
             !session.user.username ? (
               <AddUsername email={session.user.email!} />
@@ -56,13 +54,16 @@ export default async function RootLayout({
                     duration: 5000,
                   }}
                 />
-                <Nav
-                  email={session.user.email!}
-                  username={session.user.username}
-                  image={session.user.image!}
-                  userId={session.user.id}
-                  notifCount={countData ? (countData[0]?.count as number) : 0}
-                />
+                {session && (
+                  <Nav
+                    email={session.user.email!}
+                    username={session.user.username}
+                    image={session.user.image!}
+                    userId={session.user.id}
+                    notifCount={countData ? (countData[0]?.count as number) : 0}
+                  />
+                )}
+
                 <Providers>{children}</Providers>
               </div>
             )
