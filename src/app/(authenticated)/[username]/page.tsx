@@ -1,27 +1,42 @@
 import UserProfile from "@/components/user/UserProfile";
 import { authOptions } from "@/server/auth";
 import { api } from "@/trpc/server";
+import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
-import { notFound } from "next/navigation";
-import { redirect } from "next/navigation";
-import og from "./opengraph-image";
+import { notFound, redirect } from "next/navigation";
 
-export const metadata = {
-  title: "Bachira",
-  description: "Say more with Bachira",
-  openGraph: {
-    title: "Bachira",
-    description: "Say more with Bachira",
-    url: "https://cruip-tutorials-next.vercel.app/social-preview",
-    images: [og],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Bachira",
-    description: "Say more with Bachira",
-    images: [og],
-  },
+type Props = {
+  params: { username: string };
 };
+
+export function generateMetadata({ params }: Props) {
+  // read route params
+  const username = params.username;
+
+  return {
+    title: "Bachira",
+    description: "Say more with Bachira",
+    openGraph: {
+      title: "Bachira",
+      description: "Say more with Bachira",
+      images: [
+        {
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}api/og?username=${username}`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Bachira",
+      description: "Say more with Bachira",
+      images: [
+        {
+          url: `${process.env.NEXT_PUBLIC_BASE_URL}api/og?username=${username}`,
+        },
+      ],
+    },
+  };
+}
 
 const page = async ({ params }: { params: { username: string } }) => {
   const userData = await api.user.getUser.query({ username: params.username });
