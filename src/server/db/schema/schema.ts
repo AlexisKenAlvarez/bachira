@@ -22,34 +22,43 @@ export const NOTIFICATION_TYPE = [
 ] as const;
 
 export const NOTIFICATION_STATUS = ["READ", "UNREAD"] as const;
-export const GENDER = ['MALE', 'FEMALE', 'IDK'] as const
+export const GENDER = ["MALE", "FEMALE", "IDK"] as const;
 
-const updatedAt = timestamp("updatedAt", { mode: 'date' })
+const updatedAt = timestamp("updatedAt", { mode: "date" })
   .notNull()
   .default(sql`CURRENT_TIMESTAMP`)
   .onUpdateNow();
 
-const createdAt = timestamp("createdAt", { mode: 'date' })
+const createdAt = timestamp("createdAt", { mode: "date" })
   .default(sql`CURRENT_TIMESTAMP`)
   .notNull();
 
-export const users = mysqlTable("user", {
-  id: varchar("id", { length: 255 }).notNull().primaryKey(),
-  bio: varchar("bio", { length: 160 }).default(''),
-  coverPhoto: varchar("coverPhoto", { length: 255 }),
-  username: varchar("username", { length: 50 }),
-  email: varchar("email", { length: 255 }).notNull(),
-  name: varchar("name", { length: 255 }),
-  website: varchar("website", { length: 255 }).default(''),
-  gender: mysqlEnum("gender", GENDER).default("IDK"),
-  created_at: createdAt,
-  emailVerified: timestamp("emailVerified", {
-    mode: "date",
-    fsp: 3,
-  }).defaultNow(),
-  image: varchar("image", { length: 255 }),
-  updatedAt,
-});
+export const users = mysqlTable(
+  "user",
+  {
+    countId: int("countId").notNull().autoincrement().primaryKey(),
+    id: varchar("id", { length: 255 }).notNull(),
+    bio: varchar("bio", { length: 160 }).default(""),
+    coverPhoto: varchar("coverPhoto", { length: 255 }),
+    username: varchar("username", { length: 50 }),
+    email: varchar("email", { length: 255 }).notNull(),
+    name: varchar("name", { length: 255 }),
+    website: varchar("website", { length: 255 }).default(""),
+    gender: mysqlEnum("gender", GENDER).default("IDK"),
+    created_at: createdAt,
+    emailVerified: timestamp("emailVerified", {
+      mode: "date",
+      fsp: 3,
+    }).defaultNow(),
+    image: varchar("image", { length: 255 }),
+    updatedAt,
+  },
+  (table) => {
+    return {
+      id: index("userid").on(table.id),
+    };
+  },
+);
 
 export const followership = mysqlTable(
   "followership",
@@ -73,5 +82,5 @@ export const notification = mysqlTable("notifications", {
   type: mysqlEnum("type", NOTIFICATION_TYPE).notNull(),
   status: mysqlEnum("status", NOTIFICATION_STATUS).default("UNREAD"),
   seen: boolean("seen").default(false),
-  createdAt
+  createdAt,
 });

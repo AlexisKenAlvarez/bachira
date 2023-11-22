@@ -12,17 +12,17 @@ interface ProgressInterface extends React.ComponentPropsWithoutRef<typeof Progre
 const Progress = React.forwardRef<
   React.ElementRef<typeof ProgressPrimitive.Root>,
   ProgressInterface
->(({ className, value, indicatorClassName, ...props }, ref) => (
+>(({ className, indicatorClassName, value, ...props }, ref) => (
   <ProgressPrimitive.Root
     ref={ref}
     className={cn(
-      "relative h-4 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800",
+      "relative h-4 w-full overflow-hidden rounded-full bg-secondary",
       className
     )}
     {...props}
   >
     <ProgressPrimitive.Indicator
-      className={cn('h-full w-full flex-1 bg-slate-900 transition-all dark:bg-slate-50', indicatorClassName)}
+      className={cn("h-full w-full flex-1 bg-primary transition-all", {indicatorClassName})}
       style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
     />
   </ProgressPrimitive.Root>

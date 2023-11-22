@@ -54,15 +54,14 @@ export default async function RootLayout({
                     duration: 5000,
                   }}
                 />
-                {session && (
-                  <Nav
-                    email={session.user.email!}
-                    username={session.user.username}
-                    image={session.user.image!}
-                    userId={session.user.id}
-                    notifCount={countData ? (countData[0]?.count as number) : 0}
-                  />
-                )}
+
+                <Nav
+                  email={session.user.email!}
+                  username={session.user.username}
+                  image={session.user.image!}
+                  userId={session.user.id}
+                  notifCount={countData ? (countData[0]?.count as number) : 0}
+                />
 
                 <Providers>{children}</Providers>
               </div>

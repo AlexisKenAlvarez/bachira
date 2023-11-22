@@ -92,7 +92,7 @@ const Notifications = ({
       >
         <div className="relative grid h-10 w-10 place-content-center rounded-full bg-black/5">
           {count > 0 && (
-            <div className="absolute -right-[4px] -top-[4px] h-fit w-fit rounded-full bg-red-500 p-[9px] font-primary text-[10px] text-white">
+            <div className="absolute -right-[4px] -top-[4px] h-fit w-fit rounded-full bg-primary p-[9px] font-primary text-[10px] text-white">
               <p className="absolute bottom-0 left-0 right-0 top-0 m-auto h-fit font-semibold">
                 {count}
               </p>

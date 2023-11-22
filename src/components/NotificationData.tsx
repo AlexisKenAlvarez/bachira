@@ -93,12 +93,12 @@ const NotificationData = ({
                 >
                   <div className="relative rounded-md px-5 py-3 text-left transition-all duration-300 ease-in-out hover:bg-gchat/5">
                     {notif.status === "UNREAD" && (
-                      <div className="absolute bottom-0 right-4 top-0 my-auto h-2 w-2 rounded-full bg-gchat"></div>
+                      <div className="absolute bottom-0 right-4 top-0 my-auto h-2 w-2 rounded-full bg-primary"></div>
                     )}
 
                     <div className=" flex items-center gap-3">
                       <div className="relative h-fit w-fit rounded-full">
-                        <div className="absolute bottom-[-4px] right-[-4px] h-fit w-fit rounded-full bg-gchat p-[5px]">
+                        <div className="absolute bottom-[-4px] right-[-4px] h-fit w-fit rounded-full bg-primary p-[5px]">
                           <User fill="white" stroke="white" size={13} />
                         </div>
                         <Image
@@ -115,7 +115,7 @@ const NotificationData = ({
                           {notif.notificationFrom?.username}
                         </h1>
                         <p className="-mt-[5px]">is now following you.</p>
-                        <p className="-mt-[2px] font-primary text-xs font-semibold text-gchat">
+                        <p className="-mt-[2px] font-primary text-xs font-semibold text-primary">
                           {timeAgo(notif.createdAt.toString())}
                         </p>
                       </div>

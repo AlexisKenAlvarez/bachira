@@ -202,7 +202,7 @@ const EditProfile = ({
               }}
             >
               {" "}
-              <p className="text-sm font-semibold text-gchat">
+              <p className="text-sm font-semibold text-primary">
                 Change profile photo.
               </p>
             </button>
@@ -215,7 +215,7 @@ const EditProfile = ({
                 <div className="!mt-4 flex gap-2">
                   <Button
                     variant="secondary"
-                    className="relative hover:bg-gchat hover:text-white"
+                    className="relative"
                   >
                     <div
                       {...getRootProps()}

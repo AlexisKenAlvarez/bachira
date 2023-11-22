@@ -228,13 +228,13 @@ const UserProfile = ({
 
             {userData[0]?.website && (
               <div className="mt-2 font-primary flex items-center gap-2">
-                <LinkIcon size="14" className="text-gchat font-bold" strokeWidth={2.5} />
+                <LinkIcon size="14" className="text-primary font-bold" strokeWidth={2.5} />
                 <Link
                   href={userData[0]?.website ?? ""}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <p className="text-sm font-semibold text-gchat">
+                  <p className="text-sm font-semibold text-primary">
                     {userData[0]?.website}
                   </p>
                 </Link>

@@ -249,6 +249,40 @@ export const userRouter = createTRPCRouter({
         nextCursor,
       };
     }),
+  searchUser: privateProcedure
+    .input(
+      z.object({
+        searchValue: z.string(),
+        limit: z.number().min(1).max(10).nullish(),
+        cursor: z.number().nullish(),
+        offset: z.number().nullish(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const limit = input.limit ?? 10;
+
+      const searchedUsers = await ctx.db.query.users.findMany({
+        where: (users, { ilike, gt, and }) =>
+          and(
+            ilike(users.username, `${input.searchValue}%`),
+            gt(users.countId, input.cursor ?? 0),
+          ),
+        orderBy: asc(followership.id),
+        limit: limit + 1,
+      });
+
+      let nextCursor;
+
+      if (searchedUsers.length > limit) {
+        const nextItem = searchedUsers.pop(); // return the last item from the array
+        nextCursor = nextItem?.id;
+      }
+
+      return {
+        searchedUsers,
+        nextCursor,
+      };
+    }),
   uploadCover: privateProcedure
     .input(
       z.object({
@@ -279,7 +313,10 @@ export const userRouter = createTRPCRouter({
       const deleteIfUtf = async (imageUrl: string) => {
         const newUrl = new URL(imageUrl);
 
-        if (newUrl.hostname === "utfs.io" || newUrl.hostname === 'uploadthing.com') {
+        if (
+          newUrl.hostname === "utfs.io" ||
+          newUrl.hostname === "uploadthing.com"
+        ) {
           const filekey = imageUrl.substring(imageUrl.lastIndexOf("/") + 1);
           await utapi.deleteFiles(filekey);
         }
@@ -310,30 +347,40 @@ export const userRouter = createTRPCRouter({
     }),
 
   saveProfile: privateProcedure
-    .input(z.object({
-      id: z.string(),
-      userData: editProfileSchema,
-      newData: editProfileSchema
-    }))
+    .input(
+      z.object({
+        id: z.string(),
+        userData: editProfileSchema,
+        newData: editProfileSchema,
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
-
-      const { userData, newData, id } = input
+      const { userData, newData, id } = input;
 
       if (userData.bio !== newData.bio) {
-        await ctx.db.update(users).set({ bio: newData.bio }).where(eq(users.id, id))
+        await ctx.db
+          .update(users)
+          .set({ bio: newData.bio })
+          .where(eq(users.id, id));
       }
 
       if (userData.gender !== newData.gender) {
-        await ctx.db.update(users).set({gender: newData.gender}).where(eq(users.id, id))
+        await ctx.db
+          .update(users)
+          .set({ gender: newData.gender })
+          .where(eq(users.id, id));
       }
 
       if (userData.website !== newData.website) {
-        await ctx.db.update(users).set({website: newData.website}).where(eq(users.id, id))
+        await ctx.db
+          .update(users)
+          .set({ website: newData.website })
+          .where(eq(users.id, id));
       }
 
       return {
-        success: true
-      }
+        success: true,
+      };
     }),
 });
 
