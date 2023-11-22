@@ -47,14 +47,6 @@ export default async function RootLayout({
               <AddUsername email={session.user.email!} />
             ) : (
               <div className="mx-auto flex min-h-screen w-full max-w-[700px] flex-col border-x border-black/10">
-                <Toaster
-                  position="bottom-left"
-                  gutter={10}
-                  toastOptions={{
-                    duration: 5000,
-                  }}
-                />
-
                 <Nav
                   email={session.user.email!}
                   username={session.user.username}
@@ -69,6 +61,13 @@ export default async function RootLayout({
           ) : (
             <Providers>{children}</Providers>
           )}
+          <Toaster
+            position="bottom-left"
+            gutter={10}
+            toastOptions={{
+              duration: 5000,
+            }}
+          />
         </body>
       </html>
     </TRPCReactProvider>

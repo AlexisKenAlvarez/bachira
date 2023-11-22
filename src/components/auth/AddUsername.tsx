@@ -23,13 +23,9 @@ import { useRouter } from "next/navigation";
 
 const AddUsername = ({ email }: { email: string }) => {
   const { data: session, update } = useSession();
-  const router = useRouter()
+  const router = useRouter();
 
   const updateUsername = api.user.updateUsername.useMutation({
-    onError: () => {
-      toast.error("Sorry, Something went wrong!");
-      setDebounce(false);
-    },
     onSuccess: async () => {
       const newSession = {
         ...session,
@@ -41,8 +37,9 @@ const AddUsername = ({ email }: { email: string }) => {
 
       await update(newSession);
 
-      router.refresh()
-    }
+      router.refresh();
+    },
+
   });
 
   const [debounce, setDebounce] = useState(false);
@@ -63,6 +60,14 @@ const AddUsername = ({ email }: { email: string }) => {
     },
   });
 
+  function isValidInput(input: string) {
+    // Regular expression pattern allowing only characters a-z and A-Z
+    const pattern = /^[a-zA-Z0-9]+$/;
+
+    // Test the input against the pattern
+    return pattern.test(input);
+  }
+
   return (
     <section className="flex h-auto min-h-screen w-full bg-white pb-20 sm:bg-bggrey sm:pb-0">
       <div className="w-full place-content-center sm:grid">
@@ -81,11 +86,23 @@ const AddUsername = ({ email }: { email: string }) => {
                 onSubmit={usernameForm.handleSubmit(async (data) => {
                   if (!debounce) {
                     setDebounce(true);
-                    await updateUsername.mutateAsync({
-                      username: data.username,
-                      email,
-                    });
-
+                    
+                    try {
+                      if (isValidInput(data.username)) {
+                        await updateUsername.mutateAsync({
+                          username: data.username.trim(),
+                          email,
+                        });
+                      } else {
+                        toast.error("Username must only contain alphabets");
+                        setDebounce(false);
+                      }
+                    } catch (error) {
+                      console.log(error);
+                      toast.error("Username is already taken!");
+                      setDebounce(false);
+                    }
+                    
                   }
                 })}
               >

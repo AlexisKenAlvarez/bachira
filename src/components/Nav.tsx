@@ -63,7 +63,7 @@ const Nav = ({
             onChange={handleSearch}
           />
           <AnimatePresence>
-            {searchValue !== "" && <SearchUser />}
+            {searchValue !== "" && <SearchUser searchValue={searchValue} />}
           </AnimatePresence>
         </div>
       </div>

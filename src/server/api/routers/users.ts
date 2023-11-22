@@ -1,6 +1,6 @@
 import { createTRPCRouter, privateProcedure } from "@/server/api/trpc";
 import { followership, notification, users } from "@/server/db/schema";
-import { and, asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, gt, ilike, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { pusherServer } from "@/lib/pusher";
@@ -102,9 +102,17 @@ export const userRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const existing = await ctx.db.query.users.findFirst({
+        where: (users, { eq }) => eq(users.username, input.username),
+      });
+
+      if (existing) {
+        throw new TRPCError({ code: "UNPROCESSABLE_CONTENT" })
+      }
+
       await ctx.db
         .update(users)
-        .set({ username: input.username.trim() })
+        .set({ username: input.username })
         .where(eq(users.email, input.email));
 
       return {
@@ -262,12 +270,12 @@ export const userRouter = createTRPCRouter({
       const limit = input.limit ?? 10;
 
       const searchedUsers = await ctx.db.query.users.findMany({
-        where: (users, { ilike, gt, and }) =>
+        where: (users, { like, gt, and }) =>
           and(
-            ilike(users.username, `${input.searchValue}%`),
+            like(users.username, `${input.searchValue}%`),
             gt(users.countId, input.cursor ?? 0),
           ),
-        orderBy: asc(followership.id),
+        orderBy: asc(users.id),
         limit: limit + 1,
       });
 
