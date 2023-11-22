@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Skeleton } from "./ui/skeleton";
 import Image from "next/image";
 import { Input } from "./ui/input";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { ScrollArea } from "./ui/scroll-area";
 import { AnimatePresence, motion } from "framer-motion";
 import SearchUser from "./user/SearchUser";
@@ -34,12 +34,21 @@ const Nav = ({
   userId: string;
   notifCount: number;
 }) => {
-  const [searching, setSearching] = useState(false);
+  const [open, setOpen] = useState(false);
   const [searchValue, setValue] = useState("");
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setValue(event.target.value);
+    if (event.target.value === "") {
+      setOpen(false);
+    } else {
+      setOpen(true);
+    }
   };
+
+  const closeSearch = useCallback(() => {
+    setOpen(false);
+  }, []);
 
   return (
     <nav className="z-50 flex items-center justify-between gap-3 border-b border-black/10 p-4 font-primary">
@@ -60,10 +69,16 @@ const Nav = ({
             placeholder="Search users..."
             className="focus-visible:ring-transparent"
             autoComplete="off"
+            onBlur={() => closeSearch()}
+            onFocus={() => {
+              if (searchValue !== "") {
+                setOpen(true);
+              }
+            }}
             onChange={handleSearch}
           />
           <AnimatePresence>
-            {searchValue !== "" && <SearchUser searchValue={searchValue} />}
+            {open && <SearchUser searchValue={searchValue} closeSearch={closeSearch} />}
           </AnimatePresence>
         </div>
       </div>
