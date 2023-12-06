@@ -8,18 +8,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import { AnimatePresence } from "framer-motion";
 import { Cog, LogOut, User } from "lucide-react";
 import { signOut } from "next-auth/react";
+import Image from "next/image";
 import Link from "next/link";
+import { useCallback, useState } from "react";
 import Notifications from "./Notifications";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Skeleton } from "./ui/skeleton";
-import Image from "next/image";
 import { Input } from "./ui/input";
-import { useCallback, useState } from "react";
-import { ScrollArea } from "./ui/scroll-area";
-import { AnimatePresence, motion } from "framer-motion";
+import { Skeleton } from "./ui/skeleton";
 import SearchUser from "./user/SearchUser";
+import { debounce } from "lodash";
 
 const Nav = ({
   email,
@@ -37,13 +37,21 @@ const Nav = ({
   const [open, setOpen] = useState(false);
   const [searchValue, setValue] = useState("");
 
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setValue(event.target.value);
-    if (event.target.value === "") {
+  const search = debounce((value: string) => {
+    setValue(value);
+    if (value === "") {
       setOpen(false);
     } else {
       setOpen(true);
     }
+  }, 700)
+
+  const debounceSearch = useCallback((value: string) => {
+    search(value)
+  }, [])
+
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    debounceSearch(event.target.value);
   };
 
   const closeSearch = useCallback(() => {
@@ -78,7 +86,7 @@ const Nav = ({
             onChange={handleSearch}
           />
           <AnimatePresence>
-            {open && <SearchUser searchValue={searchValue} closeSearch={closeSearch} />}
+            {open && <SearchUser searchValue={searchValue} />}
           </AnimatePresence>
         </div>
       </div>

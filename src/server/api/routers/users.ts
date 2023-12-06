@@ -275,7 +275,7 @@ export const userRouter = createTRPCRouter({
             like(users.username, `${input.searchValue}%`),
             gt(users.countId, input.cursor ?? 0),
           ),
-        orderBy: asc(users.id),
+        orderBy: asc(users.countId),
         limit: limit + 1,
       });
 
@@ -283,7 +283,7 @@ export const userRouter = createTRPCRouter({
 
       if (searchedUsers.length > limit) {
         const nextItem = searchedUsers.pop(); // return the last item from the array
-        nextCursor = nextItem?.id;
+        nextCursor = nextItem?.countId
       }
 
       return {
