@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
-import { debounce } from "lodash"
+import { debounce } from "lodash";
 
 const SearchUser = ({ searchValue }: { searchValue: string }) => {
   const [ref, inView] = useInView();
@@ -16,25 +16,18 @@ const SearchUser = ({ searchValue }: { searchValue: string }) => {
       searchValue,
     },
     {
-      getNextPageParam: ({nextCursor}) => {
+      getNextPageParam: ({ nextCursor }) => {
         return nextCursor;
       },
       refetchOnMount: true,
     },
   );
 
-  const navigateProfile = (user: string) => {
-    console.log(user);
-    router.push(`/${user}`);
-    // router.refresh()
-  };
-
   useEffect(() => {
     if (inView === true) {
-      fetchNextPage()
+      fetchNextPage();
     }
-  }, [inView])
-  
+  }, [inView]);
 
   return (
     <motion.div
@@ -52,8 +45,13 @@ const SearchUser = ({ searchValue }: { searchValue: string }) => {
               <button
                 className="flex w-full gap-3 px-4 py-2 hover:bg-primary/5"
                 key={user.id}
-                onClick={() => navigateProfile(user.username as string)}
-                ref={data?.pages.length - 1 === i && page.searchedUsers.length - 1 === j ? ref : undefined}
+                onClick={() => router.push(`/${user.username}`)}
+                ref={
+                  data?.pages.length - 1 === i &&
+                  page.searchedUsers.length - 1 === j
+                    ? ref
+                    : undefined
+                }
               >
                 <Image
                   src={user.image as string}

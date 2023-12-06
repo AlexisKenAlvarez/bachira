@@ -22,8 +22,7 @@ import SearchUser from "./user/SearchUser";
 import { debounce } from "lodash";
 
 const Nav = ({
-  email,
-  username,
+  email,  username,
   image,
   userId,
   notifCount,
@@ -44,11 +43,11 @@ const Nav = ({
     } else {
       setOpen(true);
     }
-  }, 700)
+  }, 700);
 
   const debounceSearch = useCallback((value: string) => {
-    search(value)
-  }, [])
+    search(value);
+  }, []);
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     debounceSearch(event.target.value);
@@ -77,7 +76,11 @@ const Nav = ({
             placeholder="Search users..."
             className="focus-visible:ring-transparent"
             autoComplete="off"
-            onBlur={() => closeSearch()}
+            onBlur={() =>
+              setTimeout(() => {
+                closeSearch();
+              }, 100)
+            }
             onFocus={() => {
               if (searchValue !== "") {
                 setOpen(true);

@@ -84,3 +84,4 @@ export const notification = mysqlTable("notifications", {
   seen: boolean("seen").default(false),
   createdAt,
 });
+
