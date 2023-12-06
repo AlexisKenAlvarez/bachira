@@ -1,6 +1,6 @@
 import { signupSchema } from "@/lib/zodSchema";
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
-import { users } from "@/server/db/schema";
+import { users } from "@/server/db/schema/schema";
 import { z } from "zod";
 
 export const authenticationRouter = createTRPCRouter({

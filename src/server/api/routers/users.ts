@@ -1,5 +1,5 @@
 import { createTRPCRouter, privateProcedure } from "@/server/api/trpc";
-import { followership, notification, users } from "@/server/db/schema";
+import { followership, notification, users } from "@/server/db/schema/schema";
 import { and, asc, eq, gt, ilike, sql } from "drizzle-orm";
 import { z } from "zod";
 
@@ -79,9 +79,9 @@ export const userRouter = createTRPCRouter({
         },
       });
 
-      if (data) {
+      if (data && data !== null) {
         const isFollowing = data.follower.filter(
-          (val) => val.following_id === input.following_id,
+          (val: {following_id: string}) => val.following_id === input.following_id,
         );
         console.log(isFollowing);
         return {

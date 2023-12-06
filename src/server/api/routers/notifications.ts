@@ -1,5 +1,5 @@
 import { createTRPCRouter, privateProcedure } from "@/server/api/trpc";
-import { notification } from "@/server/db/schema";
+import { notification } from "@/server/db/schema/schema";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 

@@ -1,6 +1,6 @@
 import { authOptions } from "@/server/auth";
 import { db } from "@/server/db";
-import { users } from "@/server/db/schema";
+import { users } from "@/server/db/schema/schema";
 import { eq } from "drizzle-orm";
 import { getServerSession } from "next-auth";
 import { createUploadthing, type FileRouter } from "uploadthing/next";

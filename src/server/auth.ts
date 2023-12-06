@@ -7,7 +7,7 @@ import {
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import { db } from "./db";
-import { users } from "./db/schema";
+import { users } from "./db/schema/schema";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`

@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { followership, notification, users } from ".";
+import { followership, notification, users } from "./schema";
 
 export const userRelations = relations(users, ({ many }) => ({
   follower: many(followership, { relationName: "user_follower" }),
