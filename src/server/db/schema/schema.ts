@@ -8,6 +8,7 @@ import {
   int,
   mysqlEnum,
   mysqlTableCreator,
+  text,
   timestamp,
   varchar,
 } from "drizzle-orm/mysql-core";
@@ -21,8 +22,11 @@ export const NOTIFICATION_TYPE = [
   "REPLY",
 ] as const;
 
+export const POST_TYPE = ["ALL", "FOLLOWERS"] as const;
+
 export const NOTIFICATION_STATUS = ["READ", "UNREAD"] as const;
 export const GENDER = ["MALE", "FEMALE", "IDK"] as const;
+export const PRIVACY = ["PUBLIC", "PRIVATE"] as const;
 
 const updatedAt = timestamp("updatedAt", { mode: "date" })
   .notNull()
@@ -85,3 +89,41 @@ export const notification = mysqlTable("notifications", {
   createdAt,
 });
 
+export const posts = mysqlTable("posts", {
+  id: int("id").primaryKey().notNull().autoincrement(),
+  userId: varchar("userId", { length: 100 }).notNull(),
+  text: text("text").notNull(),
+  postType: mysqlEnum("postType", POST_TYPE).notNull(),
+  createdAt,
+  updatedAt,
+  privacy: mysqlEnum("privacy", PRIVACY).default("PUBLIC"),
+});
+
+export const postComments = mysqlTable(
+  "postComments",
+  {
+    id: int("id").primaryKey().notNull().autoincrement(),
+    postId: int("id").notNull(),
+    userId: varchar("userId", { length: 100 }).notNull(),
+    text: text("text").notNull(),
+  },
+  (table) => {
+    return {
+      followerIdx: index("comments_post_idx").on(table.postId),
+    };
+  },
+);
+
+export const postLikes = mysqlTable(
+  "postLikes",
+  {
+    id: int("id").primaryKey().notNull().autoincrement(),
+    postId: int("id").notNull(),
+    userId: varchar("userId", { length: 100 }).notNull(),
+  },
+  (table) => {
+    return {
+      followerIdx: index("likes_post_idx").on(table.postId),
+    };
+  },
+);
