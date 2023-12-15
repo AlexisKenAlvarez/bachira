@@ -1,4 +1,5 @@
 import { Separator } from "@/components/ui/separator";
+import Post from "@/components/user/Post";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
@@ -20,6 +21,10 @@ const page = async ({searchParams}: {searchParams?: { [key: string]: string | st
         <button className="w-full text-center py-3 hover:bg-slate-50">
           <h1 className="">For you</h1>
         </button>
+      </div>
+
+      <div className="w-full p-5">
+        <Post userData={session} />
       </div>
     </div>
   );
