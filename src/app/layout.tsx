@@ -41,12 +41,12 @@ export default async function RootLayout({
   return (
     <TRPCReactProvider cookies={cookies().toString()}>
       <html lang="en">
-        <body className={`${montserrat.variable} font-sans`}>
+        <body className={`${montserrat.variable} font-sans bg-bg`}>
           {session ? (
             !session.user.username ? (
               <AddUsername email={session.user.email!} />
             ) : (
-              <div className="mx-auto flex min-h-screen w-full max-w-[700px] flex-col border-x border-black/10">
+              <div className="mx-auto flex min-h-screen w-full max-w-[700px] flex-col">
                 <Nav
                   email={session.user.email!}
                   username={session.user.username}

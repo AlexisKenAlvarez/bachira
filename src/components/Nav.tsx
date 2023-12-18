@@ -58,7 +58,7 @@ const Nav = ({
   }, []);
 
   return (
-    <nav className="z-50 flex items-center justify-between gap-3 border-b border-black/10 p-4 font-primary">
+    <nav className="z-50 flex items-center justify-between gap-3 p-4 font-primary sticky top-0 bg-white">
       <div className="relative flex items-center gap-2">
         <Link href="/">
           <Image

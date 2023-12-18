@@ -1,7 +1,9 @@
 import { Session } from "next-auth";
 import Image from "next/image";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Skeleton } from "../ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
+import { Globe } from 'lucide-react';
 
 const Post = ({ userData }: { userData: Session }) => {
   return (
@@ -22,6 +24,8 @@ const Post = ({ userData }: { userData: Session }) => {
           className="w-full border-none font-primary outline-none"
         />
       </div>
+
+      <Separator className="mt-4" />
     </section>
   );
 };

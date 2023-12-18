@@ -49,6 +49,7 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        bg: '#f0f2f5',
         bggrey: "#F7F7F8",
         gchat: "#007cff",
         hover: "#f1f5f9",
