@@ -1,5 +1,4 @@
 import Post from "@/components/user/Post";
-import { Globe2 } from "lucide-react";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
@@ -29,9 +28,9 @@ const page = async ({
         </button>
       </div> */}
 
-      <div className="w-full p-5">
+      <div className="w-full mt-4">
         <Post userData={session} />
-        <div className="w-full min-h-screen"></div>
+        <div className="w-full min-h-screen bg-white mt-4 rounded-md"></div>
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ export const notificationRouter = createTRPCRouter({
       z.object({
         userId: z.string(),
         text: z.string(),
+        privacy: z.enum(["Public", "Private"]),
       }),
     )
     .mutation(async ({ ctx, input }) => {

@@ -22,8 +22,6 @@ export const NOTIFICATION_TYPE = [
   "REPLY",
 ] as const;
 
-export const POST_TYPE = ["ALL", "FOLLOWERS"] as const;
-
 export const NOTIFICATION_STATUS = ["READ", "UNREAD"] as const;
 export const GENDER = ["MALE", "FEMALE", "IDK"] as const;
 export const PRIVACY = ["PUBLIC", "PRIVATE"] as const;
@@ -93,7 +91,6 @@ export const posts = mysqlTable("posts", {
   id: int("id").primaryKey().notNull().autoincrement(),
   userId: varchar("userId", { length: 100 }).notNull(),
   text: text("text").notNull(),
-  postType: mysqlEnum("postType", POST_TYPE).notNull(),
   createdAt,
   updatedAt,
   privacy: mysqlEnum("privacy", PRIVACY).default("PUBLIC"),
