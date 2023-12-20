@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
-import { debounce } from "lodash";
 
 const SearchUser = ({ searchValue }: { searchValue: string }) => {
   const [ref, inView] = useInView();

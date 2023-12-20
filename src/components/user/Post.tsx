@@ -12,9 +12,7 @@ import {
   Dialog,
   DialogClose,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTrigger,
+  DialogTrigger
 } from "@/components/ui/dialog";
 
 import { Form, FormControl, FormField } from "@/components/ui/form";
@@ -23,17 +21,19 @@ import {
   Select,
   SelectContent,
   SelectItem,
-  SelectTrigger,
-  SelectValue,
+  SelectTrigger
 } from "@/components/ui/select";
-import { useState } from "react";
-import { ChevronDown, Globe2, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { api } from "@/trpc/react";
+import { ChevronDown, Globe2, Loader, X } from "lucide-react";
+import toast from "react-hot-toast";
 import { Separator } from "../ui/separator";
 import { Textarea } from "../ui/textarea";
 
 const Post = ({ userData }: { userData: Session }) => {
-  const PRIVACY = ["Public", "Private"] as const;
+  const PRIVACY = ["PUBLIC", "PRIVATE"] as const;
 
+  const createPost = api.posts.createPost.useMutation();
   const postObject = z.object({
     text: z
       .string()
@@ -48,7 +48,7 @@ const Post = ({ userData }: { userData: Session }) => {
     resolver: zodResolver(postObject),
     defaultValues: {
       text: "",
-      privacy: "Public",
+      privacy: "PUBLIC",
     },
   });
 
@@ -73,107 +73,121 @@ const Post = ({ userData }: { userData: Session }) => {
             />
           </DialogTrigger>
           <DialogContent>
-            <DialogHeader>
-              <DialogDescription>
-                <div className="space-y-4">
-                  <div className="text-2xl text-black font-semibold flex justify-between">
-                    <h1 className="">Create a post </h1>
-                    <DialogClose>
-                    <X />
-                    </DialogClose>
-                  </div>
-                  <Separator/>
-                  <div className="flex gap-x-2">
-                    <Avatar className="mt-1 h-11 w-11">
-                      <AvatarImage
-                        src={userData.user.image as string}
-                        className="object-cover"
-                      />
-                      <AvatarFallback>
-                        <Skeleton className="h-full w-full rounded-full" />
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="text-base  font-semibold text-black">
-                      <h1 className="">{userData.user.name}</h1>
-                      <Form {...postForm}>
-                        <form>
-                          <FormField
-                            name="privacy"
-                            control={postForm.control}
-                            render={({ field }) => (
-                              <FormControl>
-                                <Select
-                                  onValueChange={field.onChange}
-                                  defaultValue={field.value}
-                                >
-                                  <SelectTrigger className="flex items-center gap-1 w-fit px-0" asChild>
-                                    <Button
-                                      variant="secondary"
-                                      className="!h-fit space-x-1 px-2 py-1 bg-bg"
-                                      
-                                    >
-                                      <Globe2 size={14} className="" />
-                                      <p className="text-sm capitalize">
-                                        {field.value}
-                                      </p>
-                                      <ChevronDown size={16} fill="black" />
-                                    </Button>
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="Public">
-                                      Public
-                                    </SelectItem>
-                                    <SelectItem value="Private">
-                                      Private
-                                    </SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </FormControl>
-                            )}
-                          />
-                        </form>
-                      </Form>
-                    </div>
-                  </div>
-
+            <div className="space-y-4">
+              <div className="flex justify-between text-2xl font-semibold text-black">
+                <h1 className="">Create a post </h1>
+                
+                <DialogClose>
+                  <X />
+                </DialogClose>
+              </div>
+              <Separator />
+              <div className="flex gap-x-2">
+                <Avatar className="mt-1 h-11 w-11">
+                  <AvatarImage
+                    src={userData.user.image as string}
+                    className="object-cover"
+                  />
+                  <AvatarFallback>
+                    <Skeleton className="h-full w-full rounded-full" />
+                  </AvatarFallback>
+                </Avatar>
+                <div className="text-base  font-semibold text-black">
+                  <h1 className="">{userData.user.name}</h1>
                   <Form {...postForm}>
-                    <form
-                      className="w-full"
-                      onSubmit={postForm.handleSubmit(
-                        async (data: postType) => {
-                          console.log(data);
-                        },
-                      )}
-                    >
+                    <form>
                       <FormField
-                        name="text"
+                        name="privacy"
                         control={postForm.control}
                         render={({ field }) => (
                           <FormControl>
-                            <Textarea
-                              {...field}
-                              placeholder="What's on your mind?"
-                              className="w-full border-none py-1 font-primary text-lg outline-none"
-                            />
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <SelectTrigger
+                                className="flex w-fit items-center gap-1 px-0"
+                                asChild
+                              >
+                                <Button
+                                  variant="secondary"
+                                  className="!h-fit space-x-[2px] bg-bg px-2 py-1"
+                                >
+                                  <Globe2 size={14} className="" />
+                                  <span className="text-sm capitalize">
+                                    {field.value.toLowerCase()}
+                                  </span>
+                                  <ChevronDown size={16} fill="black" />
+                                </Button>
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Public">Public</SelectItem>
+                                <SelectItem value="Private">Private</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </FormControl>
                         )}
                       />
-                      <div className="mt-2 w-full">
-                        {postForm.formState.errors.text && (
-                          <p className="text-red-500">
-                            {postForm.formState.errors.text.message}
-                          </p>
-                        )}
-
-                        <div className="ml-auto flex w-full items-center gap-x-2">
-                          <Button className="w-full" disabled={!postForm.formState.isValid}>Post</Button>
-                        </div>
-                      </div>
                     </form>
                   </Form>
                 </div>
-              </DialogDescription>
-            </DialogHeader>
+              </div>
+
+              <Form {...postForm}>
+                <form
+                  className="w-full"
+                  onSubmit={postForm.handleSubmit(async (data: postType) => {
+                    try {
+                      await createPost.mutateAsync({
+                        userId: userData.user.id,
+                        ...data,
+                      });
+
+                      toast.success("Post created successfully.");
+                    } catch (error) {
+                      console.log(error);
+                    }
+                  })}
+                >
+                  <FormField
+                    name="text"
+                    control={postForm.control}
+                    render={({ field }) => (
+                      <FormControl>
+                        <Textarea
+                          {...field}
+                          placeholder="What's on your mind?"
+                          className="w-full border-none py-1 font-primary text-lg outline-none"
+                        />
+                      </FormControl>
+                    )}
+                  />
+                  <div className="mt-2 w-full">
+                    {postForm.formState.errors.text && (
+                      <p className="text-red-500">
+                        {postForm.formState.errors.text.message}
+                      </p>
+                    )}
+
+                    <div className="ml-auto flex w-full items-center gap-x-2">
+                      <Button
+                        className={cn("w-full", {
+                          "pointer-events-none opacity-50":
+                            createPost.isLoading,
+                        })}
+                        disabled={!postForm.formState.isValid}
+                      >
+                        {createPost.isLoading ? (
+                          <Loader className="animate-spin" />
+                        ) : (
+                          "Post"
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </form>
+              </Form>
+            </div>
           </DialogContent>
         </Dialog>
       </div>

@@ -1,19 +1,21 @@
 import Post from "@/components/user/Post";
+import { authOptions } from "@/server/auth";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
+
+type SearchParams = Record<string, string | string[] | undefined>;
 
 const page = async ({
   searchParams,
 }: {
-  searchParams?: { [key: string]: string | string[] | undefined };
+  searchParams?:  SearchParams;
 }) => {
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
+  console.log("🚀 ~ file: page.tsx:11 ~ session:", session)
 
   if (!session || !session?.user) {
     redirect("/api/auth/signin");
   }
-
-  console.log(searchParams?.feed);
 
   return (
     <div className="flex-1">

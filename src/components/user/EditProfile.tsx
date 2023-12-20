@@ -1,19 +1,13 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Textarea } from "@/components/ui/textarea";
-import { userDataOutput } from "@/lib/routerTypes";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Skeleton } from "../ui/skeleton";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import { useUploadThing } from "@/utils/uploadthing";
-import { generateClientDropzoneAccept } from "uploadthing/client";
-import { FileWithPath } from "@uploadthing/react";
-import { useDropzone } from "@uploadthing/react/hooks";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -23,6 +17,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -30,22 +26,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { useState, useCallback, useEffect } from "react";
-import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
+import { Textarea } from "@/components/ui/textarea";
 import { useDeleteImage } from "@/hooks/useDeleteImage";
-import { DialogClose } from "@radix-ui/react-dialog";
-import { useSession } from "next-auth/react";
-import { api } from "@/trpc/react";
+import { userDataOutput } from "@/lib/routerTypes";
+import { cn } from "@/lib/utils";
 import { editProfileSchema } from "@/lib/zodSchema";
+import { api } from "@/trpc/react";
+import { useUploadThing } from "@/utils/uploadthing";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { DialogClose } from "@radix-ui/react-dialog";
+import { FileWithPath } from "@uploadthing/react";
+import { useDropzone } from "@uploadthing/react/hooks";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import { generateClientDropzoneAccept } from "uploadthing/client";
+import { z } from "zod";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Skeleton } from "../ui/skeleton";
 
 const EditProfile = ({
   userData,

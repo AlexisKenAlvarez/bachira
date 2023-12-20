@@ -1,22 +1,23 @@
 import { createTRPCRouter, privateProcedure } from "@/server/api/trpc";
-import { notification } from "@/server/db/schema/schema";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { posts } from "@/server/db/schema/schema";
 import { z } from "zod";
 
-export const notificationRouter = createTRPCRouter({
+export const postRouter = createTRPCRouter({
   createPost: privateProcedure
     .input(
       z.object({
         userId: z.string(),
         text: z.string(),
-        privacy: z.enum(["Public", "Private"]),
+        privacy: z.enum(["PUBLIC", "PRIVATE"]),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.query.posts.findMany({
-
+      await ctx.db.insert(posts).values({
+        userId: input.userId,
+        text: input.text,
+        privacy: input.privacy
       })
     }),
 });
 
-export type NotificationRouter = typeof notificationRouter;
+export type PostRouter = typeof postRouter;
