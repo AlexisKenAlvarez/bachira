@@ -33,7 +33,7 @@ const Notifications = ({
 
   const followHandler = (data: NotificationType) => {
     const alreadyNotified = recentNotif.some(
-      (el) => el.notificationFrom === data.notificationFrom,
+      (el) => el.notificationFrom === data.notificationFrom && el.type === data.type,
     );
 
     if (alreadyNotified) {

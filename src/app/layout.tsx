@@ -41,7 +41,7 @@ export default async function RootLayout({
   return (
     <TRPCReactProvider cookies={cookies().toString()}>
       <html lang="en">
-        <body className={`${montserrat.variable} font-sans bg-bg`}>
+        <body className={`${montserrat.variable} bg-bg font-sans`}>
           {session ? (
             !session.user.username ? (
               <AddUsername email={session.user.email!} />
@@ -55,7 +55,9 @@ export default async function RootLayout({
                   notifCount={countData ? (countData[0]?.count as number) : 0}
                 />
 
-                <Providers>{children}</Providers>
+                <Providers>
+                  <div className="flex-1 flex flex-col">{children}</div>
+                </Providers>
               </div>
             )
           ) : (

@@ -34,7 +34,6 @@ const UserProfile = ({
 }) => {
   const { data: session, status } = useSession();
   const [follows, setFollow] = useState<boolean>(isFollowing);
-  const [coverLoaded, setCoverLoaded] = useState(false);
   const [userFollowData, setFollowData] = useState<FollowData>({
     followers: Number(userData[0]!.followers as number),
     following: Number(userData[0]!.following as number),
@@ -138,11 +137,8 @@ const UserProfile = ({
   return (
     <>
       {userData && (
-        <div className="flex w-full flex-1 flex-col">
-          <div className="relative -mb-5 flex h-[18rem] w-full items-end justify-end bg-[#EDEDED]">
-            {!coverLoaded && (
-              <Skeleton className="absolute left-0 top-0 h-full w-full" />
-            )}
+        <div className="flex w-full flex-1 flex-col bg-white">
+          <div className="relative -mb-5 flex h-[18rem] w-full items-end justify-end bg-slate-200">
 
             {userData[0]?.coverPhoto && (
               <Image
@@ -150,15 +146,12 @@ const UserProfile = ({
                 height={800}
                 src={userData[0]?.coverPhoto}
                 alt="Cover Photo"
-                onLoadingComplete={() => {
-                  setCoverLoaded(true);
-                }}
                 className="absolute bottom-0 left-0 top-0 my-auto h-full w-full object-cover object-center"
               />
             )}
             {inProfile && <CoverButton userData={userData} />}
           </div>
-          <div className="relative z-10 h-full w-full flex-1 rounded-tl-3xl rounded-tr-3xl border-l border-r border-t border-black/10 bg-white p-5">
+          <div className="relative z-10 h-full w-full rounded-tl-3xl rounded-tr-3xl border-t border-black/10 bg-white p-5">
             <div className="flex gap-4">
               <Avatar className="h-24 w-24">
                 <AvatarImage src={userData[0]?.image as string} className="object-cover" />
@@ -222,7 +215,7 @@ const UserProfile = ({
               />
             </div>
 
-            <div className="mt-2">
+            <div className="mt-2 ">
               <pre className="font-primary text-sm">{userData[0]?.bio}</pre>
             </div>
 
@@ -241,6 +234,7 @@ const UserProfile = ({
               </div>
             )}
           </div>
+          <div className="flex flex-1 w-full bg-white"></div>
         </div>
       )}
     </>

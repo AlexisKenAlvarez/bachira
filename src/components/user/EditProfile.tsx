@@ -175,14 +175,14 @@ const EditProfile = ({
   ]);
 
   return (
-    <div className="p-5 font-primary sm:p-10">
+    <div className="p-5 font-primary sm:p-10 bg-white mt-4 rounded-md">
       <h1 className="text-lg font-bold">Edit Profile</h1>
       <div className="my-4 mt-8 flex gap-x-2">
         <div className="w-[7.5rem]">
           <Avatar className="h-14 w-14">
-            <AvatarImage src={userData[0]?.image as string} />
+            <AvatarImage src={userData[0]?.image as string} className="object-cover" />
             <AvatarFallback>
-              <Skeleton className="h-full w-full rounded-full" />
+              <Skeleton className="h-full w-full rounded-full object-cover" />
             </AvatarFallback>
           </Avatar>
         </div>

@@ -144,6 +144,7 @@ const Post = ({ userData }: { userData: Session }) => {
                       });
 
                       toast.success("Post created successfully.");
+                      postForm.reset()
                     } catch (error) {
                       console.log(error);
                     }

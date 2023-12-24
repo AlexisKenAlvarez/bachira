@@ -13,5 +13,5 @@ export default async function authLayout({
     redirect('/signin')
   }
 
-  return <section>{children}</section>;
+  return <section className="flex-1 flex flex-col">{children}</section>;
 }
