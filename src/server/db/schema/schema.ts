@@ -115,7 +115,7 @@ export const postLikes = mysqlTable(
   "postLikes",
   {
     id: int("id").primaryKey().notNull().autoincrement(),
-    postId: int("id").notNull(),
+    postId: int("postId").notNull(),
     userId: varchar("userId", { length: 100 }).notNull(),
   },
   (table) => {

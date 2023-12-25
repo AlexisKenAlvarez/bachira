@@ -4,8 +4,13 @@ import { api } from "@/trpc/react";
 import Image from "next/image";
 import { Separator } from "./ui/separator";
 import { MessageCircle, Share2, ThumbsUp } from "lucide-react";
+import { useInView } from "react-intersection-observer";
+import { useEffect } from "react";
+import PostButtons from "./PostButtons";
 
 const FeedPosts = () => {
+  const [ref, inView] = useInView();
+
   const { data, fetchNextPage, isFetching } =
     api.posts.getPosts.useInfiniteQuery(
       {
@@ -17,12 +22,28 @@ const FeedPosts = () => {
         },
       },
     );
+
+  useEffect(() => {
+    if (inView === true) {
+      fetchNextPage();
+    }
+  }, [inView]);
+
   return (
     <div className="h-full w-full space-y-4">
-      {data?.pages.map((page) =>
-        page.postData.map((post) => {
+      {data?.pages.map((page, i) =>
+        page.postData.map((post, j) => {
           return (
-            <div className="h-fit w-full rounded-md bg-white" key={post.id}>
+            <div
+              className="h-fit w-full rounded-md bg-white"
+              key={post.id}
+              ref={
+                data?.pages.length - 1 === i &&
+                page.postData.length - 1 === j
+                  ? ref
+                  : undefined
+              }
+            >
               <div className=" p-5">
                 <div className="flex gap-x-2">
                   <div className="relative h-10 w-10 overflow-hidden rounded-full">
@@ -46,20 +67,7 @@ const FeedPosts = () => {
                 </div>
               </div>
               <Separator />
-              <div className="w-full text-sm flex p-1">
-                <button className="flex items-center gap-x-1 w-full justify-center hover:bg-slate-100 py-2 rounded-md">
-                  <ThumbsUp size="16" />
-                  <p className="">Like</p>
-                </button>
-                <button className="flex items-center gap-x-1 w-full justify-center hover:bg-slate-100 py-2 rounded-md">
-                  <MessageCircle size="16" />
-                  <p className="">Comment</p>
-                </button>
-                <button className="flex items-center gap-x-1 w-full justify-center hover:bg-slate-100 py-2 rounded-md">
-                  <Share2 size="16" />
-                  <p className="">Share</p>
-                </button>
-              </div>
+              <PostButtons/>
             </div>
           );
         }),

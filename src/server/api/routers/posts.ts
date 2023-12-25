@@ -1,6 +1,6 @@
 import { createTRPCRouter, privateProcedure } from "@/server/api/trpc";
-import { posts } from "@/server/db/schema/schema";
-import { desc } from "drizzle-orm";
+import { postLikes, posts } from "@/server/db/schema/schema";
+import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
 export const postRouter = createTRPCRouter({
@@ -31,7 +31,10 @@ export const postRouter = createTRPCRouter({
       const limit = input.limit ?? 10;
 
       const postData = await ctx.db.query.posts.findMany({
-        where: (posts, { gt, lt }) => input.cursor ? lt(posts.id, input.cursor ?? 0) : gt(posts.id, input.cursor ?? 0),
+        where: (posts, { gt, lt }) =>
+          input.cursor
+            ? lt(posts.id, input.cursor ?? 0)
+            : gt(posts.id, input.cursor ?? 0),
         with: {
           user: true,
           comments: true,
@@ -52,6 +55,23 @@ export const postRouter = createTRPCRouter({
         postData,
         nextCursor,
       };
+    }),
+  likePost: privateProcedure
+    .input(z.object({ userId: z.string(), postId: z.number(), action: z.enum(["LIKE", "UNLIKE"]) }))
+    .mutation(async ({ ctx, input }) => {
+      if (input.action === "LIKE") {
+      await ctx.db.insert(postLikes).values({
+        userId: input.userId,
+        postId: input.postId,
+      });
+    } else {
+      await ctx.db.delete(postLikes).where(
+        and(
+          eq(postLikes.userId, input.userId),
+          eq(postLikes.postId, input.postId)
+        )
+      )
+    }
     }),
 });
 
