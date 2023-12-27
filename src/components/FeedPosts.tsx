@@ -7,8 +7,10 @@ import { MessageCircle, Share2, ThumbsUp } from "lucide-react";
 import { useInView } from "react-intersection-observer";
 import { useEffect } from "react";
 import PostButtons from "./PostButtons";
+import { useSession } from "next-auth/react";
+import { authOptions } from "@/server/auth";
 
-const FeedPosts = () => {
+const FeedPosts = ({ userId }: { userId: string }) => {
   const [ref, inView] = useInView();
 
   const { data, fetchNextPage, isFetching } =
@@ -38,8 +40,7 @@ const FeedPosts = () => {
               className="h-fit w-full rounded-md bg-white"
               key={post.id}
               ref={
-                data?.pages.length - 1 === i &&
-                page.postData.length - 1 === j
+                data?.pages.length - 1 === i && page.postData.length - 1 === j
                   ? ref
                   : undefined
               }
@@ -67,7 +68,13 @@ const FeedPosts = () => {
                 </div>
               </div>
               <Separator />
-              <PostButtons/>
+              <PostButtons
+              postId={post.id}
+              userId={userId}
+                postLiked={
+                  post.likes.some((obj) => obj.userId === userId) ? true : false
+                }
+              />
             </div>
           );
         }),

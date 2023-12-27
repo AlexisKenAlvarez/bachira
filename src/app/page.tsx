@@ -34,7 +34,7 @@ const page = async ({
       <div className="w-full mt-4">
         <Post userData={session} />
         <div className="w-full min-h-screen mt-4 rounded-md">
-          <FeedPosts/>
+          <FeedPosts userId={session.user.id} />
         </div>
       </div>
     </div>
