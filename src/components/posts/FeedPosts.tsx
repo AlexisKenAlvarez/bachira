@@ -1,14 +1,11 @@
 "use client";
+import PostButtons from "@/components/posts/PostButtons";
 import { timeAgo } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import Image from "next/image";
-import { Separator } from "./ui/separator";
-import { MessageCircle, Share2, ThumbsUp } from "lucide-react";
-import { useInView } from "react-intersection-observer";
 import { useEffect } from "react";
-import PostButtons from "./PostButtons";
-import { useSession } from "next-auth/react";
-import { authOptions } from "@/server/auth";
+import { useInView } from "react-intersection-observer";
+import { Separator } from "../ui/separator";
 
 const FeedPosts = ({ userId }: { userId: string }) => {
   const [ref, inView] = useInView();
@@ -45,7 +42,7 @@ const FeedPosts = ({ userId }: { userId: string }) => {
                   : undefined
               }
             >
-              <div className=" p-5">
+              <div className="p-5 pb-3">
                 <div className="flex gap-x-2">
                   <div className="relative h-10 w-10 overflow-hidden rounded-full">
                     <Image
@@ -67,8 +64,9 @@ const FeedPosts = ({ userId }: { userId: string }) => {
                   <p className="">{post.text}</p>
                 </div>
               </div>
-              <Separator />
+
               <PostButtons
+              likes={post.likes}
               postId={post.id}
               userId={userId}
                 postLiked={

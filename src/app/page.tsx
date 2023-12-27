@@ -1,4 +1,4 @@
-import FeedPosts from "@/components/FeedPosts";
+import FeedPosts from "@/components/posts/FeedPosts";
 import Post from "@/components/user/Post";
 import { authOptions } from "@/server/auth";
 import { getServerSession } from "next-auth";
@@ -33,7 +33,7 @@ const page = async ({
 
       <div className="w-full mt-4">
         <Post userData={session} />
-        <div className="w-full min-h-screen mt-4 rounded-md">
+        <div className="w-full min-h-screen mt-4 rounded-md font-primary">
           <FeedPosts userId={session.user.id} />
         </div>
       </div>

@@ -1,3 +1,4 @@
+import Post from "@/components/user/Post";
 import { createTRPCRouter, privateProcedure } from "@/server/api/trpc";
 import { postLikes, posts } from "@/server/db/schema/schema";
 import { and, desc, eq } from "drizzle-orm";
@@ -38,7 +39,11 @@ export const postRouter = createTRPCRouter({
         with: {
           user: true,
           comments: true,
-          likes: true,
+          likes: {
+            with: {
+              user: true,
+            },
+          },
         },
         orderBy: desc(posts.id),
         limit: limit + 1,
@@ -57,21 +62,29 @@ export const postRouter = createTRPCRouter({
       };
     }),
   likePost: privateProcedure
-    .input(z.object({ userId: z.string(), postId: z.number(), action: z.enum(["LIKE", "UNLIKE"]) }))
+    .input(
+      z.object({
+        userId: z.string(),
+        postId: z.number(),
+        action: z.enum(["LIKE", "UNLIKE"]),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       if (input.action === "LIKE") {
-      await ctx.db.insert(postLikes).values({
-        userId: input.userId,
-        postId: input.postId,
-      });
-    } else {
-      await ctx.db.delete(postLikes).where(
-        and(
-          eq(postLikes.userId, input.userId),
-          eq(postLikes.postId, input.postId)
-        )
-      )
-    }
+        await ctx.db.insert(postLikes).values({
+          userId: input.userId,
+          postId: input.postId,
+        });
+      } else {
+        await ctx.db
+          .delete(postLikes)
+          .where(
+            and(
+              eq(postLikes.userId, input.userId),
+              eq(postLikes.postId, input.postId),
+            ),
+          );
+      }
     }),
 });
 
