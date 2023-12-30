@@ -18,6 +18,7 @@ import { users } from "./db/schema/schema";
 declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
+      countId: number
       id: string;
       username: string;
       coverPhoto: string;
@@ -30,6 +31,7 @@ declare module "next-auth" {
   interface User {
     // ...other properties
     // role: UserRole;
+    countId: number
     username: string | null;
     coverPhoto: string | null;
     image: string | null;
@@ -60,7 +62,9 @@ export const authOptions: NextAuthOptions = {
                 : null,
           });
         } else {
+          console.log("Count ID", userFromDb.countId);
           user.username = userFromDb.username;
+          user.countId = userFromDb.countId,
           user.id = userFromDb.id;
           user.image = userFromDb.image;
           user.coverPhoto = userFromDb.coverPhoto;
@@ -73,6 +77,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.email = user.email;
+        token.countId = user.countId
         token.username = user.username;
         token.coverPhoto = user.coverPhoto;
         token.image = user.image;
@@ -91,6 +96,7 @@ export const authOptions: NextAuthOptions = {
         ...session,
         user: {
           ...session.user,
+          countId: token.countId,
           id: token.id,
           username: token.username,
           coverPhoto: token.coverPhoto,

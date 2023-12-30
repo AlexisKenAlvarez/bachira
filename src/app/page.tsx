@@ -6,13 +6,11 @@ import { redirect } from "next/navigation";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
-const page = async ({
-  searchParams,
-}: {
-  searchParams?:  SearchParams;
-}) => {
+
+
+const page = async ({ searchParams }: { searchParams?: SearchParams }) => {
   const session = await getServerSession(authOptions);
-  console.log("🚀 ~ file: page.tsx:11 ~ session:", session)
+  console.log("🚀 ~ file: page.tsx:11 ~ session:", session);
 
   if (!session || !session?.user) {
     redirect("/api/auth/signin");
@@ -31,10 +29,10 @@ const page = async ({
         </button>
       </div> */}
 
-      <div className="w-full mt-4">
+      <div className="mt-4 w-full">
         <Post userData={session} />
-        <div className="w-full min-h-screen mt-4 rounded-md font-primary">
-          <FeedPosts userId={session.user.id} />
+        <div className="mt-4 min-h-screen w-full rounded-md font-primary">
+          <FeedPosts user={session.user} />
         </div>
       </div>
     </div>

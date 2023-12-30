@@ -40,8 +40,18 @@ export const postRouter = createTRPCRouter({
           user: true,
           comments: true,
           likes: {
-            with: {
-              user: true,
+            with: { 
+              user: {
+                columns: {
+                  countId: true,
+                  id: true,
+                  username: true,
+                  coverPhoto: true,
+                  email: true,
+                  image: true,
+                  name: true,
+                }
+              }
             },
           },
         },

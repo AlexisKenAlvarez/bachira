@@ -1,31 +1,41 @@
 "use client";
 
+import { Separator } from "@/components/ui/separator";
+import { SessionUser } from "@/lib/userTypes";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { motion } from "framer-motion";
 import { MessageCircle, Share2, ThumbsUp } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { Separator } from "@/components/ui/separator";
-import { userData } from "@/lib/routerTypes";
-import { UserInterface } from "@/lib/userTypes";
 
 interface postLike {
   postId: number;
   userId: string;
-  id: number;
-  user: UserInterface;
+  user: LikesUser;
+}
+
+interface LikesUser {
+  countId: number;
+  id: string;
+  name: string | null;
+  coverPhoto: string | null;
+  username: string | null;
+  email: string;
+  image: string | null;
 }
 
 const PostButtons = ({
   postLiked,
   postId,
   userId,
+  user,
   likes,
 }: {
   postLiked: boolean;
   postId: number;
   userId: string;
+  user: SessionUser;
   likes: postLike[];
 }) => {
   const [liked, setLiked] = useState(postLiked);
@@ -34,7 +44,39 @@ const PostButtons = ({
   const likeQuery = api.posts.likePost.useMutation({
     onMutate: () => {
       const previousState = liked;
-      const previousData = [...likeData];
+
+      if (!liked) {
+
+        const newLike: postLike = {
+          postId,
+          userId,
+          user: {
+            countId: user.countId,
+            id: user.id,
+            name: user.name as string,
+            coverPhoto: user.coverPhoto,
+            username: user.username,
+            email: user.email as string,
+            image: user.image,
+          },
+        };
+
+        console.log(newLike);
+
+        setLikeData((prevState) => [
+          ...prevState,
+          {
+            ...newLike,
+          },
+        ]);
+      } else {
+        setLikeData((prevState) =>
+          prevState.filter(
+            (like) => like.userId !== userId
+          ),
+        );
+      }
+
       setLiked((curr) => !curr);
 
       return {
@@ -61,20 +103,32 @@ const PostButtons = ({
         {likeData.length > 0 ? (
           likeData.length === 1 ? (
             <div className="flex items-center gap-2">
-              <div className="text-white bg-gradient-to-br from-primary/50 to-primary rounded-full shrink-0 w-6 h-6 grid place-content-center">
+              <div className="grid h-6 w-6 shrink-0 place-content-center rounded-full bg-gradient-to-br from-primary/50 to-primary text-white">
                 <ThumbsUp size="12" fill="white" className="" />
               </div>
 
-              {likes.map((like) => (
-                <h2 className="text-subtle text-sm">{like.user.username}</h2>
+              {likeData.map((like, i) => (
+                <h2 className="text-sm text-subtle" key={i}>
+                  {like.user.username}
+                </h2>
               ))}
             </div>
-          ) : null
+          ) : (
+            <div className="flex items-center gap-2">
+              <div className="grid h-6 w-6 shrink-0 place-content-center rounded-full bg-gradient-to-br from-primary/50 to-primary text-white">
+                <ThumbsUp size="12" fill="white" className="" />
+              </div>
+
+              <h2 className="text-sm text-subtle">
+                 {likeData.length} 
+                </h2>
+            </div>
+          )
         ) : null}
       </div>
       <Separator />
       <div className="flex w-full p-1 text-sm">
-        <button
+        <button 
           className={cn(
             "flex w-full items-center justify-center gap-x-1 rounded-md py-2 hover:bg-slate-100",
             { "text-primary": liked },

@@ -1,13 +1,13 @@
 "use client";
 import PostButtons from "@/components/posts/PostButtons";
+import { SessionUser } from "@/lib/userTypes";
 import { timeAgo } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import Image from "next/image";
 import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
-import { Separator } from "../ui/separator";
 
-const FeedPosts = ({ userId }: { userId: string }) => {
+const FeedPosts = ({ user }: { user: SessionUser}) => {
   const [ref, inView] = useInView();
 
   const { data, fetchNextPage, isFetching } =
@@ -66,11 +66,12 @@ const FeedPosts = ({ userId }: { userId: string }) => {
               </div>
 
               <PostButtons
+              user={user}
               likes={post.likes}
               postId={post.id}
-              userId={userId}
+              userId={user.id}
                 postLiked={
-                  post.likes.some((obj) => obj.userId === userId) ? true : false
+                  post.likes.some((obj) => obj.userId === user.id) ? true : false
                 }
               />
             </div>

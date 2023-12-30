@@ -28,3 +28,13 @@ export interface UserInterface {
   image: string | null;
   updatedAt: Date;
 }
+
+export interface SessionUser {
+  countId: number
+  id: string;
+  username: string;
+  coverPhoto: string;
+  image: string | null;
+  name?: string | null | undefined;
+  email?: string | null | undefined;
+}
