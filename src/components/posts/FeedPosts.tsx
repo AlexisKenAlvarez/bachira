@@ -6,11 +6,12 @@ import { api } from "@/trpc/react";
 import Image from "next/image";
 import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
+import Comments from "./Comments";
 
 const FeedPosts = ({ user }: { user: SessionUser}) => {
   const [ref, inView] = useInView();
 
-  const { data, fetchNextPage, isFetching } =
+  const { data, fetchNextPage, refetch } =
     api.posts.getPosts.useInfiniteQuery(
       {
         limit: 10,

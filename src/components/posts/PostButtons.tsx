@@ -1,29 +1,22 @@
 "use client";
 
 import { Separator } from "@/components/ui/separator";
-import { SessionUser } from "@/lib/userTypes";
+import { DatabaseUser, SessionUser } from "@/lib/userTypes";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { motion } from "framer-motion";
 import { MessageCircle, Share2, ThumbsUp } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import Comments from "./Comments";
 
 interface postLike {
   postId: number;
   userId: string;
-  user: LikesUser;
+  user: DatabaseUser;
 }
 
-interface LikesUser {
-  countId: number;
-  id: string;
-  name: string | null;
-  coverPhoto: string | null;
-  username: string | null;
-  email: string;
-  image: string | null;
-}
+
 
 const PostButtons = ({
   postLiked,
@@ -40,6 +33,7 @@ const PostButtons = ({
 }) => {
   const [liked, setLiked] = useState(postLiked);
   const [likeData, setLikeData] = useState<postLike[]>(likes);
+  const [commentOpen, setCommentOpen] = useState(false)
 
   const likeQuery = api.posts.likePost.useMutation({
     onMutate: () => {
@@ -151,15 +145,17 @@ const PostButtons = ({
           </motion.div>
           <p className="">Like</p>
         </button>
-        <button className="flex w-full items-center justify-center gap-x-1 rounded-md py-2 hover:bg-slate-100">
+        <button className="flex w-full items-center justify-center gap-x-1 rounded-md py-2 hover:bg-slate-100" onClick={() => {setCommentOpen(true)}}>
           <MessageCircle size="16" />
-          <p className="">Comment</p>
+          <p className="">Comment</p> 
         </button>
         <button className="flex w-full items-center justify-center gap-x-1 rounded-md py-2 hover:bg-slate-100">
           <Share2 size="16" />
           <p className="">Share</p>
         </button>
       </div>
+      <Separator/>
+      <Comments user={user} commentOpen={commentOpen} /> 
     </div>
   );
 };

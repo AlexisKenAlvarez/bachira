@@ -54,7 +54,8 @@ module.exports = {
         gchat: "#007cff",
         hover: "#f1f5f9",
         rd: "#ef4444",
-        subtle: '#8b8c8f'
+        subtle: '#8b8c8f',
+        blue: "#3066b2"
       },
       borderRadius: {
         lg: "var(--radius)",

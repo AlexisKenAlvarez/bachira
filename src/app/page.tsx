@@ -10,7 +10,6 @@ type SearchParams = Record<string, string | string[] | undefined>;
 
 const page = async ({ searchParams }: { searchParams?: SearchParams }) => {
   const session = await getServerSession(authOptions);
-  console.log("🚀 ~ file: page.tsx:11 ~ session:", session);
 
   if (!session || !session?.user) {
     redirect("/api/auth/signin");

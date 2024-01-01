@@ -38,3 +38,13 @@ export interface SessionUser {
   name?: string | null | undefined;
   email?: string | null | undefined;
 }
+
+export interface DatabaseUser {
+  countId: number;
+  id: string;
+  name: string | null;
+  coverPhoto: string | null;
+  username: string | null;
+  email: string;
+  image: string | null;
+}
