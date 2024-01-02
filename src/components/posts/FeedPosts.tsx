@@ -11,7 +11,7 @@ import Comments from "./Comments";
 const FeedPosts = ({ user }: { user: SessionUser}) => {
   const [ref, inView] = useInView();
 
-  const { data, fetchNextPage, refetch } =
+  const { data, fetchNextPage } =
     api.posts.getPosts.useInfiniteQuery(
       {
         limit: 10,
@@ -20,6 +20,9 @@ const FeedPosts = ({ user }: { user: SessionUser}) => {
         getNextPageParam: (lastPage) => {
           return lastPage.nextCursor;
         },
+        refetchInterval: 5000,
+        refetchIntervalInBackground: true,
+        refetchOnWindowFocus: false,
       },
     );
 
@@ -62,7 +65,7 @@ const FeedPosts = ({ user }: { user: SessionUser}) => {
                   </div>
                 </div>
                 <div className="mt-2">
-                  <p className="">{post.text}</p>
+                  <pre className="font-primary">{post.text}</pre>
                 </div>
               </div>
 
@@ -71,6 +74,7 @@ const FeedPosts = ({ user }: { user: SessionUser}) => {
               likes={post.likes}
               postId={post.id}
               userId={user.id}
+              comments={post.comments}
                 postLiked={
                   post.likes.some((obj) => obj.userId === user.id) ? true : false
                 }

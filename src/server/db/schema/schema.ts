@@ -100,7 +100,7 @@ export const postComments = mysqlTable(
   "postComments",
   {
     id: int("id").primaryKey().notNull().autoincrement(),
-    postId: int("id").notNull(),
+    postId: int("postId").notNull(),
     userId: varchar("userId", { length: 100 }).notNull(),
     text: text("text").notNull(),
   },

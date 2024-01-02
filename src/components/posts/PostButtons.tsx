@@ -9,6 +9,7 @@ import { MessageCircle, Share2, ThumbsUp } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import Comments from "./Comments";
+import { CommentType } from "@/lib/postTypes";
 
 interface postLike {
   postId: number;
@@ -16,21 +17,22 @@ interface postLike {
   user: DatabaseUser;
 }
 
-
-
 const PostButtons = ({
   postLiked,
   postId,
   userId,
   user,
   likes,
+  comments
 }: {
   postLiked: boolean;
   postId: number;
   userId: string;
   user: SessionUser;
   likes: postLike[];
+  comments: CommentType[]
 }) => {
+  console.log("🚀 ~ file: PostButtons.tsx:35 ~ likes:", likes)
   const [liked, setLiked] = useState(postLiked);
   const [likeData, setLikeData] = useState<postLike[]>(likes);
   const [commentOpen, setCommentOpen] = useState(false)
@@ -90,6 +92,7 @@ const PostButtons = ({
       console.log("LIKE ACTION");
     },
   });
+
 
   return (
     <div>
@@ -155,7 +158,7 @@ const PostButtons = ({
         </button>
       </div>
       <Separator/>
-      <Comments user={user} commentOpen={commentOpen} /> 
+      <Comments user={user} commentOpen={commentOpen} comments={comments} postId={postId} /> 
     </div>
   );
 };

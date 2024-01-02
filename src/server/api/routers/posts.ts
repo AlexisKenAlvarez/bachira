@@ -1,7 +1,7 @@
 import Post from "@/components/user/Post";
 import { createTRPCRouter, privateProcedure } from "@/server/api/trpc";
-import { postLikes, posts } from "@/server/db/schema/schema";
-import { and, desc, eq } from "drizzle-orm";
+import { postComments, postLikes, posts } from "@/server/db/schema/schema";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
 export const postRouter = createTRPCRouter({
@@ -38,7 +38,22 @@ export const postRouter = createTRPCRouter({
             : gt(posts.id, input.cursor ?? 0),
         with: {
           user: true,
-          comments: true,
+          comments: {
+            with: { 
+              user: {
+                columns: {
+                  countId: true,
+                  id: true,
+                  username: true,
+                  coverPhoto: true,
+                  email: true,
+                  image: true,
+                  name: true,
+                }
+              }
+            },
+            limit: 1,
+          },
           likes: {
             with: { 
               user: {
@@ -53,11 +68,13 @@ export const postRouter = createTRPCRouter({
                 }
               }
             },
+            limit: 1,
           },
         },
         orderBy: desc(posts.id),
         limit: limit + 1,
       });
+      console.log("🚀 ~ file: posts.ts:77 ~ .query ~ postData:", postData[0]?.likes)
 
       let nextCursor;
 
@@ -65,6 +82,7 @@ export const postRouter = createTRPCRouter({
         const nextItem = postData.pop(); // return the last item from the array
         nextCursor = nextItem?.id;
       }
+
 
       return {
         postData,
@@ -95,7 +113,29 @@ export const postRouter = createTRPCRouter({
             ),
           );
       }
+
+      return {
+        success: true
+      }
     }),
+  addComment: privateProcedure.input(
+    z.object({
+      userId: z.string(),
+      postId: z.number(),
+      text: z.string(),
+    })
+  ).mutation(async ({ ctx, input }) => {
+    await ctx.db.insert(postComments).values({
+      userId: input.userId,
+      postId: input.postId,
+      text: input.text,
+
+    })
+
+    return {
+      success: true
+    }
+  })
 });
 
 export type PostRouter = typeof postRouter;
