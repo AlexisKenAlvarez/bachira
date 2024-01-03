@@ -9,6 +9,7 @@ import { MessageCircle, Share2, ThumbsUp } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import Comments from "./Comments";
+import { CommentType } from "@/lib/postTypes";
 
 interface postLike {
   postId: number;
@@ -16,26 +17,27 @@ interface postLike {
   user: DatabaseUser;
 }
 
-
-
 const PostButtons = ({
   postLiked,
   postId,
   userId,
   user,
   likes,
+  comments
 }: {
   postLiked: boolean;
   postId: number;
   userId: string;
   user: SessionUser;
   likes: postLike[];
+  comments: CommentType[]
 }) => {
+  console.log("🚀 ~ file: PostButtons.tsx:35 ~ comments:", comments)
   const [liked, setLiked] = useState(postLiked);
   const [likeData, setLikeData] = useState<postLike[]>(likes);
   const [commentOpen, setCommentOpen] = useState(false)
 
-  const likeQuery = api.posts.likePost.useMutation({
+  const likeMutation = api.posts.likePost.useMutation({
     onMutate: () => {
       const previousState = liked;
 
@@ -45,13 +47,7 @@ const PostButtons = ({
           postId,
           userId,
           user: {
-            countId: user.countId,
-            id: user.id,
-            name: user.name as string,
-            coverPhoto: user.coverPhoto,
             username: user.username,
-            email: user.email as string,
-            image: user.image,
           },
         };
 
@@ -128,7 +124,7 @@ const PostButtons = ({
             { "text-primary": liked },
           )}
           onClick={() =>
-            likeQuery.mutate({
+            likeMutation.mutate({
               postId,
               userId,
               action: liked ? "UNLIKE" : "LIKE",
@@ -155,7 +151,7 @@ const PostButtons = ({
         </button>
       </div>
       <Separator/>
-      <Comments user={user} commentOpen={commentOpen} /> 
+      <Comments user={user} commentOpen={commentOpen} comments={comments} postId={postId}  /> 
     </div>
   );
 };

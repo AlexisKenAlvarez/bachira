@@ -40,11 +40,11 @@ export interface SessionUser {
 }
 
 export interface DatabaseUser {
-  countId: number;
-  id: string;
-  name: string | null;
-  coverPhoto: string | null;
   username: string | null;
-  email: string;
-  image: string | null;
+}
+
+export interface DatabaseUserWithImage {
+  id: string;
+  username: string | null;
+  image: string | null
 }

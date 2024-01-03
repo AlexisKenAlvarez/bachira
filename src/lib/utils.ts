@@ -15,6 +15,9 @@ export const timeAgo = (created: string) => {
   const seconds = Math.floor((now.getTime() - createdAt.getTime()) / 1000);
 
   if (seconds < 60) {
+    if (seconds < 0) {
+      return "Just now";
+    }
     return `${seconds} seconds ago`;
   } else if (seconds < 3600) {
     const minutes = Math.floor(seconds / 60);

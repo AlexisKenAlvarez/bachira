@@ -6,12 +6,17 @@ import { api } from "@/trpc/react";
 import Image from "next/image";
 import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
-import Comments from "./Comments";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-const FeedPosts = ({ user }: { user: SessionUser}) => {
+const FeedPosts = ({ user }: { user: SessionUser }) => {
   const [ref, inView] = useInView();
 
-  const { data, fetchNextPage, refetch } =
+  const { data, fetchNextPage, refetch, isLoading } =
     api.posts.getPosts.useInfiniteQuery(
       {
         limit: 10,
@@ -22,6 +27,13 @@ const FeedPosts = ({ user }: { user: SessionUser}) => {
         },
       },
     );
+
+  const options = {
+    weekday: "short",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  } as const;
 
   useEffect(() => {
     if (inView === true) {
@@ -56,9 +68,21 @@ const FeedPosts = ({ user }: { user: SessionUser}) => {
                   </div>
                   <div className="">
                     <h1 className="font-semibold">{post.user.username}</h1>
-                    <p className="text-xs opacity-60">
-                      {timeAgo(post.createdAt.toString())}
-                    </p>
+                    <TooltipProvider>
+                      <Tooltip >
+                        <TooltipTrigger>
+                          {" "}
+                          <p className="text-xs opacity-60">
+                            {timeAgo(post.createdAt.toString())}
+                          </p>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="text-xs text-subtle">
+                            {post.createdAt.toLocaleString("en-US", options)} {post.createdAt.toLocaleTimeString("en-US", { hour12: true, hour: 'numeric', minute: 'numeric' })}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </div>
                 <div className="mt-2">
@@ -67,12 +91,15 @@ const FeedPosts = ({ user }: { user: SessionUser}) => {
               </div>
 
               <PostButtons
-              user={user}
-              likes={post.likes}
-              postId={post.id}
-              userId={user.id}
+                user={user}
+                likes={post.likes}
+                comments={post.comments}
+                postId={post.id}
+                userId={user.id}
                 postLiked={
-                  post.likes.some((obj) => obj.userId === user.id) ? true : false
+                  post.likes.some((obj) => obj.userId === user.id)
+                    ? true
+                    : false
                 }
               />
             </div>

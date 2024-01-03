@@ -29,9 +29,12 @@ import { ChevronDown, Globe2, Loader, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { Separator } from "../ui/separator";
 import { Textarea } from "../ui/textarea";
+import { useRouter } from "next/navigation";
 
 const Post = ({ userData }: { userData: Session }) => {
+  const utils = api.useUtils()
   const PRIVACY = ["PUBLIC", "PRIVATE"] as const;
+  const router = useRouter()
 
   const createPost = api.posts.createPost.useMutation();
   const postObject = z.object({
@@ -142,9 +145,10 @@ const Post = ({ userData }: { userData: Session }) => {
                         userId: userData.user.id,
                         ...data,
                       });
-
+                      utils.posts.getPosts.invalidate()
                       toast.success("Post created successfully.");
                       postForm.reset()
+                      router.refresh()
                     } catch (error) {
                       console.log(error);
                     }

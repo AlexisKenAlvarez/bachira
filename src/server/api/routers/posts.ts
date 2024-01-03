@@ -1,6 +1,6 @@
-import Post from "@/components/user/Post";
+import Post from "@/components/posts/Post";
 import { createTRPCRouter, privateProcedure } from "@/server/api/trpc";
-import { postLikes, posts } from "@/server/db/schema/schema";
+import { postComments, postLikes, posts } from "@/server/db/schema/schema";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -38,9 +38,8 @@ export const postRouter = createTRPCRouter({
             : gt(posts.id, input.cursor ?? 0),
         with: {
           user: true,
-          comments: true,
-          likes: {
-            with: { 
+          comments: {
+            with: {
               user: {
                 columns: {
                   countId: true,
@@ -50,6 +49,16 @@ export const postRouter = createTRPCRouter({
                   email: true,
                   image: true,
                   name: true,
+                },
+              },
+            },
+            limit: 2
+          },
+          likes: {
+            with: { 
+              user: {
+                columns: {
+                  username: true,
                 }
               }
             },
@@ -58,6 +67,7 @@ export const postRouter = createTRPCRouter({
         orderBy: desc(posts.id),
         limit: limit + 1,
       });
+      console.log("🚀 ~ file: posts.ts:70 ~ .query ~ postData:", postData)
 
       let nextCursor;
 
@@ -95,6 +105,25 @@ export const postRouter = createTRPCRouter({
             ),
           );
       }
+    }),
+    addComment: privateProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        postId: z.number(),
+        text: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.insert(postComments).values({
+        userId: input.userId,
+        postId: input.postId,
+        text: input.text,
+      });
+
+      return {
+        success: true,
+      };
     }),
 });
 
