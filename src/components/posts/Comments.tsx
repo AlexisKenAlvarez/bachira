@@ -6,7 +6,6 @@ import { SessionUser } from "@/lib/userTypes";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { s } from "@upstash/redis/zmscore-10fd3773";
 import { SendHorizontal } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -19,11 +18,13 @@ const Comments = ({
   commentOpen,
   comments,
   postId,
+  commentCount
 }: {
   user: SessionUser;
   commentOpen: boolean;
   comments: CommentType[];
   postId: number;
+  commentCount: number
 }) => {
   const [commentData, setComments] = useState<CommentType[]>(comments);
 

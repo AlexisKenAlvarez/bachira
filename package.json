@@ -37,7 +37,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "dotenv": "^16.3.1",
-    "drizzle-orm": "^0.28.5",
+    "drizzle-orm": "^0.29.2",
     "framer-motion": "^10.16.5",
     "lodash": "^4.17.21",
     "lucide-react": "^0.292.0",

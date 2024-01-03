@@ -7,3 +7,10 @@ export interface CommentType {
   userId: string
   user: DatabaseUser
 }
+
+export interface LikeType {
+  id: number, 
+  postId: number,
+  userId: string
+  user: DatabaseUser
+}

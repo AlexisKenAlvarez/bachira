@@ -1,8 +1,24 @@
 import Post from "@/components/user/Post";
+import { CommentType, LikeType } from "@/lib/postTypes";
+import { UserInterface } from "@/lib/userTypes";
 import { createTRPCRouter, privateProcedure } from "@/server/api/trpc";
 import { postComments, postLikes, posts } from "@/server/db/schema/schema";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { InferSelectModel, and, desc, eq, count } from "drizzle-orm";
 import { z } from "zod";
+
+interface PostType {
+  id: number | undefined | null;
+  commentCount: number
+  likeCount: number
+  createdAt: Date;
+  updatedAt: Date;
+  userId: string;
+  text: string;
+  privacy: "PUBLIC" | "PRIVATE" | null;
+  user: UserInterface;
+  comments: CommentType[];
+  likes: LikeType[];
+}
 
 export const postRouter = createTRPCRouter({
   createPost: privateProcedure
@@ -30,6 +46,7 @@ export const postRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const limit = input.limit ?? 10;
+      let data: PostType[] = [];
 
       const postData = await ctx.db.query.posts.findMany({
         where: (posts, { gt, lt }) =>
@@ -39,7 +56,7 @@ export const postRouter = createTRPCRouter({
         with: {
           user: true,
           comments: {
-            with: { 
+            with: {
               user: {
                 columns: {
                   countId: true,
@@ -49,13 +66,13 @@ export const postRouter = createTRPCRouter({
                   email: true,
                   image: true,
                   name: true,
-                }
-              }
+                },
+              },
             },
             limit: 1,
           },
           likes: {
-            with: { 
+            with: {
               user: {
                 columns: {
                   countId: true,
@@ -65,8 +82,8 @@ export const postRouter = createTRPCRouter({
                   email: true,
                   image: true,
                   name: true,
-                }
-              }
+                },
+              },
             },
             limit: 1,
           },
@@ -74,7 +91,33 @@ export const postRouter = createTRPCRouter({
         orderBy: desc(posts.id),
         limit: limit + 1,
       });
-      console.log("🚀 ~ file: posts.ts:77 ~ .query ~ postData:", postData[0]?.likes)
+
+
+      for (const items of postData) {
+        // console.log("Items ID", items.id);
+      
+        const commentCount = await ctx.db
+          .select({
+            count: count(),
+          })
+          .from(postComments)
+          .where(eq(postComments.postId, items.id));
+      
+        console.log("Items ID", items.id);
+      
+        const likeCount = await ctx.db
+          .select({
+            count: count(),
+          })
+          .from(postLikes)
+          .where(eq(postLikes.postId, items.id));
+      
+        data.push({
+          ...items,
+          commentCount: commentCount ? commentCount[0]!.count : 0,
+          likeCount: likeCount ? likeCount[0]!.count : 0,
+        });
+      }
 
       let nextCursor;
 
@@ -83,9 +126,8 @@ export const postRouter = createTRPCRouter({
         nextCursor = nextItem?.id;
       }
 
-
       return {
-        postData,
+        postData: data,
         nextCursor,
       };
     }),
@@ -115,27 +157,28 @@ export const postRouter = createTRPCRouter({
       }
 
       return {
-        success: true
-      }
+        success: true,
+      };
     }),
-  addComment: privateProcedure.input(
-    z.object({
-      userId: z.string(),
-      postId: z.number(),
-      text: z.string(),
-    })
-  ).mutation(async ({ ctx, input }) => {
-    await ctx.db.insert(postComments).values({
-      userId: input.userId,
-      postId: input.postId,
-      text: input.text,
+  addComment: privateProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        postId: z.number(),
+        text: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.insert(postComments).values({
+        userId: input.userId,
+        postId: input.postId,
+        text: input.text,
+      });
 
-    })
-
-    return {
-      success: true
-    }
-  })
+      return {
+        success: true,
+      };
+    }),
 });
 
 export type PostRouter = typeof postRouter;

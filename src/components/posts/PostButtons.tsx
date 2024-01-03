@@ -23,7 +23,9 @@ const PostButtons = ({
   userId,
   user,
   likes,
-  comments
+  comments,
+  commentCount,
+  likeCount
 }: {
   postLiked: boolean;
   postId: number;
@@ -31,15 +33,18 @@ const PostButtons = ({
   user: SessionUser;
   likes: postLike[];
   comments: CommentType[]
+  commentCount: number,
+  likeCount: number
 }) => {
-  console.log("🚀 ~ file: PostButtons.tsx:35 ~ likes:", likes)
   const [liked, setLiked] = useState(postLiked);
   const [likeData, setLikeData] = useState<postLike[]>(likes);
   const [commentOpen, setCommentOpen] = useState(false)
+  const [likeCountData, setLikeCountData] = useState(likeCount)
 
   const likeQuery = api.posts.likePost.useMutation({
     onMutate: () => {
       const previousState = liked;
+      const previousLikeCount = likeCountData
 
       if (!liked) {
 
@@ -57,20 +62,23 @@ const PostButtons = ({
           },
         };
 
-        console.log(newLike);
-
         setLikeData((prevState) => [
           ...prevState,
           {
             ...newLike,
           },
         ]);
+
+        setLikeCountData((prevState) => prevState + 1)
+
       } else {
         setLikeData((prevState) =>
           prevState.filter(
             (like) => like.userId !== userId
           ),
         );
+
+        setLikeCountData((prevState) => prevState - 1)
       }
 
       setLiked((curr) => !curr);
@@ -158,7 +166,7 @@ const PostButtons = ({
         </button>
       </div>
       <Separator/>
-      <Comments user={user} commentOpen={commentOpen} comments={comments} postId={postId} /> 
+      <Comments user={user} commentOpen={commentOpen} comments={comments} postId={postId} commentCount={commentCount} /> 
     </div>
   );
 };

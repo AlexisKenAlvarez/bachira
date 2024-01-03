@@ -8,23 +8,22 @@ import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 import Comments from "./Comments";
 
-const FeedPosts = ({ user }: { user: SessionUser}) => {
+const FeedPosts = ({ user }: { user: SessionUser }) => {
   const [ref, inView] = useInView();
 
-  const { data, fetchNextPage } =
-    api.posts.getPosts.useInfiniteQuery(
-      {
-        limit: 10,
+  const { data, fetchNextPage } = api.posts.getPosts.useInfiniteQuery(
+    {
+      limit: 5,
+    },
+    {
+      getNextPageParam: (lastPage) => {
+        return lastPage.nextCursor;
       },
-      {
-        getNextPageParam: (lastPage) => {
-          return lastPage.nextCursor;
-        },
-        refetchInterval: 5000,
-        refetchIntervalInBackground: true,
-        refetchOnWindowFocus: false,
-      },
-    );
+      // refetchInterval: 5000,
+      // refetchIntervalInBackground: true,
+      // refetchOnWindowFocus: false,
+    },
+  );
 
   useEffect(() => {
     if (inView === true) {
@@ -68,15 +67,21 @@ const FeedPosts = ({ user }: { user: SessionUser}) => {
                   <pre className="font-primary">{post.text}</pre>
                 </div>
               </div>
-
+              {post.commentCount}
               <PostButtons
-              user={user}
-              likes={post.likes}
-              postId={post.id}
-              userId={user.id}
-              comments={post.comments}
+                commentCount={post.commentCount}
+                likeCount={post.likeCount}
+                user={user}
+                likes={post.likes}
+                postId={post.id as number}
+                userId={user.id}
+                comments={post.comments}
                 postLiked={
-                  post.likes.some((obj) => obj.userId === user.id) ? true : false
+                  post.likes.some(
+                    (obj: { userId: string }) => obj.userId === user.id,
+                  )
+                    ? true
+                    : false
                 }
               />
             </div>
