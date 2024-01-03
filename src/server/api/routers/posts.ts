@@ -46,7 +46,7 @@ export const postRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const limit = input.limit ?? 10;
-      let data: PostType[] = [];
+      const data: PostType[] = [];
 
       const postData = await ctx.db.query.posts.findMany({
         where: (posts, { gt, lt }) =>
@@ -94,7 +94,6 @@ export const postRouter = createTRPCRouter({
 
 
       for (const items of postData) {
-        // console.log("Items ID", items.id);
       
         const commentCount = await ctx.db
           .select({
@@ -102,8 +101,6 @@ export const postRouter = createTRPCRouter({
           })
           .from(postComments)
           .where(eq(postComments.postId, items.id));
-      
-        console.log("Items ID", items.id);
       
         const likeCount = await ctx.db
           .select({
