@@ -30,10 +30,26 @@ const Notifications = ({
   const [open, setOpen] = useState(false);
 
   const seen = api.notifications.seenNotifications.useMutation();
+  const notifications = [
+    {
+      type: "FOLLOW",
+      message: "is now following you.",
+    },
+    {
+      type: "LIKE",
+      message: "liked your post.",
+    },
+    {
+      type: "COMMENT",
+      message: "commented on your post.",
+    },
+  ];
 
-  const followHandler = (data: NotificationType) => {
+  const notificationHandler = (data: NotificationType) => {
+    console.log("🚀 ~ file: Notifications.tsx:49 ~ notificationHandler ~ data:", data)
     const alreadyNotified = recentNotif.some(
-      (el) => el.notificationFrom === data.notificationFrom && el.type === data.type,
+      (el) =>
+        el.notificationFrom === data.notificationFrom && el.type === data.type,
     );
 
     if (alreadyNotified) {
@@ -50,7 +66,7 @@ const Notifications = ({
           <Image
             src={data.image}
             alt="Follower Image"
-            className="ml-0 w-12 shrink-0 rounded-full"
+            className="ml-0 w-12 h-12 object-cover shrink-0 rounded-full"
             width={500}
             height={500}
           />
@@ -59,7 +75,11 @@ const Notifications = ({
             <h1 className=" max-w-20 inline-block truncate overflow-ellipsis font-primary font-bold md:max-w-[14rem]">
               {data.notificationFrom}
             </h1>
-            <p className="-mt-[5px]">is now following you.</p>
+            <p className="-mt-[5px]">
+              {notifications.map((notif) =>
+                notif.type === data.type ? notif.message : null,
+              )}
+            </p>
           </div>
         </div>,
       );
@@ -68,15 +88,14 @@ const Notifications = ({
   };
 
   useEffect(() => {
-    pusherClient.subscribe(toPusherKey(`user:${userId}:incoming_follow`));
-    pusherClient.subscribe(toPusherKey(`user:${userId}:incoming_unfollow`));
-    pusherClient.bind("incoming_follow", followHandler);
+    pusherClient.subscribe(toPusherKey(`user:${userId}:incoming_notification`));
+    pusherClient.bind("incoming_notification", notificationHandler);
 
     return () => {
-      pusherClient.unsubscribe(toPusherKey(`user:${userId}:incoming_follow`));
-      pusherClient.unsubscribe(toPusherKey(`user:${userId}:incoming_unfollow`));
-
-      pusherClient.unbind("incoming_follow", followHandler);
+      pusherClient.unsubscribe(
+        toPusherKey(`user:${userId}:incoming_notification`),
+      );
+      pusherClient.unbind("incoming_notification", notificationHandler);
     };
   }, [recentNotif]);
 

@@ -184,8 +184,8 @@ export const userRouter = createTRPCRouter({
         });
 
         pusherServer.trigger(
-          toPusherKey(`user:${input.followingId}:incoming_follow`),
-          "incoming_follow",
+          toPusherKey(`user:${input.followingId}:incoming_notification`),
+          "incoming_notification",
           {
             notificationFrom: input.followerName,
             type: "FOLLOW",

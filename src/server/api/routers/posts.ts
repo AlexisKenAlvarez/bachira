@@ -1,8 +1,27 @@
-import Post from "@/components/posts/Post";
+import { pusherServer } from "@/lib/pusher";
+import { toPusherKey } from "@/lib/utils";
 import { createTRPCRouter, privateProcedure } from "@/server/api/trpc";
-import { postComments, postLikes, posts } from "@/server/db/schema/schema";
+import {
+  notification,
+  postComments,
+  postLikes,
+  posts,
+} from "@/server/db/schema/schema";
+import { TRPCError } from "@trpc/server";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
+
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL as string,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN as string,
+});
+
+const rateLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.fixedWindow(3, "10 s"),
+});
 
 export const postRouter = createTRPCRouter({
   createPost: privateProcedure
@@ -52,22 +71,22 @@ export const postRouter = createTRPCRouter({
                 },
               },
             },
-            limit: 2
+            limit: 2,
           },
           likes: {
-            with: { 
+            with: {
               user: {
                 columns: {
                   username: true,
-                }
-              }
+                },
+              },
             },
           },
         },
         orderBy: desc(posts.id),
         limit: limit + 1,
       });
-      console.log("🚀 ~ file: posts.ts:70 ~ .query ~ postData:", postData)
+      console.log("🚀 ~ file: posts.ts:70 ~ .query ~ postData:", postData);
 
       let nextCursor;
 
@@ -85,28 +104,65 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         userId: z.string(),
+        authorId: z.string(),
         postId: z.number(),
         action: z.enum(["LIKE", "UNLIKE"]),
+        username: z.string(),
+        image: z.string()
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      if (input.action === "LIKE") {
+      const { success } = await rateLimiter.limit(ctx.session.user.id);
+
+      if (!success) {
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
+      }
+
+      const { authorId, postId, userId, action, username } = input;
+      if (action === "LIKE") {
         await ctx.db.insert(postLikes).values({
-          userId: input.userId,
-          postId: input.postId,
+          userId: userId,
+          postId: postId,
         });
+
+        if (userId !== authorId) {
+          await ctx.db.insert(notification).values({
+            notificationFrom: userId,
+            notificationFor: authorId,
+            type: "LIKE",
+          });
+
+          pusherServer.trigger(
+            toPusherKey(`user:${input.authorId}:incoming_notification`),
+            "incoming_notification",
+            {
+              notificationFrom: input.username,
+              type: "LIKE",
+              image: input.image,
+            },
+          );
+        }
       } else {
         await ctx.db
           .delete(postLikes)
           .where(
-            and(
-              eq(postLikes.userId, input.userId),
-              eq(postLikes.postId, input.postId),
-            ),
+            and(eq(postLikes.userId, userId), eq(postLikes.postId, postId)),
           );
+
+        if (userId !== authorId) {
+          await ctx.db
+            .delete(notification)
+            .where(
+              and(
+                eq(notification.notificationFrom, userId),
+                eq(notification.notificationFor, authorId),
+                eq(notification.type, "LIKE"),
+              ),
+            );
+        }
       }
     }),
-    addComment: privateProcedure
+  addComment: privateProcedure
     .input(
       z.object({
         userId: z.string(),

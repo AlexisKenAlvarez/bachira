@@ -21,18 +21,21 @@ const PostButtons = ({
   postLiked,
   postId,
   userId,
+  authorId,
   user,
   likes,
   comments
+
 }: {
   postLiked: boolean;
   postId: number;
   userId: string;
+  authorId: string;
   user: SessionUser;
   likes: postLike[];
   comments: CommentType[]
 }) => {
-  console.log("🚀 ~ file: PostButtons.tsx:35 ~ comments:", comments)
+
   const [liked, setLiked] = useState(postLiked);
   const [likeData, setLikeData] = useState<postLike[]>(likes);
   const [commentOpen, setCommentOpen] = useState(false)
@@ -127,7 +130,10 @@ const PostButtons = ({
             likeMutation.mutate({
               postId,
               userId,
+              authorId,
               action: liked ? "UNLIKE" : "LIKE",
+              username: user.username,
+              image: user.image as string
             })
           }
         >

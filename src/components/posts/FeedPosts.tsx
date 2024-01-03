@@ -12,6 +12,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Skeleton } from "../ui/skeleton";
 
 const FeedPosts = ({ user }: { user: SessionUser }) => {
   const [ref, inView] = useInView();
@@ -42,7 +43,11 @@ const FeedPosts = ({ user }: { user: SessionUser }) => {
   }, [inView]);
 
   return (
-    <div className="h-full w-full space-y-4">
+    <div className="h-full w-full space-y-4 px-3 lg:px-0">
+      {isLoading &&
+        [...Array(4)].map((_, i) => (
+          <Skeleton className="h-44 w-full bg-slate-200" key={i} />
+        ))}
       {data?.pages.map((page, i) =>
         page.postData.map((post, j) => {
           return (
@@ -69,7 +74,7 @@ const FeedPosts = ({ user }: { user: SessionUser }) => {
                   <div className="">
                     <h1 className="font-semibold">{post.user.username}</h1>
                     <TooltipProvider>
-                      <Tooltip >
+                      <Tooltip>
                         <TooltipTrigger>
                           {" "}
                           <p className="text-xs opacity-60">
@@ -78,7 +83,12 @@ const FeedPosts = ({ user }: { user: SessionUser }) => {
                         </TooltipTrigger>
                         <TooltipContent>
                           <p className="text-xs text-subtle">
-                            {post.createdAt.toLocaleString("en-US", options)} {post.createdAt.toLocaleTimeString("en-US", { hour12: true, hour: 'numeric', minute: 'numeric' })}
+                            {post.createdAt.toLocaleString("en-US", options)}{" "}
+                            {post.createdAt.toLocaleTimeString("en-US", {
+                              hour12: true,
+                              hour: "numeric",
+                              minute: "numeric",
+                            })}
                           </p>
                         </TooltipContent>
                       </Tooltip>
@@ -91,6 +101,7 @@ const FeedPosts = ({ user }: { user: SessionUser }) => {
               </div>
 
               <PostButtons
+                authorId={post.userId}
                 user={user}
                 likes={post.likes}
                 comments={post.comments}

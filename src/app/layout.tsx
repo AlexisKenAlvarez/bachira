@@ -67,7 +67,7 @@ export default async function RootLayout({
             position="bottom-left"
             gutter={10}
             toastOptions={{
-              duration: 5000,
+              duration: 5000
             }}
           />
         </body>
