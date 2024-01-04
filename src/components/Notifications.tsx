@@ -11,6 +11,7 @@ import { X } from "lucide-react";
 import toast from "react-hot-toast";
 import { api } from "@/trpc/react";
 import Image from "next/image";
+import { notifications } from "@/lib/constants";
 
 interface NotificationType {
   image: string;
@@ -30,20 +31,7 @@ const Notifications = ({
   const [open, setOpen] = useState(false);
 
   const seen = api.notifications.seenNotifications.useMutation();
-  const notifications = [
-    {
-      type: "FOLLOW",
-      message: "is now following you.",
-    },
-    {
-      type: "LIKE",
-      message: "liked your post.",
-    },
-    {
-      type: "COMMENT",
-      message: "commented on your post.",
-    },
-  ];
+
 
   const notificationHandler = (data: NotificationType) => {
     console.log("🚀 ~ file: Notifications.tsx:49 ~ notificationHandler ~ data:", data)

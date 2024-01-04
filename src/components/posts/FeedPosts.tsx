@@ -73,26 +73,28 @@ const FeedPosts = ({ user }: { user: SessionUser }) => {
                   </div>
                   <div className="">
                     <h1 className="font-semibold">{post.user.username}</h1>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          {" "}
-                          <p className="text-xs opacity-60">
-                            {timeAgo(post.createdAt.toString())}
-                          </p>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="text-xs text-subtle">
-                            {post.createdAt.toLocaleString("en-US", options)}{" "}
-                            {post.createdAt.toLocaleTimeString("en-US", {
-                              hour12: true,
-                              hour: "numeric",
-                              minute: "numeric",
-                            })}
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <div className="-mt-[6px]">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            {" "}
+                            <p className="text-xs opacity-60">
+                              {timeAgo(post.createdAt.toString())}
+                            </p>
+                          </TooltipTrigger>
+                          <TooltipContent className="">
+                            <p className="text-xs text-subtle">
+                              {post.createdAt.toLocaleString("en-US", options)}{" "}
+                              {post.createdAt.toLocaleTimeString("en-US", {
+                                hour12: true,
+                                hour: "numeric",
+                                minute: "numeric",
+                              })}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                   </div>
                 </div>
                 <div className="mt-2">

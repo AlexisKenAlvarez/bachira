@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Dispatch, SetStateAction, UIEvent, useEffect, useRef } from "react";
 import UserSkeleton from "./skeleton/UserSkeleton";
 import { SheetContent, SheetHeader, SheetTitle } from "./ui/sheet";
+import { notifications } from "@/lib/constants";
 
 const NotificationData = ({
   userId,
@@ -104,7 +105,7 @@ const NotificationData = ({
                         <Image
                           src={notif.notificationFrom?.image ?? "/fox.webp"}
                           alt={notif.notificationFrom?.username ?? "User Image"}
-                          className="ml-0 w-12 shrink-0 rounded-full"
+                          className="ml-0 w-12 h-12 object-cover shrink-0 rounded-full"
                           width={500}
                           height={500}
                         />
@@ -114,7 +115,11 @@ const NotificationData = ({
                         <h1 className=" max-w-20 inline-block truncate overflow-ellipsis font-primary font-bold md:max-w-[14rem]">
                           {notif.notificationFrom?.username}
                         </h1>
-                        <p className="-mt-[5px]">is now following you.</p>
+                        <p className="-mt-[5px]">
+                          {notifications.map((value) =>
+                            value.type === notif.type ? value.message : null,
+                          )}
+                        </p>
                         <p className="-mt-[2px] font-primary text-xs font-semibold text-primary">
                           {timeAgo(notif.createdAt.toString())}
                         </p>

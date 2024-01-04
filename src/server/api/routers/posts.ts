@@ -181,6 +181,12 @@ export const postRouter = createTRPCRouter({
         success: true,
       };
     }),
+  deleteComment: privateProcedure.input(z.object({
+    commentId: z.number()
+  })).mutation(async ({ ctx, input }) => {
+    const { commentId } = input
+    await ctx.db.delete(postComments).where(eq(postComments.id, commentId))
+  })
 });
 
 export type PostRouter = typeof postRouter;

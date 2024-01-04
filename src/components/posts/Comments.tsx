@@ -7,11 +7,13 @@ import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SendHorizontal } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import TextareaAutosize from "react-textarea-autosize";
 import { z } from "zod";
+import CommentBox from "./CommentBox";
+import { useRouter } from "next/navigation";
 
 const Comments = ({
   user,
@@ -25,14 +27,23 @@ const Comments = ({
   postId: number;
 }) => {
   const [commentData, setComments] = useState<CommentType[]>(comments);
+  const utils = api.useUtils()
+  const router = useRouter()
+  
+  const deleteComment = useCallback(async (id: number) => {
+    setComments(prevState => prevState.filter(comment => comment.id !== id))
+    await utils.posts.getPosts.invalidate()
+    router.refresh()
+    
+  }, [commentData])
 
   const commentQuery = api.posts.addComment.useMutation({
     onMutate: ({ text }) => {
       const previousState = commentData;
       let id = 0;
 
-      if (comments.length > 0) {
-        comments.map((items, i) => {
+      if (commentData.length > 0) {
+        commentData.map((items, i) => {
           if (i === comments.length - 1) {
             id = items.id + 1;
           }
@@ -54,6 +65,8 @@ const Comments = ({
           image: user.image,
         },
       };
+
+      console.log("New comment ", newComment);
 
       setComments((prevState) => [...prevState, newComment]);
 
@@ -102,20 +115,8 @@ const Comments = ({
             View more comments
           </button>
         )}
-        {commentData.slice(0, 1).map((item, i) => (
-          <div className="flex w-full items-start gap-2 px-5 pt-2" key={i}>
-            <div className="relative mt-1 h-8 w-8 shrink-0 overflow-hidden rounded-full">
-              <img
-                src={item.user.image as string}
-                alt={item.user.username as string}
-                className="h-full w-full object-cover"
-              />
-            </div>
-            <div className="w-full rounded-md bg-bg p-2 text-sm">
-              <h1 className="font-semibold">{item.user.username}</h1>
-              <pre className="-mt-[2px] font-primary">{item.text}</pre>
-            </div>
-          </div>
+        {commentData.slice(0, 1).map((data, i) => (
+          <CommentBox data={data} key={i} user={user} deleteComment={deleteComment} />
         ))}
       </div>
       <div className="flex w-full items-start gap-2  px-5 pb-1 pt-3">
