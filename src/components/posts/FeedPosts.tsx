@@ -106,7 +106,6 @@ const FeedPosts = ({ user }: { user: SessionUser }) => {
                 authorId={post.userId}
                 user={user}
                 likes={post.likes}
-                comments={post.comments}
                 postId={post.id}
                 userId={user.id}
                 postLiked={

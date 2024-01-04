@@ -57,22 +57,6 @@ export const postRouter = createTRPCRouter({
             : gt(posts.id, input.cursor ?? 0),
         with: {
           user: true,
-          comments: {
-            with: {
-              user: {
-                columns: {
-                  countId: true,
-                  id: true,
-                  username: true,
-                  coverPhoto: true,
-                  email: true,
-                  image: true,
-                  name: true,
-                },
-              },
-            },
-            limit: 2,
-          },
           likes: {
             with: {
               user: {
@@ -204,10 +188,24 @@ export const postRouter = createTRPCRouter({
       const limit = input.limit ?? 10;
 
       const commentData = await ctx.db.query.postComments.findMany({
-        where: (postComments, { gt, lt }) =>
+        where: (postComments, { gt, lt, eq }) =>
           input.cursor
-            ? lt(postComments.id, input.cursor ?? 0)
-            : gt(postComments.id, input.cursor ?? 0),
+            ? lt(postComments.id, input.cursor ?? 0) && eq(postComments.postId, input.postId)
+            : gt(postComments.id, input.cursor ?? 0) && eq(postComments.postId, input.postId),
+
+        with: {
+          user: {
+            columns: {
+              countId: true,
+              id: true,
+              username: true,
+              coverPhoto: true,
+              email: true,
+              image: true,
+              name: true,
+            },
+          }
+        },
         orderBy: desc(postComments.id),
         limit: limit + 1,
       });

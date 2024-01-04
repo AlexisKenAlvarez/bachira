@@ -24,7 +24,6 @@ const PostButtons = ({
   authorId,
   user,
   likes,
-  comments
 
 }: {
   postLiked: boolean;
@@ -33,7 +32,6 @@ const PostButtons = ({
   authorId: string;
   user: SessionUser;
   likes: postLike[];
-  comments: CommentType[]
 }) => {
 
   const [liked, setLiked] = useState(postLiked);
@@ -157,7 +155,7 @@ const PostButtons = ({
         </button>
       </div>
       <Separator/>
-      <Comments user={user} commentOpen={commentOpen} comments={comments} postId={postId}  /> 
+      <Comments user={user} commentOpen={commentOpen} postId={postId}  /> 
     </div>
   );
 };

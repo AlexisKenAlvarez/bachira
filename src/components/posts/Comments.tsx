@@ -13,75 +13,42 @@ import toast from "react-hot-toast";
 import TextareaAutosize from "react-textarea-autosize";
 import { z } from "zod";
 import CommentBox from "./CommentBox";
-import { useRouter } from "next/navigation";
 
 const Comments = ({
   user,
   commentOpen,
-  comments,
   postId,
 }: {
   user: SessionUser;
   commentOpen: boolean;
-  comments: CommentType[];
   postId: number;
 }) => {
-  const [commentData, setComments] = useState<CommentType[]>(comments);
-  const utils = api.useUtils()
-  const router = useRouter()
-  
-  const deleteComment = useCallback(async (id: number) => {
-    setComments(prevState => prevState.filter(comment => comment.id !== id))
-    await utils.posts.getPosts.refetch()
-    router.refresh()
-    
-  }, [commentData])
 
-  const commentQuery = api.posts.addComment.useMutation({
-    onMutate: ({ text }) => {
-      const previousState = commentData;
-      let id = 0;
-
-      if (commentData.length > 0) {
-        commentData.map((items, i) => {
-          if (i === comments.length - 1) {
-            id = items.id + 1;
-          }
-        });
-      }
-
-      const newComment = {
-        userId: user.id,
-        postId,
-        text,
-        id,
-        user: {
-          countId: user.countId,
-          id: user.id,
-          name: user.name as string,
-          coverPhoto: user.coverPhoto,
-          username: user.username,
-          email: user.email as string,
-          image: user.image,
-        },
-      };
-
-      console.log("New comment ", newComment);
-
-      setComments((prevState) => [...prevState, newComment]);
-
-      return {
-        previousState,
-      };
+  const utils = api.useUtils();
+  const { data } = api.posts.getComments.useInfiniteQuery(
+    {
+      limit: 5,
+      postId,
     },
-    onError(err, _, context) {
+    {
+      getNextPageParam: (lastPage) => {
+        return lastPage.nextCursor;
+      },
+    },
+  );
+
+  const [commentData, setComments] = useState<CommentType[]>(data?.pages[0]?.commentData || []);
+  console.log("🚀 ~ file: Comments.tsx:41 ~ commentData:", commentData)
+
+
+  const commentMutation = api.posts.addComment.useMutation({
+    onError(err, _,) {
       const errMessage = err.message;
 
       if (errMessage === "TOO_MANY_REQUESTS") {
         toast.error("You are doing that too much. Try again later.");
       }
 
-      setComments(context!.previousState);
     },
     onSettled: () => {
       toast.success("Comment posted!");
@@ -103,10 +70,8 @@ const Comments = ({
   });
 
   useEffect(() => {
-    console.log(commentData);
-
-  }, [commentData])
-  
+    setComments(data?.pages[0]?.commentData || [])
+  }, [data]);
 
   return (
     <div
@@ -122,7 +87,12 @@ const Comments = ({
           </button>
         )}
         {commentData.slice(0, 1).map((data, i) => (
-          <CommentBox data={data} key={i} user={user} deleteComment={deleteComment} />
+          <CommentBox
+            data={data}
+            key={i}
+            user={user}
+            postId={postId}
+          />
         ))}
       </div>
       <div className="flex w-full items-start gap-2  px-5 pb-1 pt-3">
@@ -136,7 +106,7 @@ const Comments = ({
         <Form {...commentForm}>
           <form
             onSubmit={commentForm.handleSubmit(async (data: commentType) =>
-              commentQuery.mutateAsync({
+              commentMutation.mutateAsync({
                 text: data.comment,
                 postId,
                 userId: user.id,
