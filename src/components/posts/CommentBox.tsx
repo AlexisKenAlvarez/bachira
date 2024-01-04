@@ -14,19 +14,18 @@ import { useRouter } from "next/navigation";
 const CommentBox = ({
   data,
   user: userSession,
-  deleteComment
+  postId
 }: {
   data: CommentType;
   user: SessionUser;
-  deleteComment: (id: number) => void;
+  postId: number
 }) => {
   const { user, text, id } = data;
   const router = useRouter()
   const deleteMutation = api.posts.deleteComment.useMutation({
     onSuccess: () => {
-      utils.posts.getPosts.invalidate()
+      utils.posts.getComments.invalidate({postId})
       router.refresh()
-      deleteComment(data.id)
       toast.remove("delete-loading")
       toast.success("Comment deleted.")
     },
@@ -67,8 +66,8 @@ const CommentBox = ({
           {userSession.id === user.id && (
             <DropdownMenuItem
               className="text-rd/90 focus:text-rd/100"
-              onClick={async () => {
-                deleteMutation.mutateAsync({
+              onClick={() => {
+                deleteMutation.mutate({
                   commentId: id,
                 })                
               }}

@@ -1,2 +1,1 @@
-- Design the post schema and relationships
-- Implement posting
+- Disable comment button while fetching

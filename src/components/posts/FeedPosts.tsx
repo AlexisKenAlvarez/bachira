@@ -17,7 +17,7 @@ import { Skeleton } from "../ui/skeleton";
 const FeedPosts = ({ user }: { user: SessionUser }) => {
   const [ref, inView] = useInView();
 
-  const { data, fetchNextPage, refetch, isLoading } =
+  const { data, fetchNextPage, isLoading } =
     api.posts.getPosts.useInfiniteQuery(
       {
         limit: 10,
@@ -106,7 +106,6 @@ const FeedPosts = ({ user }: { user: SessionUser }) => {
                 authorId={post.userId}
                 user={user}
                 likes={post.likes}
-                comments={post.comments}
                 postId={post.id}
                 userId={user.id}
                 postLiked={

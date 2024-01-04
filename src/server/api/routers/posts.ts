@@ -57,22 +57,6 @@ export const postRouter = createTRPCRouter({
             : gt(posts.id, input.cursor ?? 0),
         with: {
           user: true,
-          comments: {
-            with: {
-              user: {
-                columns: {
-                  countId: true,
-                  id: true,
-                  username: true,
-                  coverPhoto: true,
-                  email: true,
-                  image: true,
-                  name: true,
-                },
-              },
-            },
-            limit: 2,
-          },
           likes: {
             with: {
               user: {
@@ -108,7 +92,7 @@ export const postRouter = createTRPCRouter({
         postId: z.number(),
         action: z.enum(["LIKE", "UNLIKE"]),
         username: z.string(),
-        image: z.string()
+        image: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -181,12 +165,63 @@ export const postRouter = createTRPCRouter({
         success: true,
       };
     }),
-  deleteComment: privateProcedure.input(z.object({
-    commentId: z.number()
-  })).mutation(async ({ ctx, input }) => {
-    const { commentId } = input
-    await ctx.db.delete(postComments).where(eq(postComments.id, commentId))
-  })
+  deleteComment: privateProcedure
+    .input(
+      z.object({
+        commentId: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { commentId } = input;
+      await ctx.db.delete(postComments).where(eq(postComments.id, commentId));
+    }),
+  getComments: privateProcedure
+    .input(
+      z.object({
+        postId: z.number(),
+        limit: z.number().min(1).max(10).nullish(),
+        cursor: z.number().nullish(),
+        offset: z.number().nullish(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const limit = input.limit ?? 10;
+
+      const commentData = await ctx.db.query.postComments.findMany({
+        where: (postComments, { gt, lt, eq }) =>
+          input.cursor
+            ? lt(postComments.id, input.cursor ?? 0) && eq(postComments.postId, input.postId)
+            : gt(postComments.id, input.cursor ?? 0) && eq(postComments.postId, input.postId),
+
+        with: {
+          user: {
+            columns: {
+              countId: true,
+              id: true,
+              username: true,
+              coverPhoto: true,
+              email: true,
+              image: true,
+              name: true,
+            },
+          }
+        },
+        orderBy: desc(postComments.id),
+        limit: limit + 1,
+      });
+
+      let nextCursor;
+
+      if (commentData.length > limit) {
+        const nextItem = commentData.pop(); // return the last item from the array
+        nextCursor = nextItem?.id;
+      }
+
+      return {
+        commentData,
+        nextCursor,
+      };
+    }),
 });
 
 export type PostRouter = typeof postRouter;
