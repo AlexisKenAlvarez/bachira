@@ -66,8 +66,8 @@ const CommentBox = ({
           {userSession.id === user.id && (
             <DropdownMenuItem
               className="text-rd/90 focus:text-rd/100"
-              onClick={async () => {
-                deleteMutation.mutateAsync({
+              onClick={() => {
+                deleteMutation.mutate({
                   commentId: id,
                 })                
               }}
