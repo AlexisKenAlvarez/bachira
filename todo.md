@@ -1,2 +1,4 @@
-- Design the post schema and relationships
-- Implement posting
+- Disable comment button while fetching
+- Fetch the two comment after deleting the other one
+- Only add to the comment state if the comment data is empty
+- Create another query for fetching comments

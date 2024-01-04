@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SendHorizontal } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import TextareaAutosize from "react-textarea-autosize";
@@ -32,7 +32,7 @@ const Comments = ({
   
   const deleteComment = useCallback(async (id: number) => {
     setComments(prevState => prevState.filter(comment => comment.id !== id))
-    await utils.posts.getPosts.invalidate()
+    await utils.posts.getPosts.refetch()
     router.refresh()
     
   }, [commentData])
@@ -101,6 +101,12 @@ const Comments = ({
       comment: "",
     },
   });
+
+  useEffect(() => {
+    console.log(commentData);
+
+  }, [commentData])
+  
 
   return (
     <div
