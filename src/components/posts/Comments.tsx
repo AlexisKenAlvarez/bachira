@@ -14,6 +14,7 @@ import TextareaAutosize from "react-textarea-autosize";
 import { z } from "zod";
 import CommentBox from "./CommentBox";
 
+
 const Comments = ({
   user,
   commentOpen,
@@ -38,7 +39,6 @@ const Comments = ({
   );
 
   const [commentData, setComments] = useState<CommentType[]>(data?.pages[0]?.commentData || []);
-  console.log("🚀 ~ file: Comments.tsx:41 ~ commentData:", commentData)
 
 
   const commentMutation = api.posts.addComment.useMutation({
@@ -48,9 +48,9 @@ const Comments = ({
       if (errMessage === "TOO_MANY_REQUESTS") {
         toast.error("You are doing that too much. Try again later.");
       }
-
     },
-    onSettled: () => {
+    onSuccess: () => {
+      utils.posts.getComments.invalidate({ postId });
       toast.success("Comment posted!");
       commentForm.reset();
     },
@@ -135,6 +135,7 @@ const Comments = ({
                           commentForm.formState.isValid,
                       },
                     )}
+                    disabled={commentMutation.isLoading || !commentForm.formState.isValid}
                   >
                     <SendHorizontal
                       className=""

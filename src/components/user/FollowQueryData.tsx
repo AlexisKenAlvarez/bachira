@@ -5,9 +5,10 @@ import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { api } from "@/trpc/react";
 import Image from "next/image";
 import Link from "next/link";
-import { UIEvent } from "react";
+import { UIEvent, useEffect } from "react";
 import UserSkeleton from "../skeleton/UserSkeleton";
 import { Separator } from "../ui/separator";
+import { useInView } from "react-intersection-observer";
 
 const FollowQueryData = ({
   type,
@@ -16,6 +17,7 @@ const FollowQueryData = ({
   type: "Following" | "Followers";
   userId: string;
 }) => {
+  const [ref, inView] = useInView();
   const { data, fetchNextPage, isFetching } =
     type === "Followers"
       ? api.user.getFollowers.useInfiniteQuery(
@@ -43,16 +45,11 @@ const FollowQueryData = ({
           },
         );
 
-  const handleScroll = (event: UIEvent<HTMLDivElement>) => {
-    const target = event.target as HTMLElement;
-
-    const scrollPercentage =
-      (target.scrollTop / (target.scrollHeight - target.clientHeight)) * 100;
-
-    if (scrollPercentage > 75) {
+  useEffect(() => {
+    if (inView) {
       fetchNextPage();
     }
-  };
+  }, [inView]);
 
   return (
     <DialogHeader className="space-y-3">
@@ -64,65 +61,62 @@ const FollowQueryData = ({
         {type}
       </DialogTitle>
       <Separator />
-      <div
-        className="content max-h-[20rem] space-y-4 overflow-y-scroll pt-2 text-left"
-        onScroll={handleScroll}
-      >
+      <div className="content max-h-[20rem] space-y-4 overflow-y-scroll text-left">
         {data?.pages.map((page, i) => (
           <div className="space-y-4" key={i}>
-            {page.followers.map((follower) => (
-              <div className="flex gap-3" key={follower?.id}>
-                <Link
-                  href={`/${
-                    type === "Followers"
-                      ? follower.follower?.username
-                      : follower.following?.username
-                  }`}
-                >
+            {page.followers.map((follower, j) => (
+              <Link
+                href={`/${
+                  type === "Followers"
+                    ? follower.follower?.username
+                    : follower.following?.username
+                }`}
+                key={follower?.id}
+                ref={
+                  data?.pages.length - 1 === i &&
+                  page.followers.length - 1 === j
+                    ? ref
+                    : undefined
+                }
+              >
+                <div className="flex gap-3 rounded-md px-4 py-3 transition-all duration-300 ease-in-out hover:bg-slate-100">
                   <Image
                     src={
                       type === "Followers"
-                        ? follower.follower?.image as string
-                        : follower.following?.image as string
+                        ? (follower.follower?.image as string)
+                        : (follower.following?.image as string)
                     }
                     alt={follower.follower?.name as string}
-                    className="w-14 rounded-full"
+                    className="h-11 w-11 rounded-full object-cover"
                     width={500}
                     height={500}
                   />
-                </Link>
 
-                <div className="flex flex-col justify-center">
-                  <Link
-                    href={`/${
-                      type === "Followers"
-                        ? follower.follower?.username
-                        : follower.following?.username
-                    }`}
-                  >
+                  <div className="flex flex-col justify-center">
                     <h1 className="max-w-[6rem] truncate font-primary font-bold md:max-w-[14rem]">
                       {type === "Followers"
                         ? follower.follower?.username
                         : follower.following?.username}
                     </h1>
-                  </Link>
-                  <h2 className="max-w-[8rem] truncate font-primary text-sm md:max-w-[10rem]">
-                    {type === "Followers"
-                      ? follower.follower?.name
-                      : follower.following?.name}
-                  </h2>
+
+                    <h2 className="max-w-[8rem] truncate font-primary text-sm md:max-w-[10rem]">
+                      {type === "Followers"
+                        ? follower.follower?.name
+                        : follower.following?.name}
+                    </h2>
+                  </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         ))}
-        {isFetching && (
+        {/* {isFetching && (
           <div className="space-y-4">
             {[...new Array(4)].map((_, i) => (
               <UserSkeleton key={i} />
             ))}
           </div>
-        )}
+        )} */}
       </div>
     </DialogHeader>
   );

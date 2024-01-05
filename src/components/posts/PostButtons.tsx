@@ -6,10 +6,18 @@ import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { motion } from "framer-motion";
 import { MessageCircle, Share2, ThumbsUp } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 import Comments from "./Comments";
-import { CommentType } from "@/lib/postTypes";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import LikeDialog from "./LikeDialog";
 
 interface postLike {
   postId: number;
@@ -24,7 +32,6 @@ const PostButtons = ({
   authorId,
   user,
   likes,
-
 }: {
   postLiked: boolean;
   postId: number;
@@ -33,17 +40,20 @@ const PostButtons = ({
   user: SessionUser;
   likes: postLike[];
 }) => {
-
   const [liked, setLiked] = useState(postLiked);
   const [likeData, setLikeData] = useState<postLike[]>(likes);
-  const [commentOpen, setCommentOpen] = useState(false)
+  const [commentOpen, setCommentOpen] = useState(false);
+  const [likeOpen, setLikeOpen] = useState(false);
+
+  const closeLikeDialog = useCallback(() => {
+    setLikeOpen(false);
+  }, [likeOpen]);
 
   const likeMutation = api.posts.likePost.useMutation({
     onMutate: () => {
       const previousState = liked;
 
       if (!liked) {
-
         const newLike: postLike = {
           postId,
           userId,
@@ -62,9 +72,7 @@ const PostButtons = ({
         ]);
       } else {
         setLikeData((prevState) =>
-          prevState.filter(
-            (like) => like.userId !== userId
-          ),
+          prevState.filter((like) => like.userId !== userId),
         );
       }
 
@@ -90,36 +98,47 @@ const PostButtons = ({
 
   return (
     <div>
-      <div className="px-5 pb-2">
-        {likeData.length > 0 ? (
-          likeData.length === 1 ? (
-            <div className="flex items-center gap-2">
-              <div className="grid h-6 w-6 shrink-0 place-content-center rounded-full bg-gradient-to-br from-primary/50 to-primary text-white">
-                <ThumbsUp size="12" fill="white" className="" />
-              </div>
+      {likeData.length > 0 ? (
+        <div className="px-5 pb-2">
+          <Dialog open={likeOpen} onOpenChange={setLikeOpen}>
+            <DialogTrigger>
+              <>
+                {likeData.length === 1 ? (
+                <div className="flex items-center gap-2">
+                  <div className="grid h-6 w-6 shrink-0 place-content-center rounded-full bg-gradient-to-br from-primary/50 to-primary text-white">
+                    <ThumbsUp size="12" fill="white" className="" />
+                  </div>
 
-              {likeData.map((like, i) => (
-                <h2 className="text-sm text-subtle" key={i}>
-                  {like.user.username}
-                </h2>
-              ))}
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <div className="grid h-6 w-6 shrink-0 place-content-center rounded-full bg-gradient-to-br from-primary/50 to-primary text-white">
-                <ThumbsUp size="12" fill="white" className="" />
-              </div>
+                  {likeData.map((like, i) => (
+                    <h2 className="text-sm text-subtle" key={i}>
+                      {like.user.username}
+                    </h2>
+                  ))}
+                </div>
+                ) : (
+                <div className="flex items-center gap-2">
+                  <div className="grid h-6 w-6 shrink-0 place-content-center rounded-full bg-gradient-to-br from-primary/50 to-primary text-white">
+                    <ThumbsUp size="12" fill="white" className="" />
+                  </div>
 
-              <h2 className="text-sm text-subtle">
-                 {likeData.length} 
-                </h2>
-            </div>
-          )
-        ) : null}
-      </div>
+                  <h2 className="text-sm text-subtle">{likeData.length}</h2>
+                </div>
+                )}
+              </>
+            </DialogTrigger>
+            <DialogContent className="px-2 pr-4 pt-2">
+              <LikeDialog
+                postId={postId}
+                likeLength={likeData.length}
+                closeDialog={closeLikeDialog}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
+      ) : null}
       <Separator />
       <div className="flex w-full p-1 text-sm">
-        <button 
+        <button
           className={cn(
             "flex w-full items-center justify-center gap-x-1 rounded-md py-2 hover:bg-slate-100",
             { "text-primary": liked },
@@ -131,7 +150,7 @@ const PostButtons = ({
               authorId,
               action: liked ? "UNLIKE" : "LIKE",
               username: user.username,
-              image: user.image as string
+              image: user.image as string,
             })
           }
         >
@@ -145,17 +164,22 @@ const PostButtons = ({
           </motion.div>
           <p className="">Like</p>
         </button>
-        <button className="flex w-full items-center justify-center gap-x-1 rounded-md py-2 hover:bg-slate-100" onClick={() => {setCommentOpen(true)}}>
+        <button
+          className="flex w-full items-center justify-center gap-x-1 rounded-md py-2 hover:bg-slate-100"
+          onClick={() => {
+            setCommentOpen(true);
+          }}
+        >
           <MessageCircle size="16" />
-          <p className="">Comment</p> 
+          <p className="">Comment</p>
         </button>
         <button className="flex w-full items-center justify-center gap-x-1 rounded-md py-2 hover:bg-slate-100">
           <Share2 size="16" />
           <p className="">Share</p>
         </button>
       </div>
-      <Separator/>
-      <Comments user={user} commentOpen={commentOpen} postId={postId}  /> 
+      <Separator />
+      <Comments user={user} commentOpen={commentOpen} postId={postId} />
     </div>
   );
 };

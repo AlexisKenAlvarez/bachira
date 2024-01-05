@@ -27,7 +27,7 @@ const FollowData = ({
           </span>
         </h2>
       </DialogTrigger>
-      <DialogContent className="w-[95%] md:w-full">
+      <DialogContent className="px-4">
         <FollowQueryData userId={userId} type={type} />
       </DialogContent>
     </Dialog>

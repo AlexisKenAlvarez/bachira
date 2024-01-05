@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Skeleton } from "../ui/skeleton";
 
-const FeedPosts = ({ user }: { user: SessionUser }) => {
+const FeedPosts = ({ user, postId }: { user: SessionUser, postId?: number }) => {
   const [ref, inView] = useInView();
 
   const { data, fetchNextPage, isLoading } =

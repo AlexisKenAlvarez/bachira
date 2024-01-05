@@ -70,7 +70,6 @@ export const postRouter = createTRPCRouter({
         orderBy: desc(posts.id),
         limit: limit + 1,
       });
-      console.log("🚀 ~ file: posts.ts:70 ~ .query ~ postData:", postData);
 
       let nextCursor;
 
@@ -181,7 +180,6 @@ export const postRouter = createTRPCRouter({
         postId: z.number(),
         limit: z.number().min(1).max(10).nullish(),
         cursor: z.number().nullish(),
-        offset: z.number().nullish(),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -222,6 +220,53 @@ export const postRouter = createTRPCRouter({
         nextCursor,
       };
     }),
+  getLikes: privateProcedure.input(
+    z.object({
+      postId: z.number(),
+      limit: z.number().min(1).max(10).nullish(),
+      cursor: z.number().nullish(),
+      offset: z.number().nullish(),
+    })
+  ).query(async ({ ctx, input }) => {
+      const { postId, limit: inputLimit, cursor } = input
+      console.log("🚀 ~ file: posts.ts:232 ~ ).query ~ postId:", postId)
+      const limit = inputLimit ?? 10
+
+      const likeData = await ctx.db.query.postLikes.findMany({
+        where: (postLikes, { gt, lt, eq }) =>
+          input.cursor
+            ? lt(postLikes.id, cursor ?? 0) && eq(postLikes.postId, postId)
+            : gt(postLikes.id, cursor ?? 0) && eq(postLikes.postId, postId),
+        with: {
+          user: {
+            columns: {
+              countId: true,
+              id: true,
+              username: true,
+              coverPhoto: true,
+              email: true,
+              image: true,
+              name: true,
+            },
+          }
+        },
+        orderBy: desc(postComments.id),
+        limit: limit + 1,
+      });
+      console.log("🚀 ~ file: posts.ts:256 ~ ).query ~ likeData:", likeData)
+
+      let nextCursor;
+
+      if (likeData.length > limit) {
+        const nextItem = likeData.pop(); // return the last item from the array
+        nextCursor = nextItem?.id;
+      }
+
+      return {
+        likeData,
+        nextCursor,
+      };
+  })
 });
 
 export type PostRouter = typeof postRouter;

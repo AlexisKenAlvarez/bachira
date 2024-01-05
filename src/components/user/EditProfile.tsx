@@ -349,7 +349,7 @@ const EditProfile = ({
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
-                      <SelectTrigger className="w-[180px]">
+                      <SelectTrigger className="w-[180px] border">
                         <SelectValue placeholder="Gender" />
                       </SelectTrigger>
                       <SelectContent>
