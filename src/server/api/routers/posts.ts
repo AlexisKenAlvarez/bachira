@@ -42,19 +42,25 @@ export const postRouter = createTRPCRouter({
   getPosts: privateProcedure
     .input(
       z.object({
+        postId: z.number().nullish(),
         limit: z.number().min(1).max(10).nullish(),
         cursor: z.number().nullish(),
         offset: z.number().nullish(),
       }),
     )
     .query(async ({ ctx, input }) => {
+      const { postId, cursor } = input;
+
       const limit = input.limit ?? 10;
 
       const postData = await ctx.db.query.posts.findMany({
-        where: (posts, { gt, lt }) =>
-          input.cursor
-            ? lt(posts.id, input.cursor ?? 0)
-            : gt(posts.id, input.cursor ?? 0),
+        where: (posts, { gt, lt, eq }) =>
+          postId
+            ? eq(posts.id, postId)
+            : input.cursor
+            ? lt(posts.id, cursor ?? 0)
+            : gt(posts.id, cursor ?? 0),
+
         with: {
           user: true,
           likes: {
@@ -188,8 +194,10 @@ export const postRouter = createTRPCRouter({
       const commentData = await ctx.db.query.postComments.findMany({
         where: (postComments, { gt, lt, eq }) =>
           input.cursor
-            ? lt(postComments.id, input.cursor ?? 0) && eq(postComments.postId, input.postId)
-            : gt(postComments.id, input.cursor ?? 0) && eq(postComments.postId, input.postId),
+            ? lt(postComments.id, input.cursor ?? 0) &&
+              eq(postComments.postId, input.postId)
+            : gt(postComments.id, input.cursor ?? 0) &&
+              eq(postComments.postId, input.postId),
 
         with: {
           user: {
@@ -202,7 +210,7 @@ export const postRouter = createTRPCRouter({
               image: true,
               name: true,
             },
-          }
+          },
         },
         orderBy: desc(postComments.id),
         limit: limit + 1,
@@ -220,17 +228,19 @@ export const postRouter = createTRPCRouter({
         nextCursor,
       };
     }),
-  getLikes: privateProcedure.input(
-    z.object({
-      postId: z.number(),
-      limit: z.number().min(1).max(10).nullish(),
-      cursor: z.number().nullish(),
-      offset: z.number().nullish(),
-    })
-  ).query(async ({ ctx, input }) => {
-      const { postId, limit: inputLimit, cursor } = input
-      console.log("🚀 ~ file: posts.ts:232 ~ ).query ~ postId:", postId)
-      const limit = inputLimit ?? 10
+  getLikes: privateProcedure
+    .input(
+      z.object({
+        postId: z.number(),
+        limit: z.number().min(1).max(10).nullish(),
+        cursor: z.number().nullish(),
+        offset: z.number().nullish(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { postId, limit: inputLimit, cursor } = input;
+      console.log("🚀 ~ file: posts.ts:232 ~ ).query ~ postId:", postId);
+      const limit = inputLimit ?? 10;
 
       const likeData = await ctx.db.query.postLikes.findMany({
         where: (postLikes, { gt, lt, eq }) =>
@@ -248,12 +258,12 @@ export const postRouter = createTRPCRouter({
               image: true,
               name: true,
             },
-          }
+          },
         },
         orderBy: desc(postComments.id),
         limit: limit + 1,
       });
-      console.log("🚀 ~ file: posts.ts:256 ~ ).query ~ likeData:", likeData)
+      console.log("🚀 ~ file: posts.ts:256 ~ ).query ~ likeData:", likeData);
 
       let nextCursor;
 
@@ -266,7 +276,7 @@ export const postRouter = createTRPCRouter({
         likeData,
         nextCursor,
       };
-  })
+    }),
 });
 
 export type PostRouter = typeof postRouter;

@@ -5,24 +5,28 @@ import { DatabaseUser, SessionUser } from "@/lib/userTypes";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { motion } from "framer-motion";
-import { MessageCircle, Share2, ThumbsUp } from "lucide-react";
+import { Link, MessageCircle, Share2, ThumbsUp } from "lucide-react";
 import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 import Comments from "./Comments";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 import LikeDialog from "./LikeDialog";
 
 interface postLike {
   postId: number;
   userId: string;
   user: DatabaseUser;
+  
 }
 
 const PostButtons = ({
@@ -30,6 +34,7 @@ const PostButtons = ({
   postId,
   userId,
   authorId,
+  author,
   user,
   likes,
 }: {
@@ -37,6 +42,7 @@ const PostButtons = ({
   postId: number;
   userId: string;
   authorId: string;
+  author: string
   user: SessionUser;
   likes: postLike[];
 }) => {
@@ -104,25 +110,25 @@ const PostButtons = ({
             <DialogTrigger>
               <>
                 {likeData.length === 1 ? (
-                <div className="flex items-center gap-2">
-                  <div className="grid h-6 w-6 shrink-0 place-content-center rounded-full bg-gradient-to-br from-primary/50 to-primary text-white">
-                    <ThumbsUp size="12" fill="white" className="" />
-                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="grid h-6 w-6 shrink-0 place-content-center rounded-full bg-gradient-to-br from-primary/50 to-primary text-white">
+                      <ThumbsUp size="12" fill="white" className="" />
+                    </div>
 
-                  {likeData.map((like, i) => (
-                    <h2 className="text-sm text-subtle" key={i}>
-                      {like.user.username}
-                    </h2>
-                  ))}
-                </div>
+                    {likeData.map((like, i) => (
+                      <h2 className="text-sm text-subtle" key={i}>
+                        {like.user.username}
+                      </h2>
+                    ))}
+                  </div>
                 ) : (
-                <div className="flex items-center gap-2">
-                  <div className="grid h-6 w-6 shrink-0 place-content-center rounded-full bg-gradient-to-br from-primary/50 to-primary text-white">
-                    <ThumbsUp size="12" fill="white" className="" />
-                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="grid h-6 w-6 shrink-0 place-content-center rounded-full bg-gradient-to-br from-primary/50 to-primary text-white">
+                      <ThumbsUp size="12" fill="white" className="" />
+                    </div>
 
-                  <h2 className="text-sm text-subtle">{likeData.length}</h2>
-                </div>
+                    <h2 className="text-sm text-subtle">{likeData.length}</h2>
+                  </div>
                 )}
               </>
             </DialogTrigger>
@@ -173,10 +179,18 @@ const PostButtons = ({
           <MessageCircle size="16" />
           <p className="">Comment</p>
         </button>
-        <button className="flex w-full items-center justify-center gap-x-1 rounded-md py-2 hover:bg-slate-100">
-          <Share2 size="16" />
-          <p className="">Share</p>
-        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex w-full items-center justify-center gap-x-1 rounded-md py-2 hover:bg-slate-100">
+              <Share2 size="16" />
+              <p className="">Share</p>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem className="flex items-center gap-x-2 font-semibold" onClick={() => {navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_BASE_URL}${author}/${postId}`)}}><Link size={15} /> Copy link</DropdownMenuItem>
+           
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       <Separator />
       <Comments user={user} commentOpen={commentOpen} postId={postId} />
