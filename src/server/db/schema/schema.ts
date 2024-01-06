@@ -13,7 +13,7 @@ import {
   varchar,
 } from "drizzle-orm/mysql-core";
 
-export const mysqlTable = mysqlTableCreator((name) => `gchat_${name}`);
+export const mysqlTable = mysqlTableCreator((name) => `bachira_${name}`);
 
 export const NOTIFICATION_TYPE = [
   "FOLLOW",
@@ -24,7 +24,7 @@ export const NOTIFICATION_TYPE = [
 
 export const NOTIFICATION_STATUS = ["READ", "UNREAD"] as const;
 export const GENDER = ["MALE", "FEMALE", "IDK"] as const;
-export const PRIVACY = ["PUBLIC", "PRIVATE"] as const;
+export const PRIVACY = ["PUBLIC", "FOLLOWERS", "PRIVATE"] as const;
 
 const updatedAt = timestamp("updatedAt", { mode: "date" })
   .notNull()
@@ -82,6 +82,7 @@ export const notification = mysqlTable("notifications", {
   notificationFor: varchar("notificationFor", { length: 100 }).notNull(),
   notificationFrom: varchar("notificationFrom", { length: 100 }).notNull(),
   type: mysqlEnum("type", NOTIFICATION_TYPE).notNull(),
+  postId: int("postId"),
   status: mysqlEnum("status", NOTIFICATION_STATUS).default("UNREAD"),
   seen: boolean("seen").default(false),
   createdAt,

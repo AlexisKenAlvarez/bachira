@@ -8,33 +8,38 @@ import { Session } from "next-auth";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogTrigger
-} from "@/components/ui/dialog";
-
-import { Form, FormControl, FormField } from "@/components/ui/form";
+import { cn } from "@/lib/utils";
+import { api } from "@/trpc/react";
+import { ChevronDown, Loader, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import toast from "react-hot-toast";
+import { Separator } from "../ui/separator";
+import { Textarea } from "../ui/textarea";
 
 import {
   Select,
   SelectContent,
   SelectItem,
-  SelectTrigger
+  SelectTrigger,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
-import { api } from "@/trpc/react";
-import { ChevronDown, Globe2, Loader, X } from "lucide-react";
-import toast from "react-hot-toast";
-import { Separator } from "../ui/separator";
-import { Textarea } from "../ui/textarea";
-import { useRouter } from "next/navigation";
+
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
+import { Form, FormControl, FormField } from "@/components/ui/form";
+import { privacyData } from "@/lib/constants";
 
 const Post = ({ userData }: { userData: Session }) => {
-  const utils = api.useUtils()
-  const PRIVACY = ["PUBLIC", "PRIVATE"] as const;
-  const router = useRouter()
+  const utils = api.useUtils();
+  const PRIVACY = ["PUBLIC", "FOLLOWERS", "PRIVATE"] as const;
+  
+  const router = useRouter();
+  const [postOpen, setPostOpen] = useState(false);
 
   const createPost = api.posts.createPost.useMutation();
   const postObject = z.object({
@@ -67,7 +72,7 @@ const Post = ({ userData }: { userData: Session }) => {
             <Skeleton className="h-full w-full rounded-full" />
           </AvatarFallback>
         </Avatar>
-        <Dialog>
+        <Dialog open={postOpen} onOpenChange={setPostOpen}>
           <DialogTrigger className="w-full">
             <input
               type="text"
@@ -79,7 +84,7 @@ const Post = ({ userData }: { userData: Session }) => {
             <div className="space-y-4">
               <div className="flex justify-between text-2xl font-semibold text-black">
                 <h1 className="">Create a post </h1>
-                
+
                 <DialogClose>
                   <X />
                 </DialogClose>
@@ -116,7 +121,10 @@ const Post = ({ userData }: { userData: Session }) => {
                                   variant="secondary"
                                   className="!h-fit space-x-[2px] bg-bg px-2 py-1"
                                 >
-                                  <Globe2 size={14} className="" />
+                                  {privacyData.map((data, i) => 
+                                  data.value === postForm.getValues("privacy") &&
+                                  <div className="" key={i}>{data.icon}</div>
+                                  )}
                                   <span className="text-sm capitalize">
                                     {field.value.toLowerCase()}
                                   </span>
@@ -124,8 +132,9 @@ const Post = ({ userData }: { userData: Session }) => {
                                 </Button>
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="Public">Public</SelectItem>
-                                <SelectItem value="Private">Private</SelectItem>
+                                {privacyData.map((data, i) => 
+                                <SelectItem value={data.value} className="capitalize" key={i}>{data.value.toLowerCase()}</SelectItem>
+                                )}
                               </SelectContent>
                             </Select>
                           </FormControl>
@@ -145,10 +154,11 @@ const Post = ({ userData }: { userData: Session }) => {
                         userId: userData.user.id,
                         ...data,
                       });
-                      utils.posts.getPosts.invalidate()
+                      utils.posts.getPosts.invalidate();
                       toast.success("Post created successfully.");
-                      postForm.reset()
-                      router.refresh()
+                      postForm.reset();
+                      router.refresh();
+                      setPostOpen(false);
                     } catch (error) {
                       console.log(error);
                     }

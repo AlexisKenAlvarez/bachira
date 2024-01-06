@@ -25,6 +25,7 @@ export const notificationRouter = createTRPCRouter({
           ),
         with: {
           notificationFrom: true,
+          notificationFor: true
         },
         orderBy: desc(notification.id),
         limit: limit + 1,
@@ -75,7 +76,8 @@ export const notificationRouter = createTRPCRouter({
         .set({
           status: "READ",
         })
-        .where(eq(notification.id, input.notificationId));
+        .where(eq(notification.id, input.notificationId))
+        
     }),
     seenNotifications: privateProcedure
     .input(

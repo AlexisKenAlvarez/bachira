@@ -9,10 +9,11 @@ dotenv.config({
 
 export default {
   schema: "./src/server/db/schema/*",
-  out: "./src/server/db",
+  out: "./src/server/db/migrations",
   driver: "mysql2",
+
   dbCredentials: {
     connectionString: process.env.DATABASE_URL as string,
   },
-  tablesFilter: ["gchat_*"],
+  tablesFilter: ["bachira_*"],
 } satisfies Config;

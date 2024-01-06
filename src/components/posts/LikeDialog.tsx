@@ -17,7 +17,7 @@ const LikeDialog = ({
   closeDialog: () => void;
 }) => {
   const [ref, inView] = useInView();
-  const { data, fetchNextPage, isFetching } =
+  const { data, fetchNextPage } =
     api.posts.getLikes.useInfiniteQuery(
       {
         postId,

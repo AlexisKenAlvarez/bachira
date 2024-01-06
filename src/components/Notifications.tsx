@@ -12,11 +12,13 @@ import toast from "react-hot-toast";
 import { api } from "@/trpc/react";
 import Image from "next/image";
 import { notifications } from "@/lib/constants";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 interface NotificationType {
   image: string;
   notificationFrom: string;
   type: string;
+  postId?: number;
 }
 
 const Notifications = ({
@@ -29,32 +31,48 @@ const Notifications = ({
   const [count, setCount] = useState<number>(Number(notifCount));
   const [recentNotif, setRecentNotif] = useState<NotificationType[]>([]);
   const [open, setOpen] = useState(false);
-
   const seen = api.notifications.seenNotifications.useMutation();
 
-
   const notificationHandler = (data: NotificationType) => {
-    console.log("🚀 ~ file: Notifications.tsx:49 ~ notificationHandler ~ data:", data)
-    const alreadyNotified = recentNotif.some(
-      (el) =>
-        el.notificationFrom === data.notificationFrom && el.type === data.type,
+    console.log(
+      "🚀 ~ file: Notifications.tsx:49 ~ notificationHandler ~ data:",
+      data,
     );
+    const alreadyNotified = recentNotif.some((el) => {
+      if (el.type === "LIKE") {
+        return (
+          el.notificationFrom === data.notificationFrom &&
+          el.type === data.type &&
+          el.postId === data.postId
+        );
+      } else {
+        return (
+          el.notificationFrom === data.notificationFrom && el.type === data.type
+        );
+      }
+    });
 
     if (alreadyNotified) {
       console.log("Not sending notification, already notified");
     } else {
       setRecentNotif((prev) => [...prev, data]);
-
+      
       toast.dismiss("follow_toast");
-      toast(
+      toast((t) => (
         <div className=" flex gap-3">
-          <button className="absolute -right-[3px] -top-[3px] rounded-full border border-black/50 p-[2px] opacity-60">
+          <button
+            className="absolute -right-[3px] -top-[3px] rounded-full border border-black/50 p-[2px] opacity-60"
+            onClick={() => {
+              console.log("Toast closed");
+              toast.dismiss(t.id)
+            }}
+          >
             <X size={10} />
           </button>
           <Image
             src={data.image}
             alt="Follower Image"
-            className="ml-0 w-12 h-12 object-cover shrink-0 rounded-full"
+            className="ml-0 h-12 w-12 shrink-0 rounded-full object-cover"
             width={500}
             height={500}
           />
@@ -69,8 +87,8 @@ const Notifications = ({
               )}
             </p>
           </div>
-        </div>,
-      );
+        </div>
+      ));
       setCount((prev) => (prev += 1));
     }
   };

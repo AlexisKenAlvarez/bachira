@@ -2,6 +2,7 @@ import { pusherServer } from "@/lib/pusher";
 import { toPusherKey } from "@/lib/utils";
 import { createTRPCRouter, privateProcedure } from "@/server/api/trpc";
 import {
+  followership,
   notification,
   postComments,
   postLikes,
@@ -29,7 +30,7 @@ export const postRouter = createTRPCRouter({
       z.object({
         userId: z.string(),
         text: z.string(),
-        privacy: z.enum(["PUBLIC", "PRIVATE"]),
+        privacy: z.enum(["PUBLIC", "FOLLOWERS", "PRIVATE"]),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -43,7 +44,7 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         postId: z.number().nullish(),
-        userId: z.string().nullish(),
+        userId: z.string(),
         limit: z.number().min(1).max(10).nullish(),
         cursor: z.number().nullish(),
         offset: z.number().nullish(),
@@ -78,15 +79,34 @@ export const postRouter = createTRPCRouter({
         limit: limit + 1,
       });
 
-      let nextCursor;
+      const userFollowing = await ctx.db.query.followership.findMany({
+        where: (followership, { eq }) => eq(followership.follower_id, userId),
+      });
 
-      if (postData.length > limit) {
-        const nextItem = postData.pop(); // return the last item from the array
-        nextCursor = nextItem?.id;
+      let nextCursor;
+      const newData: typeof postData = postData.filter((post) => {
+        if (post.privacy === "FOLLOWERS") {
+          if (userFollowing.some((user) => user.following_id === post.userId)) {
+            return post;
+          } else if (post.userId === userId) {
+            return post;
+          }
+        } else if (post.privacy === "PRIVATE") {
+          if (post.userId === userId) {
+            return post;
+          }
+        } else {
+          return post;
+        }
+      });
+
+      if (newData.length > limit) {
+        const nextItem = newData.pop(); // return the last item from the array
+        nextCursor = nextItem?.id
       }
 
       return {
-        postData,
+        postData: newData,
         nextCursor,
       };
     }),
@@ -119,6 +139,7 @@ export const postRouter = createTRPCRouter({
           await ctx.db.insert(notification).values({
             notificationFrom: userId,
             notificationFor: authorId,
+            postId,
             type: "LIKE",
           });
 
@@ -126,9 +147,10 @@ export const postRouter = createTRPCRouter({
             toPusherKey(`user:${input.authorId}:incoming_notification`),
             "incoming_notification",
             {
-              notificationFrom: input.username,
+              notificationFrom: username,
               type: "LIKE",
               image: input.image,
+              postId,
             },
           );
         }
@@ -195,10 +217,14 @@ export const postRouter = createTRPCRouter({
       const commentData = await ctx.db.query.postComments.findMany({
         where: (postComments, { gt, lt, eq, and }) =>
           input.cursor
-            ? and(lt(postComments.id, input.cursor ?? 0), 
-              eq(postComments.postId, input.postId))
-            : and(gt(postComments.id, input.cursor ?? 0),
-              eq(postComments.postId, input.postId)),
+            ? and(
+                lt(postComments.id, input.cursor ?? 0),
+                eq(postComments.postId, input.postId),
+              )
+            : and(
+                gt(postComments.id, input.cursor ?? 0),
+                eq(postComments.postId, input.postId),
+              ),
 
         with: {
           user: {
@@ -216,7 +242,6 @@ export const postRouter = createTRPCRouter({
         orderBy: desc(postComments.id),
         limit: limit + 1,
       });
-
 
       let nextCursor;
 
@@ -241,7 +266,6 @@ export const postRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const { postId, limit: inputLimit, cursor } = input;
-      console.log("🚀 ~ file: posts.ts:232 ~ ).query ~ postId:", postId);
       const limit = inputLimit ?? 10;
 
       const likeData = await ctx.db.query.postLikes.findMany({

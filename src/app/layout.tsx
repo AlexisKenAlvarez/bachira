@@ -12,17 +12,23 @@ import Nav from "../components/Nav";
 import Providers from "./providers";
 import { Toaster } from "react-hot-toast";
 import { api } from "@/trpc/server";
+import { useRouter } from "next/navigation";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
   display: "swap",
 });
-export const metadata: Metadata = {
-  title: "Bachira",
-  description: "Say more with Bachira",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
-};
+
+
+export async function generateMetadata() {
+
+  return {
+    title: "Bachira",
+    description: "Say more with Bachira",
+    icons: [{ rel: "icon", url: "/favicon.ico" }],
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -56,7 +62,7 @@ export default async function RootLayout({
                 />
 
                 <Providers>
-                  <div className="flex-1 flex flex-col">{children}</div>
+                  <div className="flex flex-1 flex-col">{children}</div>
                 </Providers>
               </div>
             )
@@ -67,7 +73,7 @@ export default async function RootLayout({
             position="bottom-left"
             gutter={10}
             toastOptions={{
-              duration: 5000
+              duration: 5000,
             }}
           />
         </body>

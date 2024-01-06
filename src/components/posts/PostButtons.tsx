@@ -1,5 +1,6 @@
 "use client";
 
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { DatabaseUser, SessionUser } from "@/lib/userTypes";
 import { cn } from "@/lib/utils";
@@ -9,14 +10,11 @@ import { Link, MessageCircle, Share2, ThumbsUp } from "lucide-react";
 import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 import Comments from "./Comments";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -26,15 +24,14 @@ interface postLike {
   postId: number;
   userId: string;
   user: DatabaseUser;
-  
 }
 
 interface PostType {
   authorId: string;
   likes: postLike[];
   postId: number;
-  author: string
-  privacy: "PUBLIC" | "PRIVATE" | null;
+  author: string;
+  privacy: "PUBLIC" | "FOLLOWERS" | "PRIVATE" | null;
 }
 
 const PostButtons = ({
@@ -42,20 +39,20 @@ const PostButtons = ({
   userId,
   user,
   post,
-  singlePage
+  singlePage,
 }: {
   postLiked: boolean;
   userId: string;
-  post: PostType
+  post: PostType;
   user: SessionUser;
-  singlePage: boolean
-  
+  singlePage: boolean;
 }) => {
-  const { authorId, likes, postId, author } = post
+  const { authorId, likes, postId, author } = post;
   const [liked, setLiked] = useState(postLiked);
   const [likeData, setLikeData] = useState<postLike[]>(likes);
   const [commentOpen, setCommentOpen] = useState(false);
   const [likeOpen, setLikeOpen] = useState(false);
+  const utils = api.useUtils();
 
   const closeLikeDialog = useCallback(() => {
     setLikeOpen(false);
@@ -63,7 +60,7 @@ const PostButtons = ({
 
   const likeMutation = api.posts.likePost.useMutation({
     onMutate: () => {
-      const previousLikeData = likeData
+      const previousLikeData = likeData;
 
       if (!liked) {
         const newLike: postLike = {
@@ -91,7 +88,7 @@ const PostButtons = ({
       setLiked((curr) => !curr);
 
       return {
-        previousLikeData
+        previousLikeData,
       };
     },
     onError(err, _, context) {
@@ -153,7 +150,8 @@ const PostButtons = ({
             "flex w-full items-center justify-center gap-x-1 rounded-md py-2 hover:bg-slate-100",
             { "text-primary": liked },
           )}
-          onClick={() =>
+          onClick={async () => {
+            await utils.notifications.countNotifications.invalidate()
             likeMutation.mutate({
               postId,
               userId,
@@ -161,8 +159,8 @@ const PostButtons = ({
               action: liked ? "UNLIKE" : "LIKE",
               username: user.username,
               image: user.image as string,
-            })
-          }
+            });
+          }}
         >
           <motion.div
             animate={
@@ -191,13 +189,27 @@ const PostButtons = ({
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" alignOffset={20}>
-            <DropdownMenuItem className="flex items-center gap-x-2 font-semibold" onClick={() => {navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_BASE_URL}${author}/${postId}`)}}><Link size={15} /> Copy link</DropdownMenuItem>
-           
+            <DropdownMenuItem
+              className="flex items-center gap-x-2 font-semibold"
+              onClick={() => {
+                navigator.clipboard.writeText(
+                  `${process.env.NEXT_PUBLIC_BASE_URL}${author}/${postId}`,
+                );
+              }}
+            >
+              <Link size={15} /> Copy link
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
       <Separator />
-      <Comments user={user} commentOpen={commentOpen} postId={postId} author={author} singlePage={singlePage} />
+      <Comments
+        user={user}
+        commentOpen={commentOpen}
+        postId={postId}
+        author={author}
+        singlePage={singlePage}
+      />
     </div>
   );
 };

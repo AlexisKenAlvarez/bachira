@@ -1,3 +1,4 @@
 
-- Fix the friends and public options
-- Add privacy options edit for posts
+- Make the edit post functional
+- Fix the buttons that only the authors can see
+- Make delete post functional

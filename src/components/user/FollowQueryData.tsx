@@ -5,10 +5,9 @@ import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { api } from "@/trpc/react";
 import Image from "next/image";
 import Link from "next/link";
-import { UIEvent, useEffect } from "react";
-import UserSkeleton from "../skeleton/UserSkeleton";
-import { Separator } from "../ui/separator";
+import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
+import { Separator } from "../ui/separator";
 
 const FollowQueryData = ({
   type,
