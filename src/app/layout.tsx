@@ -21,7 +21,7 @@ const montserrat = Montserrat({
 });
 
 
-export async function generateMetadata() {
+export function generateMetadata() {
 
   return {
     title: "Bachira",
