@@ -43,13 +43,14 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         postId: z.number().nullish(),
+        userId: z.string().nullish(),
         limit: z.number().min(1).max(10).nullish(),
         cursor: z.number().nullish(),
         offset: z.number().nullish(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { postId, cursor } = input;
+      const { postId, cursor, userId } = input;
 
       const limit = input.limit ?? 10;
 
@@ -190,14 +191,14 @@ export const postRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const limit = input.limit ?? 10;
-
+      console.log("Input cursor ", input.cursor);
       const commentData = await ctx.db.query.postComments.findMany({
-        where: (postComments, { gt, lt, eq }) =>
+        where: (postComments, { gt, lt, eq, and }) =>
           input.cursor
-            ? lt(postComments.id, input.cursor ?? 0) &&
-              eq(postComments.postId, input.postId)
-            : gt(postComments.id, input.cursor ?? 0) &&
-              eq(postComments.postId, input.postId),
+            ? and(lt(postComments.id, input.cursor ?? 0), 
+              eq(postComments.postId, input.postId))
+            : and(gt(postComments.id, input.cursor ?? 0),
+              eq(postComments.postId, input.postId)),
 
         with: {
           user: {
@@ -215,6 +216,7 @@ export const postRouter = createTRPCRouter({
         orderBy: desc(postComments.id),
         limit: limit + 1,
       });
+
 
       let nextCursor;
 

@@ -53,10 +53,7 @@ const FeedPosts = ({
 
   return (
     <div className="h-full w-full space-y-4 px-3 lg:px-0">
-      {isLoading &&
-        [...Array(4)].map((_, i) => (
-          <Skeleton className="h-44 w-full bg-slate-200" key={i} />
-        ))}
+      
       {data?.pages.map((page, i) =>
         page.postData.map((post, j) => {
           return (
@@ -136,12 +133,16 @@ const FeedPosts = ({
               </div>
 
               <PostButtons
-                authorId={post.userId}
+                post={{
+                  authorId: post.userId,
+                  author: post.user.username as string,
+                  likes: post.likes,
+                  postId: post.id,
+                  privacy: post.privacy,
+                }}
+                singlePage={postId ? true : false}
                 user={user}
-                likes={post.likes}
-                postId={post.id}
                 userId={user.id}
-                author={post.user.username as string}
                 postLiked={
                   post.likes.some((obj) => obj.userId === user.id)
                     ? true
@@ -152,6 +153,10 @@ const FeedPosts = ({
           );
         }),
       )}
+      {isLoading &&
+        [...Array(4)].map((_, i) => (
+          <Skeleton className="h-44 w-full bg-slate-200" key={i} />
+        ))}
     </div>
   );
 };

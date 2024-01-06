@@ -11,7 +11,7 @@ const page = async ({ params }: { params: { post: number } }) => {
   }
 
   return (
-    <div className="font-primary mt-4">
+    <div className="font-primary mt-4 pb-5">
       <FeedPosts user={session.user} postId={+params.post} />
     </div>
   );

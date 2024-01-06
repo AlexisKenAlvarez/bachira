@@ -29,23 +29,29 @@ interface postLike {
   
 }
 
+interface PostType {
+  authorId: string;
+  likes: postLike[];
+  postId: number;
+  author: string
+  privacy: "PUBLIC" | "PRIVATE" | null;
+}
+
 const PostButtons = ({
   postLiked,
-  postId,
   userId,
-  authorId,
-  author,
   user,
-  likes,
+  post,
+  singlePage
 }: {
   postLiked: boolean;
-  postId: number;
   userId: string;
-  authorId: string;
-  author: string
+  post: PostType
   user: SessionUser;
-  likes: postLike[];
+  singlePage: boolean
+  
 }) => {
+  const { authorId, likes, postId, author } = post
   const [liked, setLiked] = useState(postLiked);
   const [likeData, setLikeData] = useState<postLike[]>(likes);
   const [commentOpen, setCommentOpen] = useState(false);
@@ -57,7 +63,7 @@ const PostButtons = ({
 
   const likeMutation = api.posts.likePost.useMutation({
     onMutate: () => {
-      const previousState = liked;
+      const previousLikeData = likeData
 
       if (!liked) {
         const newLike: postLike = {
@@ -85,7 +91,7 @@ const PostButtons = ({
       setLiked((curr) => !curr);
 
       return {
-        previousLike: previousState,
+        previousLikeData
       };
     },
     onError(err, _, context) {
@@ -95,10 +101,8 @@ const PostButtons = ({
         toast.error("You are doing that too much. Try again later.");
       }
 
-      setLiked(context!.previousLike);
-    },
-    onSettled: () => {
-      console.log("LIKE ACTION");
+      setLiked(!liked);
+      setLikeData(context!.previousLikeData);
     },
   });
 
@@ -186,14 +190,14 @@ const PostButtons = ({
               <p className="">Share</p>
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent>
+          <DropdownMenuContent align="end" alignOffset={20}>
             <DropdownMenuItem className="flex items-center gap-x-2 font-semibold" onClick={() => {navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_BASE_URL}${author}/${postId}`)}}><Link size={15} /> Copy link</DropdownMenuItem>
            
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
       <Separator />
-      <Comments user={user} commentOpen={commentOpen} postId={postId} />
+      <Comments user={user} commentOpen={commentOpen} postId={postId} author={author} singlePage={singlePage} />
     </div>
   );
 };
