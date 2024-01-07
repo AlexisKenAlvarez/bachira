@@ -2,13 +2,8 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Session } from "next-auth";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 
-import { api } from "@/trpc/react";
-import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";

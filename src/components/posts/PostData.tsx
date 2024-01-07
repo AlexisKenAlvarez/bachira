@@ -320,7 +320,12 @@ const PostData = ({
               </div>
             </div>
           </div>
-          <PostActions author={post.userId} userId={post.userId} postId={post.id} openEdit={openEdit} />
+          <PostActions 
+          author={post.userId} 
+          userId={user.id} 
+          postId={post.id} 
+          openEdit={openEdit}
+           />
         </div>
         <div className="mt-2">
           <p className="">{post.text}</p>

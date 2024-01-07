@@ -21,7 +21,7 @@ const redis = new Redis({
 
 const rateLimiter = new Ratelimit({
   redis,
-  limiter: Ratelimit.fixedWindow(3, "10 s"),
+  limiter: Ratelimit.fixedWindow(6, "10 s"),
 });
 
 export const postRouter = createTRPCRouter({

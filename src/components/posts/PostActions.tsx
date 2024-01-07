@@ -33,10 +33,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import PostDialogContent from "./PostDialogContent";
-import { DialogUserType } from "@/lib/userTypes";
-
 const PostActions = ({
   author,
   userId,
@@ -49,10 +45,11 @@ const PostActions = ({
   openEdit: () => void
 }) => {
   const [deleteAlert, setDeleteAlert] = useState(false);
+  const utils = api.useUtils()
 
   const deleteMutation = api.posts.deletePost.useMutation({
     onSuccess: () => {
-      console.log("Delete success");
+      utils.posts.getPosts.invalidate()
       setDeleteAlert(false);
       toast.success("Post deleted.");
     },

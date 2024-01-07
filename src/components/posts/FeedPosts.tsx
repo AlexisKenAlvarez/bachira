@@ -17,7 +17,6 @@ const FeedPosts = ({
   postId?: number;
 }) => {
   const [ref, inView] = useInView();
-  const router = useRouter();
   const { data, fetchNextPage, isLoading } =
     api.posts.getPosts.useInfiniteQuery(
       {
