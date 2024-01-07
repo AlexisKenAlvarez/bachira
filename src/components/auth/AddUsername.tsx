@@ -39,7 +39,6 @@ const AddUsername = ({ email }: { email: string }) => {
 
       router.refresh();
     },
-
   });
 
   const [debounce, setDebounce] = useState(false);
@@ -70,7 +69,8 @@ const AddUsername = ({ email }: { email: string }) => {
 
   return (
     <section className="flex h-auto min-h-screen w-full bg-white pb-20 sm:bg-bggrey sm:pb-0">
-      <div className="w-full place-content-center sm:grid">
+      <ImageSmooth src="/background.jpg" className="absolute top-0 left-0 w-full h-full object-cover sm:block hidden" />
+      <div className="w-full place-content-center sm:grid z-10">
         <div className="h-full sm:rounded-xl sm:shadow-md">
           <div className="sm:min-h-20 flex w-full flex-col space-y-4 bg-white px-7 py-10 font-primary sm:w-[26rem] sm:rounded-xl">
             <div className="text-center">
@@ -86,7 +86,7 @@ const AddUsername = ({ email }: { email: string }) => {
                 onSubmit={usernameForm.handleSubmit(async (data) => {
                   if (!debounce) {
                     setDebounce(true);
-                    
+
                     try {
                       if (isValidInput(data.username)) {
                         await updateUsername.mutateAsync({
@@ -102,7 +102,6 @@ const AddUsername = ({ email }: { email: string }) => {
                       toast.error("Username is already taken!");
                       setDebounce(false);
                     }
-                    
                   }
                 })}
               >
@@ -117,7 +116,7 @@ const AddUsername = ({ email }: { email: string }) => {
                       <FormControl>
                         <Input
                           placeholder="Enter your username"
-                          className="focus-visible:ring-none !mt-[4px] focus-visible:border-blue-200 focus-visible:ring-transparent"
+                          className="focus-visible:ring-none focus-visible:border-blue-200 !mt-[4px] focus-visible:ring-transparent"
                           key="first-username"
                           {...field}
                           autoFocus
@@ -138,14 +137,16 @@ const AddUsername = ({ email }: { email: string }) => {
           </div>
         </div>
       </div>
-      <div className="relative hidden w-full overflow-hidden lg:block">
-        <Link href="/">
-          <h1 className="transition-text absolute right-0 top-0 z-10 m-auto h-fit font-primary text-[12rem] text-white/20 duration-300 ease-in-out hover:text-white/50 xl:text-[15rem]">
-            GChat
+      <div className="relative hidden w-full  font-primary items-center overflow-hidden lg:flex z-10">
+        <div className="">
+          <h1 className="block h-fit text-9xl font-bold">
+            Bachira
           </h1>
-        </Link>
-
-        <ImageSmooth src="/auth/register.webp" />
+          <p className="text-xl">
+            Just one step ahead to experience the best social media in the
+            world.
+          </p>
+        </div>
       </div>
     </section>
   );

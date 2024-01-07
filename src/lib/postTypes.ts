@@ -14,3 +14,10 @@ export interface LikeType {
   userId: string
   user: DatabaseUser
 }
+
+export interface PostEditType {
+  postText: string,
+  privacy: "PUBLIC" | "FOLLOWERS" | "PRIVATE"
+  postId: number,
+  author: string
+}

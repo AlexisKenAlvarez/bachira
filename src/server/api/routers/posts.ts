@@ -235,18 +235,20 @@ export const postRouter = createTRPCRouter({
             },
           },
         },
-        orderBy: input.singlePage ? asc(postComments.id) : desc(postComments.id),
-        limit: limit + 1
+        orderBy: input.singlePage
+          ? asc(postComments.id)
+          : desc(postComments.id),
+        limit: limit + 1,
       });
 
       let nextCursor;
 
       if (commentData.length > limit) {
-        let nextItem
+        let nextItem;
 
         for (let i = 0; i < commentData.length; i++) {
           if (i === commentData.length - 1) {
-            nextItem = commentData[i]
+            nextItem = commentData[i];
           }
         }
 
@@ -321,6 +323,44 @@ export const postRouter = createTRPCRouter({
       await ctx.db
         .delete(notification)
         .where(eq(notification.postId, input.postId));
+
+      return {
+        success: true,
+      };
+    }),
+  editPost: privateProcedure
+    .input(
+      z.object({
+        originalPost: z.object({
+          postId: z.number(),
+          postText: z.string(),
+          privacy: z.enum(["PUBLIC", "FOLLOWERS", "PRIVATE"]),
+          author: z.string(),
+        }),
+        editedPost: z.object({
+          postText: z.string(),
+          privacy: z.enum(["PUBLIC", "FOLLOWERS", "PRIVATE"]),
+        }),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { originalPost, editedPost } = input;
+
+      if (originalPost.postText !== editedPost.postText) {
+        await ctx.db
+          .update(posts)
+          .set({
+            text: editedPost.postText,
+          })
+          .where(eq(posts.id, originalPost.postId));
+      } else if (originalPost.privacy !== editedPost.privacy) {
+        await ctx.db
+          .update(posts)
+          .set({
+            privacy: editedPost.privacy,
+          })
+          .where(eq(posts.id, originalPost.postId));
+      }
 
       return {
         success: true,

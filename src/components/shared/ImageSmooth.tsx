@@ -1,12 +1,19 @@
 "use client";
+import { cn } from "@/lib/utils";
 import Image from "next/image";
 
-const ImageSmooth = ({ src }: { src: string }) => {
+const ImageSmooth = ({
+  src,
+  className,
+}: {
+  src: string;
+  className?: string;
+}) => {
   return (
     <Image
       alt="Auth Image"
       src={src}
-      className="h-full w-full object-cover opacity-0 transition-opacity duration-300"
+      className={cn("", className)}
       onLoadingComplete={(image) => {
         image.classList.remove("opacity-0");
       }}

@@ -53,3 +53,9 @@ export interface FollowData {
   followers: number;
   following: number;
 }
+
+export interface DialogUserType {
+  userImage: string;
+  username: string;
+  userId: string;
+}

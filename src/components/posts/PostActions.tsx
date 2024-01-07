@@ -1,4 +1,10 @@
 "use client";
+
+import { useCallback, useState } from "react";
+import { Button } from "../ui/button";
+import { api } from "@/trpc/react";
+import toast from "react-hot-toast";
+
 import {
   Bookmark,
   FlagTriangleRight,
@@ -26,28 +32,32 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
-import { Button } from "../ui/button";
-import { api } from "@/trpc/react";
-import toast from "react-hot-toast";
+
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import PostDialogContent from "./PostDialogContent";
+import { DialogUserType } from "@/lib/userTypes";
 
 const PostActions = ({
   author,
   userId,
   postId,
+  openEdit
 }: {
   author: string;
-  userId: string;
   postId: number;
+  userId: string
+  openEdit: () => void
 }) => {
   const [deleteAlert, setDeleteAlert] = useState(false);
+
   const deleteMutation = api.posts.deletePost.useMutation({
     onSuccess: () => {
       console.log("Delete success");
       setDeleteAlert(false);
-      toast.success("Post deleted.")
-    }
+      toast.success("Post deleted.");
+    },
   });
+
 
   return (
     <>
@@ -76,7 +86,7 @@ const PostActions = ({
                   Who can comment on this post?
                 </h2>
               </DropdownMenuItem>
-              <DropdownMenuItem className="items-start gap-3 pr-5 text-left text-base">
+              <DropdownMenuItem className="items-start gap-3 pr-5 text-left text-base" onClick={openEdit}>
                 <MessageCircle className="mt-1" size={23} />
                 <h2 className="text-sm md:text-base">Edit post</h2>
               </DropdownMenuItem>
@@ -140,17 +150,17 @@ const PostActions = ({
             <Button
               variant="destructive"
               onClick={() => {
-               deleteMutation.mutate({ postId })
+                deleteMutation.mutate({ postId });
               }}
               disabled={deleteMutation.isLoading}
             >
               {deleteMutation.isLoading ? (
-                <div className="space-x-2 flex">
-                <Loader className="animate-spin" size={18} />
-                <p className="">Deleting</p>
-              </div>
+                <div className="flex space-x-2">
+                  <Loader className="animate-spin" size={18} />
+                  <p className="">Deleting</p>
+                </div>
               ) : (
-                <div className="space-x-2 flex">
+                <div className="flex space-x-2">
                   <Trash size={18} />
                   <p className="">Continue</p>
                 </div>

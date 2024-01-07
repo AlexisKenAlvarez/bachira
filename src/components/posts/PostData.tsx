@@ -7,7 +7,7 @@ import { RouterOutputs } from "@/trpc/shared";
 import { privacyData } from "@/lib/constants";
 import { MoreHorizontal, Settings, UserCheck2, UserPlus2 } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 
 import {
@@ -26,8 +26,21 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
+import PostDialogContent from "./PostDialogContent";
 
 type PostType = RouterOutputs["posts"]["getPosts"]["postData"][0];
 type UserFollowingType = RouterOutputs["posts"]["getPosts"]["userFollowing"];
@@ -43,6 +56,7 @@ const PostData = ({
   singlePage: boolean;
   userFollowing: UserFollowingType;
 }) => {
+  const [postOpen, setPostOpen] = useState(false);
   const [follows, setFollow] = useState<boolean>(
     userFollowing.some((obj) => obj.following_id === post.userId),
   );
@@ -130,8 +144,10 @@ const PostData = ({
   const HoverContent = (
     <HoverCardContent
       side="bottom"
-      sideOffset={3}
-      className=" w-fit space-y-3 p-5"
+      align="center"
+      sideOffset={20}
+      className=" w-fit space-y-3 p-4"
+    
     >
       <div className="flex items-start gap-3">
         <div className="shrink-0">
@@ -188,21 +204,45 @@ const PostData = ({
             )}
           </Button>
         )}
-        <Button className="w-16 px-0" variant="secondary">
-          <MoreHorizontal size={20} />
-        </Button>
       </div>
     </HoverCardContent>
   );
 
+  const closeEdit = useCallback(() => {
+    setPostOpen(false);
+  }, []);
+
+  const openEdit = useCallback(() => {
+    setPostOpen(true)
+  }, [])
+
   return (
     <div className="h-fit w-full rounded-md bg-white">
+      <Dialog open={postOpen} onOpenChange={setPostOpen}>
+        <DialogContent>
+          <PostDialogContent
+            user={{
+              userId: post.userId,
+              username: post.user.username as string,
+              userImage: post.user.image as string
+            }}
+            closeDialog={closeEdit}
+            post={{
+              postId: post.id,
+              author: post.user.username as string,
+              postText: post.text,
+              privacy: post.privacy as "PUBLIC" | "FOLLOWERS" | "PRIVATE"
+            }}
+
+          />
+        </DialogContent>
+      </Dialog>
       <div className="p-5 pb-3">
         <div className="flex justify-between">
           <div className="flex gap-x-2">
             <div className="relative h-10 w-10 overflow-hidden rounded-full">
-              <HoverCard>
-                <HoverCardTrigger>
+              <HoverCard openDelay={250}>
+                <HoverCardTrigger asChild>
                   <Link href={`/${post.user.username}`}>
                     <Image
                       src={post.user.image as string}
@@ -217,7 +257,7 @@ const PostData = ({
               </HoverCard>
             </div>
             <div className="">
-              <HoverCard>
+              <HoverCard openDelay={250}>
                 <HoverCardTrigger>
                   <button>
                     <h1
@@ -235,7 +275,6 @@ const PostData = ({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger>
-                      {" "}
                       <p
                         className="flex items-center gap-x-2 text-xs opacity-60"
                         onClick={() =>
@@ -281,7 +320,7 @@ const PostData = ({
               </div>
             </div>
           </div>
-          <PostActions author={post.userId} userId={user.id} postId={post.id} />
+          <PostActions author={post.userId} userId={post.userId} postId={post.id} openEdit={openEdit} />
         </div>
         <div className="mt-2">
           <p className="">{post.text}</p>
