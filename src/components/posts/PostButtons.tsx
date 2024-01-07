@@ -170,7 +170,7 @@ const PostButtons = ({
           >
             <ThumbsUp size="16" fill={liked ? "#3066b2" : "transparent"} />
           </motion.div>
-          <p className="">Like</p>
+          <p className="text-xs sm:text-sm lg:text-base">Like</p>
         </button>
         <button
           className="flex w-full items-center justify-center gap-x-1 rounded-md py-2 hover:bg-slate-100"
@@ -179,13 +179,13 @@ const PostButtons = ({
           }}
         >
           <MessageCircle size="16" />
-          <p className="">Comment</p>
+          <p className="text-xs sm:text-sm lg:text-base">Comment</p>
         </button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex w-full items-center justify-center gap-x-1 rounded-md py-2 hover:bg-slate-100">
               <Share2 size="16" />
-              <p className="">Share</p>
+              <p className="text-xs sm:text-sm lg:text-base">Share</p>
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" alignOffset={20}>
@@ -197,7 +197,7 @@ const PostButtons = ({
                 );
               }}
             >
-              <Link size={15} /> Copy link
+              <Link size={15} /> <p className="">Copy link</p>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -11,7 +11,7 @@ import {
 import { TRPCError } from "@trpc/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
-import { and, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
 const redis = new Redis({
@@ -102,11 +102,12 @@ export const postRouter = createTRPCRouter({
 
       if (newData.length > limit) {
         const nextItem = newData.pop(); // return the last item from the array
-        nextCursor = nextItem?.id
+        nextCursor = nextItem?.id;
       }
 
       return {
         postData: newData,
+        userFollowing,
         nextCursor,
       };
     }),
@@ -209,22 +210,17 @@ export const postRouter = createTRPCRouter({
         postId: z.number(),
         limit: z.number().min(1).max(10).nullish(),
         cursor: z.number().nullish(),
+        singlePage: z.boolean(),
       }),
     )
     .query(async ({ ctx, input }) => {
       const limit = input.limit ?? 10;
-      console.log("Input cursor ", input.cursor);
       const commentData = await ctx.db.query.postComments.findMany({
         where: (postComments, { gt, lt, eq, and }) =>
-          input.cursor
-            ? and(
-                lt(postComments.id, input.cursor ?? 0),
-                eq(postComments.postId, input.postId),
-              )
-            : and(
-                gt(postComments.id, input.cursor ?? 0),
-                eq(postComments.postId, input.postId),
-              ),
+          and(
+            gt(postComments.id, input.cursor ?? 0),
+            eq(postComments.postId, input.postId),
+          ),
 
         with: {
           user: {
@@ -239,14 +235,21 @@ export const postRouter = createTRPCRouter({
             },
           },
         },
-        orderBy: desc(postComments.id),
-        limit: limit + 1,
+        orderBy: input.singlePage ? asc(postComments.id) : desc(postComments.id),
+        limit: limit + 1
       });
 
       let nextCursor;
 
       if (commentData.length > limit) {
-        const nextItem = commentData.pop(); // return the last item from the array
+        let nextItem
+
+        for (let i = 0; i < commentData.length; i++) {
+          if (i === commentData.length - 1) {
+            nextItem = commentData[i]
+          }
+        }
+
         nextCursor = nextItem?.id;
       }
 
@@ -301,6 +304,26 @@ export const postRouter = createTRPCRouter({
       return {
         likeData,
         nextCursor,
+      };
+    }),
+  deletePost: privateProcedure
+    .input(
+      z.object({
+        postId: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.delete(posts).where(eq(posts.id, input.postId));
+      await ctx.db.delete(postLikes).where(eq(postLikes.postId, input.postId));
+      await ctx.db
+        .delete(postComments)
+        .where(eq(postComments.postId, input.postId));
+      await ctx.db
+        .delete(notification)
+        .where(eq(notification.postId, input.postId));
+
+      return {
+        success: true,
       };
     }),
 });

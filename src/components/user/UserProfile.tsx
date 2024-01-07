@@ -15,13 +15,9 @@ import toast from "react-hot-toast";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import CoverButton from "./CoverButton";
-import FollowData from "./FollowData";
 import Link from "next/link";
-
-interface FollowData {
-  followers: number;
-  following: number;
-}
+import { FollowData as FollowDataType } from "@/lib/userTypes";
+import FollowData from "./FollowData";
 
 const UserProfile = ({
   userData,
@@ -34,7 +30,7 @@ const UserProfile = ({
 }) => {
   const { data: session, status } = useSession();
   const [follows, setFollow] = useState<boolean>(isFollowing);
-  const [userFollowData, setFollowData] = useState<FollowData>({
+  const [userFollowData, setFollowData] = useState<FollowDataType>({
     followers: Number(userData[0]!.followers as number),
     following: Number(userData[0]!.following as number),
   });

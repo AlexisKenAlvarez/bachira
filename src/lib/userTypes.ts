@@ -48,3 +48,8 @@ export interface DatabaseUserWithImage {
   username: string | null;
   image: string | null
 }
+
+export interface FollowData {
+  followers: number;
+  following: number;
+}

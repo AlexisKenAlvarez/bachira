@@ -1,0 +1,13 @@
+{
+  "version": "5",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1704619049829,
+      "tag": "0000_dark_prowler",
+      "breakpoints": true
+    }
+  ]
+}

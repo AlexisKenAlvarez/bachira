@@ -33,11 +33,12 @@ const Comments = ({
   const utils = api.useUtils();
   const [ref, inView, entry] = useInView({ trackVisibility: true, delay: 100 });
 
-  const { data, fetchNextPage, isFetching } =
+  const { data, fetchNextPage, isLoading } =
     api.posts.getComments.useInfiniteQuery(
       {
         limit: 5,
         postId,
+        singlePage,
       },
       {
         getNextPageParam: (lastPage) => {
@@ -45,6 +46,7 @@ const Comments = ({
         },
       },
     );
+
   const commentMutation = api.posts.addComment.useMutation({
     onError(err, _) {
       const errMessage = err.message;
@@ -54,7 +56,7 @@ const Comments = ({
       }
     },
     onSuccess: () => {
-      utils.posts.getComments.invalidate({ postId });
+      utils.posts.getComments.invalidate();
       toast.success("Comment posted!");
       commentForm.reset();
     },
@@ -131,7 +133,7 @@ const Comments = ({
                 )),
               )}
 
-              {isFetching &&
+              {isLoading &&
                 [...new Array(5)].map((_, i) => (
                   <div
                     className="flex w-full items-start gap-2 px-5 pr-11 pt-2"

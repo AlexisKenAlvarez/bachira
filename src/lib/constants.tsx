@@ -33,6 +33,7 @@ export const privacyData = [
         />
       </svg>
     ),
+    description: "Public post"
   },
   {
     value: "FOLLOWERS",
@@ -40,9 +41,11 @@ export const privacyData = [
       <Users size={13} strokeWidth={2.5} />
 
     ),
+    description: "Followers only"
   },
   {
     value: "PRIVATE",
-    icon: <Lock size={15} />,
+    icon: <Lock size={13} />,
+    description: "Only visible to you"
   },
 ];
