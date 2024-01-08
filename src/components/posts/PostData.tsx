@@ -9,6 +9,7 @@ import { MoreHorizontal, Settings, UserCheck2, UserPlus2 } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
+import reactStringReplace from "react-string-replace";
 
 import {
   HoverCard,
@@ -147,7 +148,6 @@ const PostData = ({
       align="center"
       sideOffset={20}
       className=" w-fit space-y-3 p-4"
-    
     >
       <div className="flex items-start gap-3">
         <div className="shrink-0">
@@ -213,8 +213,8 @@ const PostData = ({
   }, []);
 
   const openEdit = useCallback(() => {
-    setPostOpen(true)
-  }, [])
+    setPostOpen(true);
+  }, []);
 
   return (
     <div className="h-fit w-full rounded-md bg-white">
@@ -224,16 +224,15 @@ const PostData = ({
             user={{
               userId: post.userId,
               username: post.user.username as string,
-              userImage: post.user.image as string
+              userImage: post.user.image as string,
             }}
             closeDialog={closeEdit}
             post={{
               postId: post.id,
               author: post.user.username as string,
               postText: post.text,
-              privacy: post.privacy as "PUBLIC" | "FOLLOWERS" | "PRIVATE"
+              privacy: post.privacy as "PUBLIC" | "FOLLOWERS" | "PRIVATE",
             }}
-
           />
         </DialogContent>
       </Dialog>
@@ -320,15 +319,23 @@ const PostData = ({
               </div>
             </div>
           </div>
-          <PostActions 
-          author={post.userId} 
-          userId={user.id} 
-          postId={post.id} 
-          openEdit={openEdit}
-           />
+          <PostActions
+            author={post.userId}
+            userId={user.id}
+            postId={post.id}
+            openEdit={openEdit}
+          />
         </div>
         <div className="mt-2">
-          <p className="">{post.text}</p>
+          {reactStringReplace(
+            post.text,
+            /@\[([^\]]+)\]/g,
+            (match, i) => (
+              <Link href={`/${match}`} color="geekblue" className="text-primary font-medium" key={i}>
+                @{match}
+              </Link>
+            ),
+          )}
         </div>
       </div>
 

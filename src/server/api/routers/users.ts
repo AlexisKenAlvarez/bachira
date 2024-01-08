@@ -1,6 +1,6 @@
 import { createTRPCRouter, privateProcedure } from "@/server/api/trpc";
 import { followership, notification, users } from "@/server/db/schema/schema";
-import { and, asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, gt, like, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { pusherServer } from "@/lib/pusher";
@@ -81,7 +81,8 @@ export const userRouter = createTRPCRouter({
 
       if (data && data !== null) {
         const isFollowing = data.follower.filter(
-          (val: {following_id: string}) => val.following_id === input.following_id,
+          (val: { following_id: string }) =>
+            val.following_id === input.following_id,
         );
         console.log(isFollowing);
         return {
@@ -107,7 +108,7 @@ export const userRouter = createTRPCRouter({
       });
 
       if (existing) {
-        throw new TRPCError({ code: "UNPROCESSABLE_CONTENT" })
+        throw new TRPCError({ code: "UNPROCESSABLE_CONTENT" });
       }
 
       await ctx.db
@@ -283,7 +284,7 @@ export const userRouter = createTRPCRouter({
 
       if (searchedUsers.length > limit) {
         const nextItem = searchedUsers.pop(); // return the last item from the array
-        nextCursor = nextItem?.countId
+        nextCursor = nextItem?.countId;
       }
 
       return {
@@ -388,6 +389,29 @@ export const userRouter = createTRPCRouter({
 
       return {
         success: true,
+      };
+    }),
+  mentionUser: privateProcedure
+    .input(
+      z.object({
+        username: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const searchedUsers = await ctx.db
+        .select({
+          username: sql<string>`(${users.username})`.as('display'),
+          id: users.id,
+          image: users.image,
+          countId: users.countId,
+        })
+        .from(users)
+        .orderBy(asc(users.countId))
+        .limit(8)
+        .where(and(like(users.username, `${input.username}%`)));
+
+      return {
+        searchedUsers,
       };
     }),
 });

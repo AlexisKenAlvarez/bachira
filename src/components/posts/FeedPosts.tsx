@@ -1,7 +1,7 @@
 "use client";
 import { SessionUser } from "@/lib/userTypes";
 import { api } from "@/trpc/react";
-import { useRouter } from "next/navigation";
+import { notFound } from "next/navigation";
 import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 import { Skeleton } from "../ui/skeleton";
@@ -17,7 +17,7 @@ const FeedPosts = ({
   postId?: number;
 }) => {
   const [ref, inView] = useInView();
-  const { data, fetchNextPage, isLoading } =
+  const { data, fetchNextPage, isLoading, isError } =
     api.posts.getPosts.useInfiniteQuery(
       {
         limit: postId ? 1 : 10,
@@ -28,10 +28,13 @@ const FeedPosts = ({
         getNextPageParam: (lastPage) => {
           return lastPage.nextCursor;
         },
+        retry: false
       },
     );
 
-  
+  if (isError) {
+    notFound()
+  }
 
   useEffect(() => {
     if (inView === true) {

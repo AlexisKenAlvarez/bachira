@@ -31,14 +31,63 @@ export const postRouter = createTRPCRouter({
         userId: z.string(),
         text: z.string(),
         privacy: z.enum(["PUBLIC", "FOLLOWERS", "PRIVATE"]),
+        mentioned: z.array(
+          z.object({
+            username: z.string(),
+            id: z.string(),
+            image: z.string()
+          })
+        ).nullable()
       }),
     )
     .mutation(async ({ ctx, input }) => {
+
       await ctx.db.insert(posts).values({
         userId: input.userId,
         text: input.text,
         privacy: input.privacy,
       });
+
+      console.log("Mentions ", input.mentioned);
+
+      // if (input.mentioned) {
+      //   const filteredMention = new Set(input.mentioned)
+      //   const mentionedArray = [...filteredMention]
+
+      //   mentionedArray.forEach(async (mention) => {
+      //     const user = await ctx.db.query.users.findOne({
+      //       where: (user, { eq }) => eq(user.username, mention.username)
+      //     })
+
+      //     if (user) {
+      //       await ctx.db.insert(notification).values({
+      //         notificationFrom: input.userId,
+      //         notificationFor: user.id,
+      //         postId: ctx.db.query.posts.findFirst({
+      //           where: (posts, { eq }) => eq(posts.userId, input.userId),
+      //           orderBy: desc(posts.id),
+      //         }).then((post) => post?.id),
+      //         type: "MENTION",
+      //       });
+
+      //       pusherServer.trigger(
+      //         toPusherKey(`user:${user.id}:incoming_notification`),
+      //         "incoming_notification",
+      //         {
+      //           notificationFrom: input.userId,
+      //           type: "MENTION",
+      //           image: input.image,
+      //           postId: ctx.db.query.posts.findFirst({
+      //             where: (posts, { eq }) => eq(posts.userId, input.userId),
+      //             orderBy: desc(posts.id),
+      //           }).then((post) => post?.id),
+      //         },
+      //       );
+      //     }
+      //   })
+        
+      // }
+      
     }),
   getPosts: privateProcedure
     .input(
@@ -78,6 +127,10 @@ export const postRouter = createTRPCRouter({
         orderBy: desc(posts.id),
         limit: limit + 1,
       });
+
+      if (postData.length === 0 && input.postId) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
 
       const userFollowing = await ctx.db.query.followership.findMany({
         where: (followership, { eq }) => eq(followership.follower_id, userId),

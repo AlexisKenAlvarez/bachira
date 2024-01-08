@@ -5,17 +5,13 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Bird } from "lucide-react";
 
-const Error = ({ error }: { error: Error & { digest?: string } }) => {
+const Error = () => {
   const router = useRouter();
-
-  useEffect(() => {
-    console.log(error);
-  }, []);
 
   return (
     <div className="grid h-[calc(100vh-73px)] w-full place-content-center text-center text-2xl px-5">
       <Bird className="text-center mx-auto text-5xl" size={170} strokeWidth={1}  />
-      <p className="lg:text-2xl text-base">Sorry, there was an error.</p>
+      <p className="lg:text-2xl text-base">This post might have been already deleted or the link might be incorrect.</p>
       <Button
         onClick={() => {
           router.push("/");
