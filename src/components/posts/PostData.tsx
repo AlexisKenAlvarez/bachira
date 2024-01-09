@@ -1,11 +1,11 @@
 "use client";
 import PostButtons from "@/components/posts/PostButtons";
+import { privacyData } from "@/lib/constants";
 import { SessionUser } from "@/lib/userTypes";
 import { timeAgo } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { RouterOutputs } from "@/trpc/shared";
-import { privacyData } from "@/lib/constants";
-import { MoreHorizontal, Settings, UserCheck2, UserPlus2 } from "lucide-react";
+import { Settings, UserCheck2, UserPlus2 } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
@@ -28,19 +28,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-
-import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
+import { Button } from "../ui/button";
 import PostDialogContent from "./PostDialogContent";
 
 type PostType = RouterOutputs["posts"]["getPosts"]["postData"][0];

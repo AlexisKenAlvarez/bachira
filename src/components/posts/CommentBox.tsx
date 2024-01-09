@@ -10,6 +10,7 @@ import { SessionUser } from "@/lib/userTypes";
 import { api } from "@/trpc/react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const CommentBox = ({
   data,
@@ -44,7 +45,9 @@ const CommentBox = ({
   return (
     <div className="flex w-full items-start gap-2 px-5 pt-2">
       <div className="relative mt-1 h-8 w-8 shrink-0 overflow-hidden rounded-full">
-        <img
+        <Image
+          width="500"
+          height="500"
           src={user.image as string}
           alt={user.username as string}
           className="h-full w-full object-cover"

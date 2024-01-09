@@ -260,7 +260,7 @@ export const postRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const limit = input.limit ?? 10;
       const commentData = await ctx.db.query.postComments.findMany({
-        where: (postComments, { gt, lt, eq, and }) =>
+        where: (postComments, { gt, eq, and }) =>
           and(
             gt(postComments.id, input.cursor ?? 0),
             eq(postComments.postId, input.postId),

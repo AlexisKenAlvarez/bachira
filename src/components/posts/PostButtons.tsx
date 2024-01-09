@@ -56,7 +56,7 @@ const PostButtons = ({
 
   const closeLikeDialog = useCallback(() => {
     setLikeOpen(false);
-  }, [likeOpen]);
+  }, []);
 
   const likeMutation = api.posts.likePost.useMutation({
     onMutate: () => {

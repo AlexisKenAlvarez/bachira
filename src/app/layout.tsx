@@ -4,15 +4,13 @@ import { cookies } from "next/headers";
 import AddUsername from "@/components/auth/AddUsername";
 import { authOptions } from "@/server/auth";
 import { TRPCReactProvider } from "@/trpc/react";
-import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { Montserrat } from "next/font/google";
 
+import { api } from "@/trpc/server";
+import { Toaster } from "react-hot-toast";
 import Nav from "../components/Nav";
 import Providers from "./providers";
-import { Toaster } from "react-hot-toast";
-import { api } from "@/trpc/server";
-import { useRouter } from "next/navigation";
 
 const montserrat = Montserrat({
   subsets: ["latin"],

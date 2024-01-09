@@ -17,7 +17,7 @@ const FollowQueryData = ({
   userId: string;
 }) => {
   const [ref, inView] = useInView();
-  const { data, fetchNextPage, isFetching } =
+  const { data, fetchNextPage } =
     type === "Followers"
       ? api.user.getFollowers.useInfiniteQuery(
           {

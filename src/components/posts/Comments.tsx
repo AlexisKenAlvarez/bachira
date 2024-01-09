@@ -15,6 +15,7 @@ import TextareaAutosize from "react-textarea-autosize";
 import { z } from "zod";
 import { Skeleton } from "../ui/skeleton";
 import CommentBox from "./CommentBox";
+import Image from "next/image";
 
 const Comments = ({
   user,
@@ -156,7 +157,9 @@ const Comments = ({
       {/* Comment Input Area Below */}
       <div className="flex w-full items-start gap-2  px-5 pb-1 pt-3">
         <div className="relative mt-1 h-8 w-8 shrink-0 overflow-hidden rounded-full">
-          <img
+          <Image
+            width="500"
+            height="500"
             src={user.image as string}
             alt={user.username}
             className="h-full w-full object-cover"

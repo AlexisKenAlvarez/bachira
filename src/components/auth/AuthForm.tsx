@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { signIn } from "next-auth/react";
 
 import { Github } from "lucide-react";
-import Link from "next/link";
 
 interface AuthPageProps {
   type: "sign in" | "sign up";

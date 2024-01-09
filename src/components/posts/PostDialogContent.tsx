@@ -268,7 +268,7 @@ const PostDialogContent = ({
                       });
                     });
                   } else {
-                    matches.forEach((match, i) => {
+                    matches.forEach((match) => {
                       mentioned.forEach((item) => {
                         if (item.username === match.slice(2, -1)) {
                           toMention.push(item);

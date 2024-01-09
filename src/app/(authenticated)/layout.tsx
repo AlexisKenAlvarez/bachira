@@ -1,5 +1,4 @@
 import { authOptions } from "@/server/auth";
-import { api } from "@/trpc/server";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 

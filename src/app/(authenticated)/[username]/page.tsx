@@ -1,13 +1,8 @@
 import UserProfile from "@/components/user/UserProfile";
 import { authOptions } from "@/server/auth";
 import { api } from "@/trpc/server";
-import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { notFound, redirect } from "next/navigation";
-
-type Props = {
-  params: { username: string };
-};
 
 // export function generateMetadata({ params }: Props) {
 //   // read route params

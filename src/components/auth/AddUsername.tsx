@@ -16,10 +16,9 @@ import {
 } from "@/components/ui/form";
 import { api } from "@/trpc/react";
 import { Loader } from "lucide-react";
-import Link from "next/link";
-import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 const AddUsername = ({ email }: { email: string }) => {
   const { data: session, update } = useSession();
