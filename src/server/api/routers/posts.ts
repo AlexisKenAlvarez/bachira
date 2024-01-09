@@ -2,11 +2,10 @@ import { pusherServer } from "@/lib/pusher";
 import { toPusherKey } from "@/lib/utils";
 import { createTRPCRouter, privateProcedure } from "@/server/api/trpc";
 import {
-  followership,
   notification,
   postComments,
   postLikes,
-  posts,
+  posts
 } from "@/server/db/schema/schema";
 import { TRPCError } from "@trpc/server";
 import { Ratelimit } from "@upstash/ratelimit";

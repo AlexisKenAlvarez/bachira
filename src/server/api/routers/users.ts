@@ -1,6 +1,6 @@
 import { createTRPCRouter, privateProcedure } from "@/server/api/trpc";
 import { followership, notification, users } from "@/server/db/schema/schema";
-import { and, asc, eq, gt, like, sql } from "drizzle-orm";
+import { and, asc, eq, like, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { pusherServer } from "@/lib/pusher";
@@ -149,6 +149,7 @@ export const userRouter = createTRPCRouter({
           notificationFrom: sql.placeholder("notificationFrom"),
           notificationFor: sql.placeholder("notificationFor"),
           type: "FOLLOW",
+          
         })
         .prepare();
 
