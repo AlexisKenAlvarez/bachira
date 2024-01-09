@@ -67,7 +67,7 @@ const AddUsername = ({ email }: { email: string }) => {
   }
 
   return (
-    <section className="flex h-auto min-h-screen w-full bg-white pb-20 sm:bg-bggrey sm:pb-0">
+    <section className="flex z-10 h-auto min-h-screen w-full bg-white pb-20 sm:bg-bggrey sm:pb-0">
       <ImageSmooth src="/background.jpg" className="absolute top-0 left-0 w-full h-full object-cover sm:block hidden" />
       <div className="w-full place-content-center sm:grid z-10">
         <div className="h-full sm:rounded-xl sm:shadow-md">
