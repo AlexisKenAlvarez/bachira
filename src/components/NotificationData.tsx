@@ -83,7 +83,7 @@ const NotificationData = ({
                   href={
                     notif.type === "FOLLOW"
                       ? `/${notif.notificationFrom.username}`
-                      : notif.type === "LIKE" ? `${process.env.NEXT_PUBLIC_BASE_URL}${notif.notificationFor.username}/${notif.postId}` : ""
+                      : notif.type === "LIKE_POST" ? `${process.env.NEXT_PUBLIC_BASE_URL}${notif.notificationFor.username}/${notif.postId}` : ""
                   }
                   onClick={async () => {
                     setOpen(false);

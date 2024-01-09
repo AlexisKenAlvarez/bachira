@@ -5,14 +5,13 @@ import { Bell } from "lucide-react";
 import { useEffect, useState } from "react";
 import NotificationData from "./NotificationData";
 
+import { notifications } from "@/lib/constants";
 import { pusherClient } from "@/lib/pusher";
 import { toPusherKey } from "@/lib/utils";
-import { X } from "lucide-react";
-import toast from "react-hot-toast";
 import { api } from "@/trpc/react";
+import { X } from "lucide-react";
 import Image from "next/image";
-import { notifications } from "@/lib/constants";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import toast from "react-hot-toast";
 
 interface NotificationType {
   image: string;

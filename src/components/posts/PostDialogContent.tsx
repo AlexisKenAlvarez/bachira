@@ -12,7 +12,7 @@ import { ChevronDown, Loader, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Separator } from "../ui/separator";
-import { MentionsInput, Mention, SuggestionDataItem, DataFunc } from "react-mentions";
+import { MentionsInput, Mention, SuggestionDataItem } from "react-mentions";
 import defaultMentionStyle from "@/styles/defaultStyle";
 
 import {
@@ -91,7 +91,10 @@ const PostDialogContent = ({
     },
   });
 
-  const fetchUsers = (query: string, callback: (data: SuggestionDataItem[]) => void) => {
+  const fetchUsers = (
+    query: string,
+    callback: (data: SuggestionDataItem[]) => void,
+  ) => {
     setToMention(query);
 
     const transformedDataArray = mentionQuery.data?.searchedUsers.map(
@@ -232,24 +235,55 @@ const PostDialogContent = ({
                 router.refresh();
                 closeDialog();
               } else {
-                const toMention: mentionedType[] = []
+                const toMention: mentionedType[] = [];
                 const pattern = /@\[([^\]]+)\]/g;
 
                 const matches = data.text.match(pattern);
 
-        
-                if (matches) {
-                  matches.forEach((match, i) => {
-                    if (match.slice(2, -1) === mentioned[i]?.username) {
-                      toMention.push(mentioned[i]!);
+                function removeDuplicates(array: mentionedType[], key: string) {
+                  const seen = new Set();
+                  return array.filter((obj) => {
+                    const value = obj[key as keyof mentionedType];
+                    if (!seen.has(value)) {
+                      seen.add(value);
+                      return true;
                     }
+                    return false;
                   });
+                }
+
+                if (matches) {
+                  if (mentioned.length > matches.length) {
+                    const newMentioned = removeDuplicates(
+                      mentioned,
+                      "username",
+                    );
+                    console.log("🚀 ~ file: PostDialogContent.tsx:258 ~ onSubmit={postForm.handleSubmit ~ newMentioned:", newMentioned)
+
+                    matches.forEach((match) => {
+                      newMentioned.forEach((item) => {
+                        if (item.username === match.slice(2, -1)) {
+                          toMention.push(item);
+                        }
+                      });
+                    });
+                  } else {
+                    matches.forEach((match, i) => {
+                      mentioned.forEach((item) => {
+                        if (item.username === match.slice(2, -1)) {
+                          toMention.push(item);
+                        }
+                      });
+                    });
+                  }    
                 }
 
                 await createPost.mutateAsync({
                   userId: userId,
                   ...data,
-                  mentioned: toMention
+                  mentioned: toMention,
+                  authorImage: userImage,
+                  username
                 });
                 utils.posts.getPosts.invalidate();
                 toast.success("Post created successfully.");

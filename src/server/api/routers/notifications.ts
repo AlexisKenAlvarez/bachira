@@ -20,12 +20,13 @@ export const notificationRouter = createTRPCRouter({
         where: (notification, { eq, and, gt, lt }) =>
           and(
             eq(notification.notificationFor, input.userId),
-            input.cursor ? lt(notification.id, input.cursor ?? 0) : gt(notification.id, input.cursor ?? 0),
-            
+            input.cursor
+              ? lt(notification.id, input.cursor ?? 0)
+              : gt(notification.id, input.cursor ?? 0),
           ),
         with: {
           notificationFrom: true,
-          notificationFor: true
+          notificationFor: true,
         },
         orderBy: desc(notification.id),
         limit: limit + 1,
@@ -48,7 +49,7 @@ export const notificationRouter = createTRPCRouter({
     .input(
       z.object({
         userId: z.string(),
-        seen: z.boolean()
+        seen: z.boolean(),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -67,7 +68,7 @@ export const notificationRouter = createTRPCRouter({
   readNotifications: privateProcedure
     .input(
       z.object({
-        notificationId: z.number()
+        notificationId: z.number(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -76,10 +77,9 @@ export const notificationRouter = createTRPCRouter({
         .set({
           status: "READ",
         })
-        .where(eq(notification.id, input.notificationId))
-        
+        .where(eq(notification.id, input.notificationId));
     }),
-    seenNotifications: privateProcedure
+  seenNotifications: privateProcedure
     .input(
       z.object({
         userId: z.string(),

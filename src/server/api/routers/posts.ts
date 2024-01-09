@@ -31,63 +31,55 @@ export const postRouter = createTRPCRouter({
         userId: z.string(),
         text: z.string(),
         privacy: z.enum(["PUBLIC", "FOLLOWERS", "PRIVATE"]),
-        mentioned: z.array(
-          z.object({
-            username: z.string(),
-            id: z.string(),
-            image: z.string()
-          })
-        ).nullable()
+        mentioned: z
+          .array(
+            z.object({
+              username: z.string(),
+              id: z.string(),
+              image: z.string(),
+            }),
+          )
+          .nullable(),
+        authorImage: z.string().nullish(),
+        username: z.string().nullish()
       }),
     )
     .mutation(async ({ ctx, input }) => {
-
-      await ctx.db.insert(posts).values({
-        userId: input.userId,
-        text: input.text,
-        privacy: input.privacy,
+      const { mentioned, userId, text, privacy, authorImage, username } = input;
+      const postData = await ctx.db.insert(posts).values({
+        userId: userId,
+        text: text,
+        privacy: privacy,
       });
+      console.log("🚀 ~ file: posts.ts:77 ~ mentioned.forEach ~ authorImage:", authorImage)
+      if (mentioned) {
+        mentioned.forEach(async (mention) => {
+          const user = await ctx.db.query.users.findFirst({
+            where: (user, { eq }) => eq(user.username, mention.username),
+          });
 
-      console.log("Mentions ", input.mentioned);
+          if (user) {
+            await ctx.db.insert(notification).values({
+              notificationFrom: userId,
+              notificationFor: mention.id,
+              postId: +postData.insertId,
+              type: "MENTION_POST",
+            });
 
-      // if (input.mentioned) {
-      //   const filteredMention = new Set(input.mentioned)
-      //   const mentionedArray = [...filteredMention]
-
-      //   mentionedArray.forEach(async (mention) => {
-      //     const user = await ctx.db.query.users.findOne({
-      //       where: (user, { eq }) => eq(user.username, mention.username)
-      //     })
-
-      //     if (user) {
-      //       await ctx.db.insert(notification).values({
-      //         notificationFrom: input.userId,
-      //         notificationFor: user.id,
-      //         postId: ctx.db.query.posts.findFirst({
-      //           where: (posts, { eq }) => eq(posts.userId, input.userId),
-      //           orderBy: desc(posts.id),
-      //         }).then((post) => post?.id),
-      //         type: "MENTION",
-      //       });
-
-      //       pusherServer.trigger(
-      //         toPusherKey(`user:${user.id}:incoming_notification`),
-      //         "incoming_notification",
-      //         {
-      //           notificationFrom: input.userId,
-      //           type: "MENTION",
-      //           image: input.image,
-      //           postId: ctx.db.query.posts.findFirst({
-      //             where: (posts, { eq }) => eq(posts.userId, input.userId),
-      //             orderBy: desc(posts.id),
-      //           }).then((post) => post?.id),
-      //         },
-      //       );
-      //     }
-      //   })
-        
-      // }
-      
+            pusherServer.trigger(
+              toPusherKey(`user:${user.id}:incoming_notification`),
+              "incoming_notification",
+              {
+                notificationFrom: username,
+                type: "MENTION_POST",
+                image: authorImage,
+                postId: +postData.insertId,
+              },
+                
+            );
+          }
+        });
+      }
     }),
   getPosts: privateProcedure
     .input(
@@ -194,7 +186,7 @@ export const postRouter = createTRPCRouter({
             notificationFrom: userId,
             notificationFor: authorId,
             postId,
-            type: "LIKE",
+            type: "LIKE_POST",
           });
 
           pusherServer.trigger(
@@ -202,7 +194,7 @@ export const postRouter = createTRPCRouter({
             "incoming_notification",
             {
               notificationFrom: username,
-              type: "LIKE",
+              type: "LIKE_POST",
               image: input.image,
               postId,
             },
@@ -222,7 +214,7 @@ export const postRouter = createTRPCRouter({
               and(
                 eq(notification.notificationFrom, userId),
                 eq(notification.notificationFor, authorId),
-                eq(notification.type, "LIKE"),
+                eq(notification.type, "LIKE_POST"),
               ),
             );
         }

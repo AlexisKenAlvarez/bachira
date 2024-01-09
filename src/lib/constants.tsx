@@ -6,12 +6,28 @@ export const notifications = [
     message: "is now following you.",
   },
   {
-    type: "LIKE",
+    type: "LIKE_POST",
     message: "liked your post.",
+  },
+  {
+    type: "LIKE_COMMENT",
+    message: "liked your comment.",
+  },
+  {
+    type: "LIKE_REPLY",
+    message: "liked your reply.",
   },
   {
     type: "COMMENT",
     message: "commented on your post.",
+  },
+  {
+    type: "MENTION_POST",
+    message: "mentioned you in a post.",
+  },
+  {
+    type: "MENTION_COMMENT",
+    message: "mentioned you in a comment.",
   },
 ];
 

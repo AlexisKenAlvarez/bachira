@@ -8,6 +8,13 @@
       "when": 1704619049829,
       "tag": "0000_dark_prowler",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1704796243058,
+      "tag": "0001_perpetual_metal_master",
+      "breakpoints": true
     }
   ]
 }

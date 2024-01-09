@@ -17,7 +17,11 @@ export const mysqlTable = mysqlTableCreator((name) => `bachira_${name}`);
 
 export const NOTIFICATION_TYPE = [
   "FOLLOW",
-  "LIKE",
+  "LIKE_POST",
+  "LIKE_COMMENT",
+  "LIKE_REPLY",
+  "MENTION_POST",
+  "MENTION_COMMENT",
   "COMMENT",
   "REPLY",
 ] as const;

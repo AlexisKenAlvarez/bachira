@@ -327,15 +327,16 @@ const PostData = ({
           />
         </div>
         <div className="mt-2">
-          {reactStringReplace(
-            post.text,
-            /@\[([^\]]+)\]/g,
-            (match, i) => (
-              <Link href={`/${match}`} color="geekblue" className="text-primary font-medium" key={i}>
-                @{match}
-              </Link>
-            ),
-          )}
+          {reactStringReplace(post.text, /@\[([^\]]+)\]/g, (match, i) => (
+            <Link
+              href={`/${match}`}
+              color="geekblue"
+              className="font-medium text-primary"
+              key={i}
+            >
+              @{match}
+            </Link>
+          ))}
         </div>
       </div>
 
