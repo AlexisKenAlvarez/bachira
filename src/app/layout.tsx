@@ -34,7 +34,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const session = await getServerSession(authOptions);
-  console.log("IN LAYOUT WITH COUNTNOTIFICATIONS TEST PLS WORK")
+  console.log("IN LAYOUT WITH COUNTNOTIFICATIONS VERCEL PLS WORK")
 
   console.log(session?.user)
 
