@@ -34,17 +34,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const session = await getServerSession(authOptions);
-  console.log("IN LAYOUT WITH COUNTNOTIFICATIONS VERCEL PLS WORK")
+  console.log("IN LAYOUT WITH COUNTNOTIFICATIONS VERCEL PLS WORK", session?.user.username)
 
   console.log(session?.user)
-
-  const countData =
-    session?.user.username &&
-    (await api.notifications.countNotifications.query({
-      userId: session.user.id,
-      seen: false,
-    }));
-
   return (
     <TRPCReactProvider cookies={cookies().toString()}>
       <html lang="en">
@@ -59,7 +51,7 @@ export default async function RootLayout({
                   username={session.user.username}
                   image={session.user.image!}
                   userId={session.user.id}
-                  notifCount={countData ? (countData[0]?.count as number) : 0}
+
                 />
 
                 <Providers>
