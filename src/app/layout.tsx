@@ -38,13 +38,12 @@ export default async function RootLayout({
 
   console.log(session?.user)
 
-  // const countData =
-  //   session && session.user &&
-  //   (await api.notifications.countNotifications.query({
-  //     userId: session.user.id,
-  //     seen: false,
-  //   }));
-  // const countData = 0
+  const countData =
+    session?.user.username &&
+    (await api.notifications.countNotifications.query({
+      userId: session.user.id,
+      seen: false,
+    }));
 
   return (
     <TRPCReactProvider cookies={cookies().toString()}>
@@ -60,7 +59,7 @@ export default async function RootLayout({
                   username={session.user.username}
                   image={session.user.image!}
                   userId={session.user.id}
-                  notifCount={0}
+                  notifCount={countData ? (countData[0]?.count as number) : 0}
                 />
 
                 <Providers>
