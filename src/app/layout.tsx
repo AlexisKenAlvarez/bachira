@@ -34,9 +34,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const session = await getServerSession(authOptions);
+  console.log("IN LAYOUT WITH COUNTNOTIFICATIONS")
 
   const countData =
-    session &&
+    session && session.user.username &&
     (await api.notifications.countNotifications.query({
       userId: session.user.id,
       seen: false,
