@@ -18,7 +18,11 @@
     "noUncheckedIndexedAccess": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "crypto": [
+        "node_modules/crypto-js"
+      ]
+      
     },
     "plugins": [{ "name": "next" }]
   },

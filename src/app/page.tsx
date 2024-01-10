@@ -4,7 +4,7 @@ import { authOptions } from "@/server/auth";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
-export const runtime = "edge"
+// export const runtime = "edge"
 // type SearchParams = Record<string, string | string[] | undefined>;
 
 const page = async () => {

@@ -13,6 +13,8 @@ import Nav from "../components/Nav";
 import Providers from "./providers";
 import { Metadata } from "next";
 
+
+
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
@@ -35,7 +37,7 @@ export default async function RootLayout({
   console.log("IN LAYOUT WITH COUNTNOTIFICATIONS")
 
   const countData =
-    session && session.user.username &&
+    session && session.user &&
     (await api.notifications.countNotifications.query({
       userId: session.user.id,
       seen: false,

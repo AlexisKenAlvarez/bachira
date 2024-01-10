@@ -86,6 +86,9 @@ dependencies:
   clsx:
     specifier: ^2.0.0
     version: 2.0.0
+  crypto-js:
+    specifier: 3.1.9-1
+    version: 3.1.9-1
   dotenv:
     specifier: ^16.3.1
     version: 16.3.1
@@ -2468,6 +2471,10 @@ packages:
       shebang-command: 2.0.0
       which: 2.0.2
     dev: true
+
+  /crypto-js@3.1.9-1:
+    resolution: {integrity: sha512-W93aKztssqf29OvUlqfikzGyYbD1rpkXvGP9IQ1JchLY3bxaLXZSWYbwrtib2vk8DobrDzX7PIXcDWHp0B6Ymw==}
+    dev: false
 
   /crypto-js@4.2.0:
     resolution: {integrity: sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==}
