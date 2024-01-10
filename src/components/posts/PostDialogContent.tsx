@@ -116,7 +116,7 @@ const PostDialogContent = ({
     return (
       <div className="flex gap-2 py-1">
         <Avatar className="h-8 w-8">
-          <AvatarImage src={suggestion.image} className="object-cover" />
+          {/* <AvatarImage src={suggestion.image} className="object-cover" /> */}
           <AvatarFallback>
             <Skeleton className="h-full w-full rounded-full" />
           </AvatarFallback>
