@@ -39,7 +39,6 @@
     "adapters": "link:@auth/core/adapters",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
-    "crypto-js": "3.1.9-1",
     "dotenv": "^16.3.1",
     "drizzle-orm": "^0.28.5",
     "framer-motion": "^10.16.5",
@@ -85,9 +84,6 @@
     "prettier-plugin-tailwindcss": "^0.5.6",
     "tailwindcss": "^3.3.3",
     "typescript": "^5.1.6"
-  },
-  "browser": {
-    "crypto": false
   },
   "ct3aMetadata": {
     "initVersion": "7.23.1"
