@@ -11,6 +11,7 @@ import { api } from "@/trpc/server";
 import { Toaster } from "react-hot-toast";
 import Nav from "../components/Nav";
 import Providers from "./providers";
+import { Metadata } from "next";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -19,14 +20,11 @@ const montserrat = Montserrat({
 });
 
 
-export function generateMetadata() {
-
-  return {
-    title: "Bachira",
-    description: "Say more with Bachira",
-    icons: [{ rel: "icon", url: "/favicon.ico" }],
-  };
-}
+export const metadata: Metadata = {
+  title: "Bachira",
+  description: "Say more with Bachira",
+  icons: [{ rel: "icon", url: "/favicon.ico" }],
+};
 
 export default async function RootLayout({
   children,
