@@ -16,7 +16,7 @@ const page = async () => {
   return (
     <div className="flex-1">
 
-      <div className="mt-4 w-full">
+      <div className="mt-4 w-full h-auto">
         <Post userData={session} />
         <div className="mt-4 min-h-screen w-full rounded-md font-primary pb-10">
           <FeedPosts user={session.user} />
