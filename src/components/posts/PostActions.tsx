@@ -37,24 +37,24 @@ const PostActions = ({
   author,
   userId,
   postId,
-  openEdit
+  openEdit,
 }: {
   author: string;
   postId: number;
-  userId: string
-  openEdit: () => void
+  userId: string;
+  openEdit: () => void;
 }) => {
   const [deleteAlert, setDeleteAlert] = useState(false);
-  const utils = api.useUtils()
+  const [commentPrivacyOpen, setCommentPrivacyOpen] = useState(false)
+  const utils = api.useUtils();
 
   const deleteMutation = api.posts.deletePost.useMutation({
     onSuccess: () => {
-      utils.posts.getPosts.invalidate()
+      utils.posts.getPosts.invalidate();
       setDeleteAlert(false);
       toast.success("Post deleted.");
     },
   });
-
 
   return (
     <>
@@ -77,13 +77,16 @@ const PostActions = ({
             <>
               {/* Author only actions */}
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="items-start gap-3 pr-5 text-left text-base">
+              <DropdownMenuItem className="items-start gap-3 pr-5 text-left text-base" onClick={() => setCommentPrivacyOpen(true)}>
                 <Pencil className="mt-1" size={23} />
                 <h2 className="text-sm md:text-base">
                   Who can comment on this post?
                 </h2>
               </DropdownMenuItem>
-              <DropdownMenuItem className="items-start gap-3 pr-5 text-left text-base" onClick={openEdit}>
+              <DropdownMenuItem
+                className="items-start gap-3 pr-5 text-left text-base"
+                onClick={openEdit}
+              >
                 <MessageCircle className="mt-1" size={23} />
                 <h2 className="text-sm md:text-base">Edit post</h2>
               </DropdownMenuItem>
@@ -129,6 +132,18 @@ const PostActions = ({
           )}
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <AlertDialog open={commentPrivacyOpen} onOpenChange={setCommentPrivacyOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Edit comment privacy</AlertDialogTitle>
+            <AlertDialogDescription className="!-mt-0">
+              Who can comment on this post?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+        
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={deleteAlert} onOpenChange={setDeleteAlert}>
         <AlertDialogContent>

@@ -108,6 +108,7 @@ export const postComments = mysqlTable(
     postId: int("postId").notNull(),
     userId: varchar("userId", { length: 100 }).notNull(),
     text: text("text").notNull(),
+    privacy: mysqlEnum("privacy", PRIVACY).default("PUBLIC"),
   },
   (table) => {
     return {
