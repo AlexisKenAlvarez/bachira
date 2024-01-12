@@ -1,9 +1,8 @@
 "use client";
-
-import { useCallback, useState } from "react";
-import { Button } from "../ui/button";
 import { api } from "@/trpc/react";
+import { useState } from "react";
 import toast from "react-hot-toast";
+import { Button } from "../ui/button";
 
 import {
   Bookmark,
@@ -33,20 +32,60 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+import { Separator } from "../ui/separator";
+
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form";
+
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { CommentPrivacyType } from "@/lib/postTypes";
+
 const PostActions = ({
   author,
   userId,
   postId,
   openEdit,
+  commentPrivacy,
 }: {
   author: string;
   postId: number;
   userId: string;
   openEdit: () => void;
+  commentPrivacy: CommentPrivacyType
 }) => {
   const [deleteAlert, setDeleteAlert] = useState(false);
-  const [commentPrivacyOpen, setCommentPrivacyOpen] = useState(false)
+  const [commentPrivacyOpen, setCommentPrivacyOpen] = useState(false);
   const utils = api.useUtils();
+
+  const commentPrivacySchema = z.object({
+    commentPrivacy: z.enum(["PUBLIC", "FOLLOWERS", "PRIVATE"], {
+      required_error: "Please select a comment privacy option.",
+    }),
+  });
+
+  type commentType = z.infer<typeof commentPrivacySchema>;
+
+  const form = useForm<commentType>({
+    defaultValues: {
+      commentPrivacy,
+    },
+    resolver: zodResolver(commentPrivacySchema),
+  });
 
   const deleteMutation = api.posts.deletePost.useMutation({
     onSuccess: () => {
@@ -55,6 +94,32 @@ const PostActions = ({
       toast.success("Post deleted.");
     },
   });
+
+  const commentPrivacyMutation = api.posts.editCommentPrivacy.useMutation({
+    onSuccess: () => {
+      toast.success("Comment privacy updated.");
+      utils.posts.getPosts.invalidate({ postId });
+      setCommentPrivacyOpen(false);
+    },
+  });
+
+  const commentPrivacyList = [
+    {
+      id: "PUBLIC",
+      name: "Public",
+      description: "Anyone can comment on this post.",
+    },
+    {
+      id: "FOLLOWERS",
+      name: "Followers",
+      description: "Only your followers can comment on this post.",
+    },
+    {
+      id: "PRIVATE",
+      name: "Only me",
+      description: "Only you can comment on this post.",
+    },
+  ];
 
   return (
     <>
@@ -77,7 +142,10 @@ const PostActions = ({
             <>
               {/* Author only actions */}
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="items-start gap-3 pr-5 text-left text-base" onClick={() => setCommentPrivacyOpen(true)}>
+              <DropdownMenuItem
+                className="items-start gap-3 pr-5 text-left text-base"
+                onClick={() => setCommentPrivacyOpen(true)}
+              >
                 <Pencil className="mt-1" size={23} />
                 <h2 className="text-sm md:text-base">
                   Who can comment on this post?
@@ -133,18 +201,67 @@ const PostActions = ({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <AlertDialog open={commentPrivacyOpen} onOpenChange={setCommentPrivacyOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Edit comment privacy</AlertDialogTitle>
-            <AlertDialogDescription className="!-mt-0">
-              Who can comment on this post?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-        
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Change post comment privacy dialog */}
+      <Dialog open={commentPrivacyOpen} onOpenChange={setCommentPrivacyOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit comment privacy</DialogTitle>
+          </DialogHeader>
+          <Separator />
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit((data: commentType) => {
+                commentPrivacyMutation.mutate({
+                  postId,
+                  privacy: data.commentPrivacy,
+                });
+              })}
+            >
+              <FormField
+                control={form.control}
+                name="commentPrivacy"
+                render={({ field }) => (
+                  <FormControl>
+                    <RadioGroup
+                      defaultValue={field.value}
+                      onValueChange={field.onChange}
+                      className="space-y-2"
+                    >
+                      {commentPrivacyList.map((item) => (
+                        <FormItem key={item.id}>
+                          <FormLabel>
+                            <div className="flex w-full flex-row-reverse items-center justify-between space-x-2 ">
+                              <FormControl>
+                                <RadioGroupItem value={item.id} />
+                              </FormControl>
 
+                              <div className="">
+                                <h1 className="font-medium">{item.name}</h1>
+                                <p className="text-sm text-subtle">
+                                  {item.description}
+                                </p>
+                              </div>
+                            </div>
+                          </FormLabel>
+                          {item.id !== "PRIVATE" && <Separator />}
+                        </FormItem>
+                      ))}
+                    </RadioGroup>
+                  </FormControl>
+                )}
+              />
+              <Button
+                className="ml-auto mt-5 block"
+                disabled={commentPrivacyMutation.isLoading}
+              >
+                Done
+              </Button>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete post confirmation */}
       <AlertDialog open={deleteAlert} onOpenChange={setDeleteAlert}>
         <AlertDialogContent>
           <AlertDialogHeader>

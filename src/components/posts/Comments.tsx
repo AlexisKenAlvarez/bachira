@@ -16,6 +16,7 @@ import { z } from "zod";
 import { Skeleton } from "../ui/skeleton";
 import CommentBox from "./CommentBox";
 import Image from "next/image";
+import { CommentPrivacyType } from "@/lib/postTypes";
 
 const Comments = ({
   user,
@@ -23,12 +24,18 @@ const Comments = ({
   postId,
   author,
   singlePage,
+  commentPrivacy,
+  follows,
+  authorId,
 }: {
   user: SessionUser;
   commentOpen: boolean;
   postId: number;
   author: string;
   singlePage: boolean;
+  commentPrivacy: CommentPrivacyType;
+  follows: boolean;
+  authorId: string;
 }) => {
   const router = useRouter();
   const utils = api.useUtils();
@@ -75,6 +82,28 @@ const Comments = ({
       comment: "",
     },
   });
+
+  const commentPrivacyList = [
+    {
+      id: "FOLLOWERS",
+      message:
+        user.id === authorId
+          ? "Write a comment..."
+          : follows
+          ? "Write a comment..."
+          : "Only followers can comment on this post.",
+      disabled: user.id === authorId ? false : follows ? false : true,
+    },
+    {
+      id: "PRIVATE",
+      message:
+        user.id === authorId
+          ? "Write a comment..."
+          : "Only the author can comment on this post.",
+      disabled: user.id === authorId ? false : follows ? true : true,
+    },
+  ];
+
   useEffect(() => {
     console.log(inView);
     if (inView || entry?.isIntersecting) {
@@ -184,7 +213,20 @@ const Comments = ({
                   <FormControl>
                     <TextareaAutosize
                       {...field}
-                      placeholder="Write a comment..."
+                      disabled={
+                        commentPrivacy === "PUBLIC"
+                          ? false
+                          : commentPrivacyList.find(
+                              (item) => item.id === commentPrivacy,
+                            )?.disabled
+                      }
+                      placeholder={
+                        commentPrivacy === "PUBLIC"
+                          ? "Write a comment..."
+                          : commentPrivacyList.find(
+                              (item) => item.id === commentPrivacy,
+                            )?.message
+                      }
                       maxLength={200}
                       className="h-full w-full resize-none rounded-md bg-bg px-3 py-2 pr-28 text-sm outline-0"
                     />

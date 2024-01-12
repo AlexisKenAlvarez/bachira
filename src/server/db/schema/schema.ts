@@ -99,6 +99,7 @@ export const posts = mysqlTable("posts", {
   createdAt,
   updatedAt,
   privacy: mysqlEnum("privacy", PRIVACY).default("PUBLIC"),
+  commentPrivacy: mysqlEnum("commentPrivacy", PRIVACY).default("PUBLIC"),
 });
 
 export const postComments = mysqlTable(
@@ -108,7 +109,6 @@ export const postComments = mysqlTable(
     postId: int("postId").notNull(),
     userId: varchar("userId", { length: 100 }).notNull(),
     text: text("text").notNull(),
-    privacy: mysqlEnum("privacy", PRIVACY).default("PUBLIC"),
   },
   (table) => {
     return {

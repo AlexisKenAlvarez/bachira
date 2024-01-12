@@ -5,7 +5,7 @@ import {
   notification,
   postComments,
   postLikes,
-  posts
+  posts,
 } from "@/server/db/schema/schema";
 import { TRPCError } from "@trpc/server";
 import { Ratelimit } from "@upstash/ratelimit";
@@ -40,7 +40,7 @@ export const postRouter = createTRPCRouter({
           )
           .nullable(),
         authorImage: z.string().nullish(),
-        username: z.string().nullish()
+        username: z.string().nullish(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -50,7 +50,10 @@ export const postRouter = createTRPCRouter({
         text: text,
         privacy: privacy,
       });
-      console.log("🚀 ~ file: posts.ts:77 ~ mentioned.forEach ~ authorImage:", authorImage)
+      console.log(
+        "🚀 ~ file: posts.ts:77 ~ mentioned.forEach ~ authorImage:",
+        authorImage,
+      );
       if (mentioned) {
         mentioned.forEach(async (mention) => {
           const user = await ctx.db.query.users.findFirst({
@@ -74,7 +77,6 @@ export const postRouter = createTRPCRouter({
                 image: authorImage,
                 postId: +postData.insertId,
               },
-                
             );
           }
         });
@@ -409,6 +411,21 @@ export const postRouter = createTRPCRouter({
       return {
         success: true,
       };
+    }),
+  editCommentPrivacy: privateProcedure
+    .input(
+      z.object({
+        postId: z.number(),
+        privacy: z.enum(["PUBLIC", "FOLLOWERS", "PRIVATE"]),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .update(posts)
+        .set({
+          commentPrivacy: input.privacy,
+        })
+        .where(eq(posts.id, input.postId));
     }),
 });
 

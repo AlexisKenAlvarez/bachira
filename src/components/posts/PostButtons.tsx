@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import LikeDialog from "./LikeDialog";
+import { CommentPrivacyType } from "@/lib/postTypes";
 
 interface postLike {
   postId: number;
@@ -32,6 +33,7 @@ interface PostType {
   postId: number;
   author: string;
   privacy: "PUBLIC" | "FOLLOWERS" | "PRIVATE" | null;
+  commentPrivacy: CommentPrivacyType
 }
 
 const PostButtons = ({
@@ -40,12 +42,14 @@ const PostButtons = ({
   user,
   post,
   singlePage,
+  follows
 }: {
   postLiked: boolean;
   userId: string;
   post: PostType;
   user: SessionUser;
   singlePage: boolean;
+  follows: boolean
 }) => {
   const { authorId, likes, postId, author } = post;
   const [liked, setLiked] = useState(postLiked);
@@ -204,11 +208,14 @@ const PostButtons = ({
       </div>
       <Separator />
       <Comments
+      follows={follows}
         user={user}
         commentOpen={commentOpen}
         postId={postId}
         author={author}
+        authorId={authorId}
         singlePage={singlePage}
+        commentPrivacy={post.commentPrivacy}
       />
     </div>
   );

@@ -21,3 +21,5 @@ export interface PostEditType {
   postId: number,
   author: string
 }
+
+export type CommentPrivacyType = "PUBLIC" | "FOLLOWERS" | "PRIVATE" 

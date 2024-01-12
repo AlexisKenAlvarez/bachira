@@ -33,6 +33,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import PostDialogContent from "./PostDialogContent";
+import { CommentPrivacyType } from "@/lib/postTypes";
 
 type PostType = RouterOutputs["posts"]["getPosts"]["postData"][0];
 type UserFollowingType = RouterOutputs["posts"]["getPosts"]["userFollowing"];
@@ -101,6 +102,8 @@ const PostData = ({
       console.log("DISLIKE ACTION");
     },
   });
+
+
 
   const handleFollow = async () => {
     try {
@@ -315,19 +318,24 @@ const PostData = ({
             userId={user.id}
             postId={post.id}
             openEdit={openEdit}
+            commentPrivacy={
+              post.commentPrivacy as "PUBLIC" | "FOLLOWERS" | "PRIVATE"
+            }
           />
         </div>
         <div className="mt-2">
-          {reactStringReplace(post.text, /@\[([^\]]+)\]/g, (match, i) => (
-            <Link
-              href={`/${match}`}
-              color="geekblue"
-              className="font-medium text-primary"
-              key={i}
-            >
-              @{match}
-            </Link>
-          ))}
+          <pre className="font-primary">
+            {reactStringReplace(post.text, /@\[([^\]]+)\]/g, (match, i) => (
+              <Link
+                href={`/${match}`}
+                color="geekblue"
+                className="font-medium text-primary"
+                key={i}
+              >
+                @{match}
+              </Link>
+            ))}
+          </pre>
         </div>
       </div>
 
@@ -338,8 +346,10 @@ const PostData = ({
           likes: post.likes,
           postId: post.id,
           privacy: post.privacy,
+          commentPrivacy: post.commentPrivacy as CommentPrivacyType
         }}
         singlePage={singlePage}
+        follows={follows}
         user={user}
         userId={user.id}
         postLiked={
