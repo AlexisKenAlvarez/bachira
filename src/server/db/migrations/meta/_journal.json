@@ -15,6 +15,13 @@
       "when": 1704796243058,
       "tag": "0001_perpetual_metal_master",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1705034264868,
+      "tag": "0002_brave_amazoness",
+      "breakpoints": true
     }
   ]
 }

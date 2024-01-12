@@ -59,3 +59,9 @@ export interface DialogUserType {
   username: string;
   userId: string;
 }
+
+export interface MentionedType {
+  username: string;
+  image: string;
+  id: string;
+}

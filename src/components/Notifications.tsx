@@ -31,6 +31,7 @@ const Notifications = ({
   const [recentNotif, setRecentNotif] = useState<NotificationType[]>([]);
   const [open, setOpen] = useState(false);
   const seen = api.notifications.seenNotifications.useMutation();
+  const utils = api.useUtils()
 
   const notificationHandler = (data: NotificationType) => {
     console.log(
@@ -55,6 +56,7 @@ const Notifications = ({
       console.log("Not sending notification, already notified");
     } else {
       setRecentNotif((prev) => [...prev, data]);
+      utils.notifications.getNotifications.invalidate()
       
       toast.dismiss("follow_toast");
       toast((t) => (

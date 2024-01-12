@@ -1,3 +1,4 @@
+import { RouterOutputs } from "@/trpc/shared"
 import { DatabaseUser, DatabaseUserWithImage } from "./userTypes"
 
 export interface CommentType {
@@ -23,3 +24,4 @@ export interface PostEditType {
 }
 
 export type CommentPrivacyType = "PUBLIC" | "FOLLOWERS" | "PRIVATE" 
+export type PostType = RouterOutputs["posts"]["getPosts"]["postData"][0];

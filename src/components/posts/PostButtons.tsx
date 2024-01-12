@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import LikeDialog from "./LikeDialog";
-import { CommentPrivacyType } from "@/lib/postTypes";
+import { CommentPrivacyType, PostType } from "@/lib/postTypes";
 
 interface postLike {
   postId: number;
@@ -27,33 +27,21 @@ interface postLike {
   user: DatabaseUser;
 }
 
-interface PostType {
-  authorId: string;
-  likes: postLike[];
-  postId: number;
-  author: string;
-  privacy: "PUBLIC" | "FOLLOWERS" | "PRIVATE" | null;
-  commentPrivacy: CommentPrivacyType
-}
-
 const PostButtons = ({
   postLiked,
-  userId,
   user,
   post,
   singlePage,
-  follows
+  follows,
 }: {
   postLiked: boolean;
-  userId: string;
   post: PostType;
   user: SessionUser;
   singlePage: boolean;
-  follows: boolean
+  follows: boolean;
 }) => {
-  const { authorId, likes, postId, author } = post;
   const [liked, setLiked] = useState(postLiked);
-  const [likeData, setLikeData] = useState<postLike[]>(likes);
+  const [likeData, setLikeData] = useState<postLike[]>(post.likes);
   const [commentOpen, setCommentOpen] = useState(false);
   const [likeOpen, setLikeOpen] = useState(false);
   const utils = api.useUtils();
@@ -68,8 +56,8 @@ const PostButtons = ({
 
       if (!liked) {
         const newLike: postLike = {
-          postId,
-          userId,
+          postId: post.id,
+          userId: user.id,
           user: {
             username: user.username,
           },
@@ -85,7 +73,7 @@ const PostButtons = ({
         ]);
       } else {
         setLikeData((prevState) =>
-          prevState.filter((like) => like.userId !== userId),
+          prevState.filter((like) => like.userId !== user.id),
         );
       }
 
@@ -139,7 +127,7 @@ const PostButtons = ({
             </DialogTrigger>
             <DialogContent className="px-2 pr-4 pt-2">
               <LikeDialog
-                postId={postId}
+                postId={post.id}
                 likeLength={likeData.length}
                 closeDialog={closeLikeDialog}
               />
@@ -155,11 +143,11 @@ const PostButtons = ({
             { "text-primary": liked },
           )}
           onClick={async () => {
-            await utils.notifications.countNotifications.invalidate()
+            await utils.notifications.countNotifications.invalidate();
             likeMutation.mutate({
-              postId,
-              userId,
-              authorId,
+              postId: post.id,
+              userId: user.id,
+              authorId: post.userId,
               action: liked ? "UNLIKE" : "LIKE",
               username: user.username,
               image: user.image as string,
@@ -197,7 +185,7 @@ const PostButtons = ({
               className="flex items-center gap-x-2 font-semibold"
               onClick={() => {
                 navigator.clipboard.writeText(
-                  `${process.env.NEXT_PUBLIC_BASE_URL}${author}/${postId}`,
+                  `${process.env.NEXT_PUBLIC_BASE_URL}${post.user.username}/${post.userId}`,
                 );
               }}
             >
@@ -208,14 +196,13 @@ const PostButtons = ({
       </div>
       <Separator />
       <Comments
-      follows={follows}
+        follows={follows}
         user={user}
         commentOpen={commentOpen}
-        postId={postId}
-        author={author}
-        authorId={authorId}
         singlePage={singlePage}
-        commentPrivacy={post.commentPrivacy}
+        commentPrivacy={post.commentPrivacy as CommentPrivacyType}
+        post={post}
+
       />
     </div>
   );

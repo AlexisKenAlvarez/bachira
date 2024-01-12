@@ -30,7 +30,7 @@ export const postRouter = createTRPCRouter({
         userId: z.string(),
         text: z.string(),
         privacy: z.enum(["PUBLIC", "FOLLOWERS", "PRIVATE"]),
-        mentioned: z
+        toMention: z
           .array(
             z.object({
               username: z.string(),
@@ -44,7 +44,7 @@ export const postRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { mentioned, userId, text, privacy, authorImage, username } = input;
+      const { toMention, userId, text, privacy, authorImage, username } = input;
       const postData = await ctx.db.insert(posts).values({
         userId: userId,
         text: text,
@@ -54,16 +54,16 @@ export const postRouter = createTRPCRouter({
         "🚀 ~ file: posts.ts:77 ~ mentioned.forEach ~ authorImage:",
         authorImage,
       );
-      if (mentioned) {
-        mentioned.forEach(async (mention) => {
+      if (toMention) {
+        toMention.forEach(async (toMention) => {
           const user = await ctx.db.query.users.findFirst({
-            where: (user, { eq }) => eq(user.username, mention.username),
+            where: (user, { eq }) => eq(user.username, toMention.username),
           });
 
           if (user) {
             await ctx.db.insert(notification).values({
               notificationFrom: userId,
-              notificationFor: mention.id,
+              notificationFor: toMention.id,
               postId: +postData.insertId,
               type: "MENTION_POST",
             });
@@ -227,14 +227,81 @@ export const postRouter = createTRPCRouter({
         userId: z.string(),
         postId: z.number(),
         text: z.string(),
+        username: z.string(),
+        image: z.string(),
+        authorId: z.string(),
+        toMention: z
+          .array(
+            z.object({
+              username: z.string(),
+              id: z.string(),
+              image: z.string(),
+            }),
+          )
+          .nullable(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const { toMention } = input;
+      let notifyAuthor = true;
+      console.log("🚀 ~ .mutation ~ toMention:", toMention);
       await ctx.db.insert(postComments).values({
         userId: input.userId,
         postId: input.postId,
         text: input.text,
       });
+
+      if (toMention) {
+        toMention.forEach(async (value) => {
+          // If you mentioned the author of the post, send only mentioned comment
+          if (value.id === input.authorId) {
+            notifyAuthor = false;
+          }
+          const user = await ctx.db.query.users.findFirst({
+            where: (user, { eq }) => eq(user.username, value.username),
+          });
+
+          if (user) {
+            await ctx.db.insert(notification).values({
+              notificationFrom: input.userId,
+              notificationFor: value.id,
+              postId: input.postId,
+              type: "MENTION_COMMENT",
+            });
+
+            pusherServer.trigger(
+              toPusherKey(`user:${value.id}:incoming_notification`),
+              "incoming_notification",
+              {
+                notificationFrom: input.username,
+                type: "MENTION_COMMENT",
+                image: value.image,
+                postId: input.postId,
+              },
+            );
+          }
+        });
+      }
+
+      if (notifyAuthor) {
+        await ctx.db.insert(notification).values({
+          notificationFrom: input.userId,
+          notificationFor: input.authorId,
+          postId: input.postId,
+          type: "COMMENT",
+        });
+
+        pusherServer.trigger(
+          toPusherKey(`user:${input.authorId}:incoming_notification`),
+          "incoming_notification",
+          {
+            notificationFrom: input.username,
+            type: "COMMENT",
+            image: input.image,
+            postId: input.postId,
+          },
+        );
+      }
 
       return {
         success: true,

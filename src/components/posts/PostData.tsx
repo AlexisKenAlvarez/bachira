@@ -3,18 +3,14 @@ import PostButtons from "@/components/posts/PostButtons";
 import { privacyData } from "@/lib/constants";
 import { SessionUser } from "@/lib/userTypes";
 import { timeAgo } from "@/lib/utils";
-import { api } from "@/trpc/react";
 import { RouterOutputs } from "@/trpc/shared";
-import { Settings, UserCheck2, UserPlus2 } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useState } from "react";
-import toast from "react-hot-toast";
 import reactStringReplace from "react-string-replace";
 
 import {
   HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
+  HoverCardTrigger
 } from "@/components/ui/hover-card";
 
 import Link from "next/link";
@@ -30,12 +26,11 @@ import {
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
+import { PostType } from "@/lib/postTypes";
 import { useRouter } from "next/navigation";
-import { Button } from "../ui/button";
+import ProfileCardContent from "../user/ProfileCardContent";
 import PostDialogContent from "./PostDialogContent";
-import { CommentPrivacyType } from "@/lib/postTypes";
 
-type PostType = RouterOutputs["posts"]["getPosts"]["postData"][0];
 type UserFollowingType = RouterOutputs["posts"]["getPosts"]["userFollowing"];
 
 const PostData = ({
@@ -50,84 +45,13 @@ const PostData = ({
   userFollowing: UserFollowingType;
 }) => {
   const [postOpen, setPostOpen] = useState(false);
-  const [follows, setFollow] = useState<boolean>(
+  const [
+    follows,
+    // setFollow
+  ] = useState<boolean>(
     userFollowing.some((obj) => obj.following_id === post.userId),
   );
   const router = useRouter();
-
-  const followUser = api.user.followUser.useMutation({
-    onMutate: () => {
-      const previousState = follows;
-
-      setFollow(true);
-
-      return {
-        previousLike: previousState,
-      };
-    },
-    onError(err, _, context) {
-      const errMessage = err.message;
-
-      if (errMessage === "TOO_MANY_REQUESTS") {
-        toast.error("You are doing that too much. Try again later.");
-      }
-
-      setFollow(context!.previousLike);
-    },
-    onSettled: () => {
-      console.log("LIKE ACTION");
-    },
-  });
-
-  const unfollow = api.user.followUser.useMutation({
-    onMutate: () => {
-      const previousState = follows;
-
-      setFollow(false);
-
-      return {
-        previousLike: previousState,
-      };
-    },
-    onError: (err, variables, context) => {
-      const errMessage = err.message;
-
-      if (errMessage === "TOO_MANY_REQUESTS") {
-        toast.error("You are doing that too much. Try again later.");
-      }
-
-      setFollow(context!.previousLike);
-    },
-    onSettled: () => {
-      console.log("DISLIKE ACTION");
-    },
-  });
-
-
-
-  const handleFollow = async () => {
-    try {
-      if (follows) {
-        // Unfollow user
-        await unfollow.mutateAsync({
-          followerId: user.id,
-          followingId: post.userId,
-          action: "unfollow",
-        });
-      } else {
-        // Follow user
-        await followUser.mutateAsync({
-          followerName: user.username,
-          followerId: user.id,
-          followingId: post.userId,
-          action: "follow",
-          image: user.image!,
-        });
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   const options = {
     weekday: "short",
@@ -135,72 +59,6 @@ const PostData = ({
     month: "long",
     day: "numeric",
   } as const;
-
-  const HoverContent = (
-    <HoverCardContent
-      side="bottom"
-      align="center"
-      sideOffset={20}
-      className=" w-fit space-y-3 p-4"
-    >
-      <div className="flex items-start gap-3">
-        <div className="shrink-0">
-          <Image
-            width={600}
-            height={600}
-            alt={post.user.username as string}
-            src={post.user.image as string}
-            className="w-11 rounded-full"
-          />
-        </div>
-        <div className="">
-          <div className="flex h-auto w-full justify-between font-primary">
-            <div className="">
-              <h2 className=" commit w-62 truncate text-base font-bold">
-                @{post.user.username as string}
-              </h2>
-              <h3 className="text-sm font-medium">
-                {post.user.name as string}
-              </h3>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="flex gap-x-2">
-        {post.userId === user.id ? (
-          <Button
-            className="group w-full gap-x-2 px-6 text-sm font-semibold"
-            disabled={!user}
-            variant="secondary"
-            onClick={() => router.push("/profile/edit")}
-          >
-            <Settings
-              size={18}
-              className="duration-500 ease-in-out group-hover:rotate-180"
-            />
-            Edit Profile
-          </Button>
-        ) : (
-          <Button
-            className="w-full px-7"
-            onClick={handleFollow}
-            disabled={status === "loading"}
-            variant={follows ? "secondary" : "default"}
-          >
-            {follows ? (
-              <span className="flex items-center gap-2">
-                <UserCheck2 /> Following
-              </span>
-            ) : (
-              <span className="flex items-center gap-2">
-                <UserPlus2 /> Follow
-              </span>
-            )}
-          </Button>
-        )}
-      </div>
-    </HoverCardContent>
-  );
 
   const closeEdit = useCallback(() => {
     setPostOpen(false);
@@ -246,7 +104,7 @@ const PostData = ({
                     />
                   </Link>
                 </HoverCardTrigger>
-                {HoverContent}
+                <ProfileCardContent isFollowing={follows} post={post} user={user}  />
               </HoverCard>
             </div>
             <div className="">
@@ -261,7 +119,7 @@ const PostData = ({
                     </h1>
                   </button>
                 </HoverCardTrigger>
-                {HoverContent}
+                <ProfileCardContent isFollowing={follows} post={post} user={user} />
               </HoverCard>
 
               <div className="-mt-[2px] flex gap-x-[5px]">
@@ -340,18 +198,10 @@ const PostData = ({
       </div>
 
       <PostButtons
-        post={{
-          authorId: post.userId,
-          author: post.user.username as string,
-          likes: post.likes,
-          postId: post.id,
-          privacy: post.privacy,
-          commentPrivacy: post.commentPrivacy as CommentPrivacyType
-        }}
+        post={post}
         singlePage={singlePage}
         follows={follows}
         user={user}
-        userId={user.id}
         postLiked={
           post.likes.some((obj) => obj.userId === user.id) ? true : false
         }

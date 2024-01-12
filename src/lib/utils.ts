@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { MentionedType } from "./userTypes";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -39,3 +40,49 @@ export const timeAgo = (created: string) => {
     return `${years} year${years > 1 ? "s" : ""} ago`;
   }
 };
+
+export function removeAddedDuplicates(array: MentionedType[], key: string) {
+  const seen = new Set();
+  return array.filter((obj) => {
+    const value = obj[key as keyof MentionedType];
+    if (!seen.has(value)) {
+      seen.add(value);
+      return true;
+    }
+    return false;
+  });
+}
+
+export function getToMentionUsers(text: string, mentioned: MentionedType[]) {
+  const toMention: MentionedType[] = [];
+  const pattern = /@\[([^\]]+)\]/g;
+
+  const matches = text.match(pattern);
+
+  if (matches) {
+    if (mentioned.length > matches.length) {
+      const newMentioned = removeAddedDuplicates(
+        mentioned,
+        "username",
+      );
+
+      matches.forEach((match) => {
+        newMentioned.forEach((item) => {
+          if (item.username === match.slice(2, -1)) {
+            toMention.push(item);
+          }
+        });
+      });
+    } else {
+      matches.forEach((match) => {
+        mentioned.forEach((item) => {
+          if (item.username === match.slice(2, -1)) {
+            toMention.push(item);
+          }
+        });
+      });
+    }    
+  }
+
+  return { toMention }
+}

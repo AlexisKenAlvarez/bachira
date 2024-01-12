@@ -53,6 +53,14 @@ const NotificationData = ({
     }
   };
 
+  const toProfile = [
+    'FOLLOW'
+  ]
+
+  const toPost = [
+    'LIKE_POST', 'LIKE_COMMENT', 'LIKE_REPLY', 'MENTION_POST', 'MENTION_COMMENT', 'COMMENT'
+  ]
+
   useEffect(() => {
     setTimeout(() => {
       const hasVerticalScrollbar = sheetRef.current
@@ -81,10 +89,12 @@ const NotificationData = ({
                 <Link
                   key={notif.id}
                   href={
-                    notif.type === "FOLLOW"
+                    toProfile.includes(notif.type)
                       ? `/${notif.notificationFrom.username}`
-                      : notif.type === "LIKE_POST" ? `${process.env.NEXT_PUBLIC_BASE_URL}${notif.notificationFor.username}/${notif.postId}` : ""
+                      : toPost.includes(notif.type) ? `${process.env.NEXT_PUBLIC_BASE_URL}${notif.notificationFor.username}/${notif.postId}` : ""
                   }
+
+
                   onClick={async () => {
                     setOpen(false);
                     await read.mutateAsync({
@@ -128,6 +138,9 @@ const NotificationData = ({
                   </div>
                 </Link>
               ))}
+              {page.notifications.length === 0 && 
+              <h1 className="font-primary text-center text-subtle text-sm">You have no notifications.</h1>
+              }
             </div>
           ))}
 

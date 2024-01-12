@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { cn } from "@/lib/utils";
+import { cn, getToMentionUsers, removeAddedDuplicates } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { ChevronDown, Loader, X } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -27,15 +27,10 @@ import { DialogClose } from "@/components/ui/dialog";
 
 import { Form, FormControl, FormField } from "@/components/ui/form";
 import { privacyData } from "@/lib/constants";
-import { DialogUserType } from "@/lib/userTypes";
+import { DialogUserType, MentionedType } from "@/lib/userTypes";
 import { PostEditType } from "@/lib/postTypes";
 import { useState } from "react";
-
-interface mentionedType {
-  username: string;
-  image: string;
-  id: string;
-}
+import MentionSuggestion from "./MentionSuggestion";
 
 const PostDialogContent = ({
   user,
@@ -55,7 +50,7 @@ const PostDialogContent = ({
   ] = useState(post ? true : false);
   const { userImage, username, userId } = user;
   const [toMention, setToMention] = useState("");
-  const [mentioned, setMentioned] = useState<mentionedType[]>([]);
+  const [mentioned, setMentioned] = useState<MentionedType[]>([]);
 
   const router = useRouter();
 
@@ -112,19 +107,7 @@ const PostDialogContent = ({
     callback(transformedDataArray);
   };
 
-  const renderSuggestion = (suggestion: SuggestionDataItem) => {
-    return (
-      <div className="flex gap-2 py-1">
-        <Avatar className="h-8 w-8">
-          <AvatarImage src={suggestion.image} className="object-cover" />
-          <AvatarFallback>
-            <Skeleton className="h-full w-full rounded-full" />
-          </AvatarFallback>
-        </Avatar>
-        <div>{suggestion.display}</div>
-      </div>
-    );
-  };
+
 
   const handleAdd = (id: string | number, display: string) => {
     const userData = mentionQuery.data?.searchedUsers.filter(
@@ -235,53 +218,13 @@ const PostDialogContent = ({
                 router.refresh();
                 closeDialog();
               } else {
-                const toMention: mentionedType[] = [];
-                const pattern = /@\[([^\]]+)\]/g;
-
-                const matches = data.text.match(pattern);
-
-                function removeDuplicates(array: mentionedType[], key: string) {
-                  const seen = new Set();
-                  return array.filter((obj) => {
-                    const value = obj[key as keyof mentionedType];
-                    if (!seen.has(value)) {
-                      seen.add(value);
-                      return true;
-                    }
-                    return false;
-                  });
-                }
-
-                if (matches) {
-                  if (mentioned.length > matches.length) {
-                    const newMentioned = removeDuplicates(
-                      mentioned,
-                      "username",
-                    );
-                    console.log("🚀 ~ file: PostDialogContent.tsx:258 ~ onSubmit={postForm.handleSubmit ~ newMentioned:", newMentioned)
-
-                    matches.forEach((match) => {
-                      newMentioned.forEach((item) => {
-                        if (item.username === match.slice(2, -1)) {
-                          toMention.push(item);
-                        }
-                      });
-                    });
-                  } else {
-                    matches.forEach((match) => {
-                      mentioned.forEach((item) => {
-                        if (item.username === match.slice(2, -1)) {
-                          toMention.push(item);
-                        }
-                      });
-                    });
-                  }    
-                }
-
+              
+                const { toMention } = getToMentionUsers(data.text, mentioned)
+            
                 await createPost.mutateAsync({
                   userId: userId,
                   ...data,
-                  mentioned: toMention,
+                  toMention,
                   authorImage: userImage,
                   username
                 });
@@ -301,10 +244,6 @@ const PostDialogContent = ({
             control={postForm.control}
             render={({ field }) => (
               <FormControl>
-                {/* <Textarea
-                  placeholder="What's on your mind?"
-                  className="w-full border-none py-1 font-primary text-lg outline-none"
-                /> */}
 
                 <MentionsInput
                   {...field}
@@ -317,7 +256,7 @@ const PostDialogContent = ({
                     displayTransform={(_, display) => `@${display}`}
                     appendSpaceOnAdd
                     data={fetchUsers}
-                    renderSuggestion={renderSuggestion}
+                    renderSuggestion={MentionSuggestion}
                     className="bg-primary/10"
                     markup="@[__display__]"
                     onAdd={handleAdd}

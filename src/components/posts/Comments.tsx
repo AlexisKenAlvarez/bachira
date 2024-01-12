@@ -1,13 +1,13 @@
 "use client";
 
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
-import { SessionUser } from "@/lib/userTypes";
-import { cn } from "@/lib/utils";
+import { MentionedType, SessionUser } from "@/lib/userTypes";
+import { cn, getToMentionUsers } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SendHorizontal } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useInView } from "react-intersection-observer";
@@ -16,27 +16,29 @@ import { z } from "zod";
 import { Skeleton } from "../ui/skeleton";
 import CommentBox from "./CommentBox";
 import Image from "next/image";
-import { CommentPrivacyType } from "@/lib/postTypes";
+import { CommentPrivacyType, PostType } from "@/lib/postTypes";
+import { Mention, MentionsInput, SuggestionDataItem } from "react-mentions";
+import defaultMentionStyle from "@/styles/commentBoxStyle";
+import MentionSuggestion from "./MentionSuggestion";
 
 const Comments = ({
   user,
   commentOpen,
-  postId,
-  author,
   singlePage,
   commentPrivacy,
   follows,
-  authorId,
+  post,
 }: {
   user: SessionUser;
   commentOpen: boolean;
-  postId: number;
-  author: string;
   singlePage: boolean;
   commentPrivacy: CommentPrivacyType;
   follows: boolean;
-  authorId: string;
+  post: PostType;
 }) => {
+  const [toMention, setToMention] = useState("");
+  const [mentioned, setMentioned] = useState<MentionedType[]>([]);
+
   const router = useRouter();
   const utils = api.useUtils();
   const [ref, inView, entry] = useInView({ trackVisibility: true, delay: 100 });
@@ -45,7 +47,7 @@ const Comments = ({
     api.posts.getComments.useInfiniteQuery(
       {
         limit: 5,
-        postId,
+        postId: post.id,
         singlePage,
       },
       {
@@ -70,6 +72,10 @@ const Comments = ({
     },
   });
 
+  const mentionQuery = api.user.mentionUser.useQuery({
+    username: toMention,
+  });
+
   const commentSchema = z.object({
     comment: z.string().min(1).max(200),
   });
@@ -87,22 +93,60 @@ const Comments = ({
     {
       id: "FOLLOWERS",
       message:
-        user.id === authorId
+        user.id === post.userId
           ? "Write a comment..."
           : follows
           ? "Write a comment..."
           : "Only followers can comment on this post.",
-      disabled: user.id === authorId ? false : follows ? false : true,
+      disabled: user.id === post.userId ? false : follows ? false : true,
     },
     {
       id: "PRIVATE",
       message:
-        user.id === authorId
+        user.id === post.userId
           ? "Write a comment..."
           : "Only the author can comment on this post.",
-      disabled: user.id === authorId ? false : follows ? true : true,
+      disabled: user.id === post.userId ? false : follows ? true : true,
     },
   ];
+
+  const fetchUsers = (
+    query: string,
+    callback: (data: SuggestionDataItem[]) => void,
+  ) => {
+    setToMention(query);
+
+    const transformedDataArray = mentionQuery.data?.searchedUsers.map(
+      (item) => ({
+        display: item.username,
+        id: item.id,
+        image: item.image as string,
+      }),
+    );
+
+    if (transformedDataArray === undefined) {
+      return;
+    }
+
+    callback(transformedDataArray);
+  };
+
+  const handleAdd = (id: string | number, display: string) => {
+    const userData = mentionQuery.data?.searchedUsers.filter(
+      (user) => user.username === display,
+    );
+    console.log(id);
+    if (userData) {
+      setMentioned((data) => [
+        ...data,
+        {
+          username: userData[0]?.username as string,
+          image: userData[0]?.image as string,
+          id: userData[0]?.id as string,
+        },
+      ]);
+    }
+  };
 
   useEffect(() => {
     console.log(inView);
@@ -114,12 +158,12 @@ const Comments = ({
   return (
     <div
       className={cn(
-        "relative z-10 max-h-0 overflow-hidden transition-all duration-500 ease-in-out",
+        " z-10 max-h-0 overflow-hidden opacity-0 transition-all duration-500 ease-in-out",
         {
-          "max-h-72":
+          "max-h-72 overflow-visible opacity-100":
             commentOpen || data?.pages[0]?.commentData.length || -1 > 0,
         },
-        { "max-h-full": singlePage },
+        { "max-h-full overflow-visible opacity-100": singlePage },
       )}
     >
       <div>
@@ -132,7 +176,7 @@ const Comments = ({
                 if (singlePage) {
                   fetchNextPage();
                 } else {
-                  router.push(`/${author}/${postId}`);
+                  router.push(`/${post.user.username}/${post.id}`);
                 }
               }}
             >
@@ -157,7 +201,8 @@ const Comments = ({
                     <CommentBox
                       data={commentData}
                       user={user}
-                      postId={postId}
+                      post={post}
+                      follows={follows}
                     />
                   </div>
                 )),
@@ -177,15 +222,20 @@ const Comments = ({
           ) : (
             data?.pages[0]?.commentData.slice(0, 1).map((commentData) => (
               <div key={commentData.id}>
-                <CommentBox data={commentData} user={user} postId={postId} />
+                <CommentBox
+                  data={commentData}
+                  user={user}
+                  post={post}
+                  follows={follows}
+                />
               </div>
             ))
           )}
         </div>
       </div>
       {/* Comment Input Area Below */}
-      <div className="flex w-full items-start gap-2  px-5 pb-1 pt-3">
-        <div className="relative mt-1 h-8 w-8 shrink-0 overflow-hidden rounded-full">
+      <div className="flex w-full items-start gap-2  px-5 pb-3 pt-3">
+        <div className=" mt-1 h-8 w-8 shrink-0 overflow-hidden rounded-full ">
           <Image
             width="500"
             height="500"
@@ -196,23 +246,29 @@ const Comments = ({
         </div>
         <Form {...commentForm}>
           <form
-            onSubmit={commentForm.handleSubmit(async (data: commentType) =>
+            onSubmit={commentForm.handleSubmit((data: commentType) => {
+              const { toMention } = getToMentionUsers(data.comment, mentioned);
+
               commentMutation.mutateAsync({
                 text: data.comment,
-                postId,
+                postId: post.id,
                 userId: user.id,
-              }),
-            )}
-            className="flex w-full items-center gap-2"
+                authorId: post.userId,
+                username: user.username,
+                image: user.image as string,
+                toMention
+              });
+            })}
+            className="flex w-full min-w-0 items-center gap-2"
           >
             <FormField
               control={commentForm.control}
               name="comment"
               render={({ field }) => (
-                <FormItem className="relative w-full">
-                  <FormControl>
-                    <TextareaAutosize
-                      {...field}
+                <FormItem className="flex h-auto w-full items-start rounded-md bg-bg">
+                  <FormControl className="!h-auto" id="Form control">
+                    <MentionsInput
+                      singleLine={false}
                       disabled={
                         commentPrivacy === "PUBLIC"
                           ? false
@@ -220,6 +276,7 @@ const Comments = ({
                               (item) => item.id === commentPrivacy,
                             )?.disabled
                       }
+                      {...field}
                       placeholder={
                         commentPrivacy === "PUBLIC"
                           ? "Write a comment..."
@@ -228,33 +285,44 @@ const Comments = ({
                             )?.message
                       }
                       maxLength={200}
-                      className="h-full w-full resize-none rounded-md bg-bg px-3 py-2 pr-28 text-sm outline-0"
-                    />
+                      className="h-full w-full resize-none rounded-md bg-bg px-3 py-2 text-sm outline-0"
+                      style={defaultMentionStyle}
+                    >
+                      <Mention
+                        trigger="@"
+                        displayTransform={(_, display) => `@${display}`}
+                        appendSpaceOnAdd
+                        data={fetchUsers}
+                        renderSuggestion={MentionSuggestion}
+                        className="bg-primary/10"
+                        markup="@[__display__]"
+                        onAdd={handleAdd}
+                      />
+                    </MentionsInput>
                   </FormControl>
-                  <button
-                    className={cn(
-                      "pointer-events-none  absolute right-4 top-[2px] opacity-50",
-                      {
+                  <div className="!mt-3 flex shrink-0 flex-row-reverse items-center gap-2  pr-4">
+                    <button
+                      className={cn("pointer-events-none  opacity-50", {
                         "pointer-events-auto opacity-100":
                           commentForm.formState.isValid,
-                      },
-                    )}
-                    disabled={
-                      commentMutation.isLoading ||
-                      !commentForm.formState.isValid
-                    }
-                  >
-                    <SendHorizontal
-                      className=""
-                      size={16}
-                      fill="#3066b2"
-                      stroke="#3066b2"
-                    />
-                  </button>
+                      })}
+                      disabled={
+                        commentMutation.isLoading ||
+                        !commentForm.formState.isValid
+                      }
+                    >
+                      <SendHorizontal
+                        className=""
+                        size={16}
+                        fill="#3066b2"
+                        stroke="#3066b2"
+                      />
+                    </button>
 
-                  <p className="absolute  right-10 top-[2px] text-xs text-subtle">
-                    {commentForm.watch("comment").length}/200
-                  </p>
+                    <p className="text-xs text-subtle">
+                      {commentForm.watch("comment").length}/200
+                    </p>
+                  </div>
                 </FormItem>
               )}
             />
