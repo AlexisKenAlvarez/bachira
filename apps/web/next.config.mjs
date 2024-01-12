@@ -8,6 +8,7 @@ await import("./src/env.mjs");
 
 /** @type {import("next").NextConfig} */
 const config = {
+  transpilePackages: ["@repo/ui"],
   images: {
   //  domains: ["lh3.googleusercontent.com", "utfs.io", "uploadthing.com"]
   remotePatterns: [
