@@ -109,7 +109,7 @@ const PostDialogContent = ({
 
 
 
-  const handleAdd = (id: string | number, display: string) => {
+  const handleAdd = async (id: string | number, display: string) => {
     const userData = mentionQuery.data?.searchedUsers.filter(
       (user) => user.username === display,
     );
