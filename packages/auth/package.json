@@ -1,0 +1,40 @@
+{
+  "name": "@bachira/auth",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main":"./src/index.ts",
+  "types": "./src/index.ts",
+  "license": "MIT",
+  "scripts": {
+    "clean": "rm -rf .turbo node_modules",
+    "format": "prettier --check . --ignore-path ../../.gitignore",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@bachira/db": "workspace:*",
+    "@auth/drizzle-adapter": "^0.3.12",
+    "@t3-oss/env-nextjs": "^0.7.1",
+    "next": "^14.0.4",
+    "next-auth": "^4.24.5",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@bachira/eslint-config": "workspace:^0.2.0",
+    "@bachira/prettier-config": "workspace:^0.1.0",
+    "@bachira/tsconfig": "workspace:^0.1.0",
+    "eslint": "^8.56.0",
+    "prettier": "^3.1.1",
+    "typescript": "^5.3.3"
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "@bachira/eslint-config/base"
+    ]
+  },
+  "prettier": "@bachira/prettier-config"
+}

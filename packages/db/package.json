@@ -1,0 +1,38 @@
+{
+  "name": "@bachira/db",
+  "version": "0.1.0",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "db:push": "pnpm with-env drizzle-kit push:mysql -- --verbose",
+    "db:studio": "pnpm with-env drizzle-kit studio --verbose",
+    "db:generate": "pnpm with-env drizzle-kit generate:mysql",
+    "clean": "rm -rf .turbo node_modules",
+    "with-env": "dotenv -e ../../.env --"
+  },
+  "dependencies": {
+    
+    "@planetscale/database": "^1.13.0",
+    "drizzle-orm": "^0.29.3"
+  },
+  "devDependencies": {
+    "@bachira/eslint-config": "workspace:^0.2.0",
+    "@bachira/prettier-config": "workspace:^0.1.0",
+    "@bachira/tsconfig": "workspace:^0.1.0",
+    "dotenv-cli": "^7.3.0",
+    "drizzle-kit": "^0.20.10",
+    "eslint": "^8.56.0",
+    "prettier": "^3.1.1",
+    "typescript": "^5.3.3"
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "@bachira/eslint-config/base"
+    ]
+  },
+  "prettier": "@bachira/prettier-config"
+}

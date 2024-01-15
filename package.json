@@ -1,22 +1,29 @@
 {
-  "name": "bachiramono",
+  "name": "create-t3-turbo",
   "private": true,
+  "packageManager": "pnpm@8.14.0",
   "scripts": {
     "build": "turbo build",
-    "dev": "turbo dev",
-    "www:dev": "turbo --filter www dev",
-    "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "clean": "git clean -xdf node_modules",
+    "clean:workspaces": "turbo clean",
+    "db:push": "pnpm turbo --filter @bachira/db db:push --no-daemon",
+    "db:studio": "pnpm turbo --filter @bachira/db db:studio --no-daemon",
+    "db:migrate": "pnpm turbo --filter @bachira/db db:generate --no-daemon",
+    "dev": "turbo dev --parallel",
+    "format": "turbo format --continue -- --cache --cache-location node_modules/.cache/.prettiercache",
+    "format:fix": "turbo format --continue -- --write --cache --cache-location node_modules/.cache/.prettiercache",
+    "lint": "turbo lint --continue -- --cache --cache-location node_modules/.cache/.eslintcache",
+    "lint:fix": "turbo lint --continue -- --fix --cache --cache-location node_modules/.cache/.eslintcache",
+    "lint:ws": "pnpm dlx sherif@latest",
+    "postinstall": "pnpm lint:ws",
+    "typecheck": "turbo typecheck"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
-    "dotenv-cli": "^7.3.0",
+    "@bachira/prettier-config": "workspace:^0.1.0",
+    "@turbo/gen": "^1.11.3",
     "prettier": "^3.1.1",
-    "turbo": "latest"
+    "turbo": "^1.11.3",
+    "typescript": "^5.3.3"
   },
-  "packageManager": "pnpm@8.9.0",
-  "engines": {
-    "node": ">=18"
-  }
+  "prettier": "@bachira/prettier-config"
 }
