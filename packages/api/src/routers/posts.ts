@@ -246,7 +246,7 @@ export const postRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { toMention } = input;
       let notifyAuthor = true;
-      console.log("🚀 ~ .mutation ~ toMention:", toMention);
+
       await ctx.db.insert(postComments).values({
         userId: input.userId,
         postId: input.postId,
@@ -285,7 +285,7 @@ export const postRouter = createTRPCRouter({
         });
       }
 
-      if (notifyAuthor) {
+      if (notifyAuthor && input.authorId !== input.userId) {
         await ctx.db.insert(notification).values({
           notificationFrom: input.userId,
           notificationFor: input.authorId,

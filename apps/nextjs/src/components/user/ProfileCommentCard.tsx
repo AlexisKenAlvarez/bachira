@@ -1,10 +1,10 @@
 import type { CommentType } from "@/lib/postTypes";
-import type { SessionUser, UserFollowingType } from "@/lib/userTypes";
-import { useEffect, useState } from "react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+import type { SessionUser } from "@/lib/userTypes";
 import { api } from "@/trpc/client";
 import { Settings, UserCheck2, UserPlus2 } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 import { Button } from "../ui/button";
@@ -17,17 +17,17 @@ const ProfileCommentCard = ({
 }: {
   data?: CommentType;
   user: SessionUser;
-  userFollowing?: UserFollowingType;
+  userFollowing: boolean;
 }) => {
   const utils = api.useUtils();
-  const [follows, setFollow] = useState<boolean>(false);
+  const [follows, setFollow] = useState<boolean>(userFollowing);
   const router = useRouter();
   const followMutation = api.user.followUser.useMutation({
     onMutate: () => {
       const previousState = follows;
 
       return {
-        previousLike: previousState
+        previousLike: previousState,
       };
     },
     onError(err) {
@@ -36,6 +36,9 @@ const ProfileCommentCard = ({
       if (errMessage === "TOO_MANY_REQUESTS") {
         toast.error("You are doing that too much. Try again later.");
       }
+    },
+    onSuccess: async () => {
+      await utils.user.postFollowing.invalidate();
     },
   });
 
@@ -58,21 +61,14 @@ const ProfileCommentCard = ({
           image: user.image!,
         });
       }
-      await utils.user.postFollowing.invalidate();
-      console.log("INVLIADTED");
     } catch (error) {
       console.log(error);
     }
   };
 
   useEffect(() => {
-    setFollow(
-      userFollowing?.some(
-        (obj: { following_id: string }) => obj.following_id === data?.userId,
-      ) ?? false,
-    );
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userFollowing, follows]);
+    setFollow(userFollowing);
+  }, [userFollowing]);
 
   return (
     <HoverCardContent
@@ -98,9 +94,7 @@ const ProfileCommentCard = ({
               <h2 className=" commit w-62 truncate text-base font-bold">
                 @{data?.user.username}
               </h2>
-              <h3 className="text-sm font-medium">
-                {data?.user.name}
-              </h3>
+              <h3 className="text-sm font-medium">{data?.user.name}</h3>
             </div>
           </div>
         </div>

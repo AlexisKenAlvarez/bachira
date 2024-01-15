@@ -1,5 +1,11 @@
 "use client";
 
+import type { PostType } from "@/lib/postTypes";
+import type { SessionUser, UserFollowingType } from "@/lib/userTypes";
+import React, { useCallback, useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import PostButtons from "@/components/posts/PostButtons";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { HoverCard, HoverCardTrigger } from "@/components/ui/hover-card";
@@ -10,13 +16,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { privacyData } from "@/lib/constants";
-import type { PostType } from "@/lib/postTypes";
-import type { SessionUser, UserFollowingType } from "@/lib/userTypes";
 import { timeAgo } from "@/lib/utils";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import React, { useCallback, useState } from "react";
 import reactStringReplace from "react-string-replace";
 
 import ProfileCardContent from "../user/ProfileCardContent";
@@ -35,14 +35,6 @@ const PostData = ({
   userFollowing: UserFollowingType;
 }) => {
   const [postOpen, setPostOpen] = useState(false);
-  const [
-    follows,
-    // setFollow
-  ] = useState<boolean>(
-    userFollowing.some(
-      (obj: { following_id: string }) => obj.following_id === post.userId,
-    )
-  );
   const router = useRouter();
 
   const options = {
@@ -63,7 +55,6 @@ const PostData = ({
   // useEffect(() => {
   //   console.log(follows, post?.id);
   // }, [userFollowing])
-  
 
   return (
     <div className="h-fit w-full rounded-md bg-white">
@@ -104,7 +95,12 @@ const PostData = ({
                 <ProfileCardContent
                   post={post}
                   user={user}
-                  userFollowing={userFollowing}
+                  userFollowing={
+                    userFollowing?.some(
+                      (obj: { following_id: string }) =>
+                        obj.following_id === post?.userId,
+                    ) ?? false
+                  }
                 />
               </HoverCard>
             </div>
@@ -120,6 +116,12 @@ const PostData = ({
                 <ProfileCardContent
                   post={post}
                   user={user}
+                  userFollowing={
+                    userFollowing?.some(
+                      (obj: { following_id: string }) =>
+                        obj.following_id === post?.userId,
+                    ) ?? false
+                  }
                 />
               </HoverCard>
 
@@ -201,7 +203,6 @@ const PostData = ({
       <PostButtons
         post={post}
         singlePage={singlePage}
-        follows={follows}
         userFollowing={userFollowing}
         user={user}
         postLiked={
