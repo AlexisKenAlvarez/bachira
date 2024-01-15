@@ -36,7 +36,9 @@ const FeedPosts = ({
         getNextPageParam: (lastPage) => {
           return lastPage.nextCursor;
         },
-        retry: false
+        retry: false,
+        refetchOnWindowFocus: "always",
+        
       },
     );
 
