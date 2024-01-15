@@ -67,7 +67,7 @@
     "react-mentions": "^4.4.10",
     "react-string-replace": "^1.1.1",
     "react-textarea-autosize": "^8.5.3",
-    "sharp": "^0.33.1",
+    "sharp": "0.33.1",
     "superjson": "^2.2.1",
     "tailwind-merge": "^2.2.0",
     "tailwindcss-animate": "^1.0.7",
