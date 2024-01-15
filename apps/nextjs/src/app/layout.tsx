@@ -2,8 +2,7 @@ import "@/styles/globals.css";
 
 import AddUsername from "@/components/auth/AddUsername";
 import TRPCProvider from "@/trpc/TRPCProvider";
-import { authOptions } from "@bachira/auth";
-import { getServerSession } from "next-auth";
+import { getServerAuthSession } from "@bachira/auth";
 import { Montserrat } from "next/font/google";
 
 import type { Metadata } from "next";
@@ -29,7 +28,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerAuthSession()
 
   console.log(session?.user)
   return (
