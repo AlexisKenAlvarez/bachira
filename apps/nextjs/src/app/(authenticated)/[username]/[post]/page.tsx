@@ -1,9 +1,9 @@
-import FeedPosts from "@/components/posts/FeedPosts";
+// import FeedPosts from "@/components/posts/FeedPosts";
 import { authOptions } from "@bachira/auth";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
-const page = async ({ params }: { params: { post: number } }) => {
+const page = async () => {
   const session = await getServerSession(authOptions);
 
   if (!session || !session?.user) {
@@ -12,7 +12,7 @@ const page = async ({ params }: { params: { post: number } }) => {
 
   return (
     <div className="font-primary mt-4 pb-5">
-      <FeedPosts user={session.user} postId={+params.post} />
+      {/* <FeedPosts user={session.user} postId={+params.post} /> */}
     </div>
   );
 };

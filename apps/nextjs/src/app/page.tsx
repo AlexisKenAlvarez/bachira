@@ -1,5 +1,5 @@
 // import FeedPosts from "@/components/posts/FeedPosts";
-import Post from "@/components/posts/Post";
+// import Post from "@/components/posts/Post";
 import { getServerAuthSession } from "@bachira/auth";
 import { redirect } from "next/navigation";
 
@@ -17,7 +17,7 @@ const page = async () => {
     <div className="flex-1">
 
       <div className="mt-4 w-full h-auto">
-        <Post userData={session} />
+        {/* <Post userData={session} /> */}
         <div className="mt-4 min-h-screen w-full rounded-md font-primary pb-10">
           {/* <FeedPosts user={session.user}  /> */}
         </div>
