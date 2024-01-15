@@ -28,9 +28,12 @@ const Notifications = ({
   notifCount: number;
 }) => {
   const [count, setCount] = useState<number>(Number(notifCount));
+
   const [recentNotif, setRecentNotif] = useState<NotificationType[]>([]);
   const [open, setOpen] = useState(false);
   const seen = api.notifications.seenNotifications.useMutation();
+
+  
 
   const notificationHandler = (data: NotificationType) => {
     console.log(
@@ -104,6 +107,7 @@ const Notifications = ({
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recentNotif]);
+
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>

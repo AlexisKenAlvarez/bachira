@@ -9,6 +9,7 @@ import type { Metadata } from "next";
 import { Toaster } from "react-hot-toast";
 import Nav from "../components/Nav";
 import Providers from "./providers";
+import { api } from "@/trpc/server";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -30,6 +31,13 @@ export default async function RootLayout({
 }) {
   const session = await getServerAuthSession()
 
+  const countData =
+    session &&
+    (await api.notifications.countNotifications.query({
+      userId: session.user.id,
+      seen: false,
+    }));
+
   console.log(session?.user)
   return (
     <TRPCProvider>
@@ -45,7 +53,7 @@ export default async function RootLayout({
                   username={session.user.username}
                   image={session.user.image!}
                   userId={session.user.id}
-
+                  notifCount={countData ? (countData[0]?.count as number) : 0}
                 />
 
                 <Providers>

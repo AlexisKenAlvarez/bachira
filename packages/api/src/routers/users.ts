@@ -417,20 +417,33 @@ export const userRouter = createTRPCRouter({
         searchedUsers,
       };
     }),
-  postFollowing: privateProcedure.input(
-    z.object({
-      userId: z.string(),
-    }),
-  )
-  .query(async ({ ctx, input }) => {
-    const userFollowing = await ctx.db.query.followership.findMany({
-      where: (followership, { eq }) => eq(followership.follower_id, input.userId),
-    });
+  postFollowing: privateProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const userFollowing = await ctx.db.query.followership.findMany({
+        where: (followership, { eq }) =>
+          eq(followership.follower_id, input.userId),
+      });
 
-    return {
-      userFollowing,
-    };
-  }),
+      return {
+        userFollowing,
+      };
+    }),
+  test: privateProcedure
+    .input(
+      z.object({
+        msg: z.string(),
+      }),
+    )
+    .query(() => {
+      return {
+        msg: "Hello World",
+      };
+    }),
 });
 
 export type UserRouter = typeof userRouter;

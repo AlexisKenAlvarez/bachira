@@ -20,26 +20,22 @@ import { Input } from "./ui/input";
 import { Skeleton } from "./ui/skeleton";
 import SearchUser from "./user/SearchUser";
 import { debounce } from "lodash";
-import { api } from "@/trpc/client";
 
 const Nav = ({
   email,
   username,
   image,
   userId,
+  notifCount
 }: {
   email: string;
   username: string;
   image: string;
   userId: string;
+  notifCount: number
 }) => {
   const [open, setOpen] = useState(false);
   const [searchValue, setValue] = useState("");
-
-  const countQuery = api.notifications.countNotifications.useQuery({
-    userId,
-    seen: false,
-  })
 
   const search = debounce((value: string) => {
     setValue(value);
@@ -101,7 +97,7 @@ const Nav = ({
       </div>
 
       <div className="flex gap-2">
-        <Notifications userId={userId} notifCount={countQuery.data ? (countQuery.data[0]?.count as number) : 0} />
+        <Notifications userId={userId} notifCount={notifCount} />
         <DropdownMenu>
           <DropdownMenuTrigger className="">
             <Avatar className="">
