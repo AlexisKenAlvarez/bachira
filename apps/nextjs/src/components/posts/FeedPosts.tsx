@@ -20,6 +20,7 @@ const FeedPosts = ({
 }) => {
   const [ref, inView] = useInView();
 
+
   const followingQuery = api.user.postFollowing.useQuery({
     userId: user.id
   })
@@ -50,7 +51,6 @@ const FeedPosts = ({
       }
     })()
   }, [inView]);
-
 
   return (
     <div className="h-full w-full space-y-4 px-3 lg:px-0">

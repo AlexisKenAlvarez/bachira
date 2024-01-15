@@ -21,13 +21,11 @@ const CommentBox = ({
   data,
   user,
   post,
-
-  userFollowing
+  userFollowing,
 }: {
   data: CommentType;
   user: SessionUser;
   post: PostType;
-
   userFollowing: UserFollowingType;
 }) => {
   const router = useRouter();
@@ -66,7 +64,16 @@ const CommentBox = ({
               />
             </Link>
           </HoverCardTrigger>
-          <ProfileCommentCard data={data} user={user} userFollowing={userFollowing} />
+          <ProfileCommentCard
+            data={data}
+            user={user}
+            userFollowing={
+              userFollowing?.some(
+                (obj: { following_id: string }) =>
+                  obj.following_id === data?.userId,
+              ) ?? false
+            }
+          />
         </HoverCard>
       </div>
       <div className="w-full rounded-md bg-bg p-2 text-sm">
@@ -79,7 +86,16 @@ const CommentBox = ({
               {data.user.username}
             </h1>
           </HoverCardTrigger>
-          <ProfileCommentCard data={data} user={user} userFollowing={userFollowing} />
+          <ProfileCommentCard
+            data={data}
+            user={user}
+            userFollowing={
+              userFollowing?.some(
+                (obj: { following_id: string }) =>
+                  obj.following_id === data?.userId,
+              ) ?? false
+            }
+          />
         </HoverCard>
 
         <pre className="font-primary">
