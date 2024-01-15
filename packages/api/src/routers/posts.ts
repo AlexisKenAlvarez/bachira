@@ -254,7 +254,7 @@ export const postRouter = createTRPCRouter({
       });
 
       if (toMention) {
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises, @typescript-eslint/no-misused-promises
         toMention.forEach(async (value) => {
           if (value.id === input.authorId) {
             notifyAuthor = false;
