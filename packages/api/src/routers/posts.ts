@@ -13,6 +13,7 @@ import {
 
 import { pusherServer, toPusherKey } from "../../lib/pusher";
 import { createTRPCRouter, privateProcedure } from "../trpc";
+import { FollowershipSchema } from "../../lib/zodSchema";
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
@@ -241,7 +242,10 @@ export const postRouter = createTRPCRouter({
             }),
           )
           .nullable(),
+        userFollowing: z.array(FollowershipSchema)
+        
       }),
+
     )
     .mutation(async ({ ctx, input }) => {
       const { toMention } = input;
@@ -252,6 +256,20 @@ export const postRouter = createTRPCRouter({
         postId: input.postId,
         text: input.text,
       });
+
+      const postPrivacy = await ctx.db.query.posts.findFirst({
+        where: (posts, { eq }) => eq(posts.id, input.postId),
+        columns: {
+          commentPrivacy: true,
+        }
+      })
+
+      if (postPrivacy?.commentPrivacy === "FOLLOWERS" && input.userFollowing.some((user) => user.following_id !== input.authorId) === false) {
+        console.log("UNPORCS");
+        throw new TRPCError({ code: "UNPROCESSABLE_CONTENT" });
+      } else if (postPrivacy?.commentPrivacy === "PRIVATE" && input.authorId !== input.userId) {
+        throw new TRPCError({ code: "UNPROCESSABLE_CONTENT" });
+      }
 
       if (toMention) {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises, @typescript-eslint/no-misused-promises

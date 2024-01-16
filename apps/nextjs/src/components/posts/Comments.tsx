@@ -166,10 +166,10 @@ const Comments = ({
       </div>
 
       {commentPrivacy === "PUBLIC" ? (
-        <CommentInput user={user} post={post} />
+        <CommentInput user={user} post={post} userFollowing={userFollowing} />
       ) : commentPrivacyList.find((item) => item.id === commentPrivacy)
           ?.disabled === false ? (
-        <CommentInput user={user} post={post} />
+        <CommentInput user={user} post={post} userFollowing={userFollowing} />
       ) : (
         <p className="text-subtle text-center text-sm p-5">
           {

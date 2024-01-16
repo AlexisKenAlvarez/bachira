@@ -1,5 +1,9 @@
 import type { PostType } from "@/lib/postTypes";
-import type { MentionedType, SessionUser } from "@/lib/userTypes";
+import type {
+  MentionedType,
+  SessionUser,
+  UserFollowingType,
+} from "@/lib/userTypes";
 import type { SuggestionDataItem } from "react-mentions";
 import { useState } from "react";
 import Image from "next/image";
@@ -19,9 +23,11 @@ import MentionSuggestion from "./MentionSuggestion";
 const CommentInput = ({
   user,
   post,
+  userFollowing,
 }: {
   user: SessionUser;
   post: PostType;
+  userFollowing: UserFollowingType;
 }) => {
   const utils = api.useUtils();
   const [toMention, setToMention] = useState("");
@@ -33,6 +39,8 @@ const CommentInput = ({
 
       if (errMessage === "TOO_MANY_REQUESTS") {
         toast.error("You are doing that too much. Try again later.");
+      } else if (errMessage === "UNPROCESSABLE_CONTENT") {
+        toast.error("The author may have changed the post's comment privacy");
       }
     },
     onSuccess: async () => {
@@ -111,17 +119,21 @@ const CommentInput = ({
       <Form {...commentForm}>
         <form
           onSubmit={commentForm.handleSubmit(async (data: commentType) => {
-            const { toMention } = getToMentionUsers(data.comment, mentioned);
-
-            await commentMutation.mutateAsync({
-              text: data.comment,
-              postId: post.id,
-              userId: user.id,
-              authorId: post.userId,
-              username: user.username,
-              image: user.image ?? "",
-              toMention,
-            });
+            try {
+              const { toMention } = getToMentionUsers(data.comment, mentioned);
+              await commentMutation.mutateAsync({
+                text: data.comment,
+                postId: post.id,
+                userId: user.id,
+                authorId: post.userId,
+                username: user.username,
+                image: user.image ?? "",
+                toMention,
+                userFollowing,
+              });
+            } catch (error) {
+              console.log(error);
+            }
           })}
           className="flex w-full min-w-0 items-center gap-2"
         >
