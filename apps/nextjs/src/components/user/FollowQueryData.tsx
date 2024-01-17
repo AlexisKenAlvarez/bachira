@@ -4,11 +4,11 @@
 import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DialogHeader, DialogTitle } from "@/ui/dialog";
 import { api } from "@/trpc/client";
 import { useInView } from "react-intersection-observer";
 
-import { Separator } from "../ui/separator";
+import { Separator } from "@/ui/separator";
 
 const FollowQueryData = ({
   type,

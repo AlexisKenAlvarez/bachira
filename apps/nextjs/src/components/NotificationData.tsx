@@ -11,7 +11,7 @@ import { Separator } from "@radix-ui/react-dropdown-menu";
 import { User } from "lucide-react";
 
 import UserSkeleton from "./skeleton/UserSkeleton";
-import { SheetContent, SheetHeader, SheetTitle } from "./ui/sheet";
+import { SheetContent, SheetHeader, SheetTitle } from "@/ui/sheet";
 import { useInView } from "react-intersection-observer";
 
 const NotificationData = ({

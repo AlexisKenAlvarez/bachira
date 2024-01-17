@@ -8,13 +8,13 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/ui/dropdown-menu";
 import { api } from "@/trpc/client";
 import { MoreHorizontal } from "lucide-react";
 import toast from "react-hot-toast";
 import reactStringReplace from "react-string-replace";
 
-import { HoverCard, HoverCardTrigger } from "../ui/hover-card";
+import { HoverCard, HoverCardTrigger } from "@/ui/hover-card";
 import ProfileCommentCard from "../user/ProfileCommentCard";
 
 const CommentBox = ({

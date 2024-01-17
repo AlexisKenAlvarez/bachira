@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "@/ui/skeleton";
 
 const UserSkeleton = ({imageSize}: {imageSize?: string}) => {
   return (

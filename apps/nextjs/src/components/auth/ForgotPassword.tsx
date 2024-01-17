@@ -1,6 +1,6 @@
 // "use client";
 // import ImageSmooth from "@/components/shared/ImageSmooth";
-// import { Button } from "@/components/ui/button";
+// import { Button } from "@/ui/button";
 // import { zodResolver } from "@hookform/resolvers/zod";
 // import Link from "next/link";
 // import { useState } from "react";
@@ -13,8 +13,8 @@
 //   FormField,
 //   FormItem,
 //   FormLabel,
-// } from "@/components/ui/form";
-// import { Input } from "@/components/ui/input";
+// } from "@/ui/form";
+// import { Input } from "@/ui/input";
 // import { Loader } from "lucide-react";
 
 // const ForgotPassword = () => {

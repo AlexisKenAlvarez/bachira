@@ -1,12 +1,12 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
+import { Skeleton } from "@/ui/skeleton";
 import type { Session } from "next-auth";
 
 import { useCallback, useState } from "react";
 
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/ui/dialog";
 
 import PostDialogContent from "./PostDialogContent";
 

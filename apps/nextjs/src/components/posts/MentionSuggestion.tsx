@@ -1,6 +1,6 @@
 import type { SuggestionDataItem } from "react-mentions";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Skeleton } from "../ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
+import { Skeleton } from "@/ui/skeleton";
 
 
 const MentionSuggestion = (suggestion: SuggestionDataItem) => {

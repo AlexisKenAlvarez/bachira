@@ -1,7 +1,7 @@
 "use client";
 import ImageSmooth from "@/components/shared/ImageSmooth";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/ui/button";
+import { Input } from "@/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -13,7 +13,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
-} from "@/components/ui/form";
+} from "@/ui/form";
 import { api } from "@/trpc/client";
 import { Loader } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -118,7 +118,6 @@ const AddUsername = ({ email }: { email: string }) => {
                           className="focus-visible:ring-none focus-visible:border-blue-200 !mt-[4px] focus-visible:ring-transparent"
                           key="first-username"
                           {...field}
-                          autoFocus
                         />
                       </FormControl>
                     </FormItem>

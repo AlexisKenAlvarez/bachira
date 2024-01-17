@@ -6,7 +6,7 @@ import { api } from "@/trpc/client";
 import { notFound } from "next/navigation";
 import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "@/ui/skeleton";
 
 
 import PostData from "./PostData";

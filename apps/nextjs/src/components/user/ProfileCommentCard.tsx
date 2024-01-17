@@ -7,8 +7,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
-import { Button } from "../ui/button";
-import { HoverCardContent } from "../ui/hover-card";
+import { Button } from "@/ui/button";
+import { HoverCardContent } from "@/ui/hover-card";
 
 const ProfileCommentCard = ({
   user,

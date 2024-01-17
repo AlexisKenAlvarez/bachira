@@ -11,7 +11,7 @@ import { Camera, ImageIcon, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { generateClientDropzoneAccept } from "uploadthing/client";
 
-import { Button } from "../ui/button";
+import { Button } from "@/ui/button";
 
 const CoverButton = ({
   userData,

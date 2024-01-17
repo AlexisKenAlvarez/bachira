@@ -8,6 +8,8 @@ export default {
     "./components/**/*.{ts,tsx}",
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
+    './@/**/*.{ts,tsx}', //
+    "../../packages/ui/**/*{.js,.ts,.jsx,.tsx}",
   ],
   theme: {
     container: {

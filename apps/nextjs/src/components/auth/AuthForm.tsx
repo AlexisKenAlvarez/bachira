@@ -1,6 +1,6 @@
 "use client";
 import ImageSmooth from "@/components/shared/ImageSmooth";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/ui/button";
 import { signIn } from "next-auth/react";
 
 import { Github } from "lucide-react";

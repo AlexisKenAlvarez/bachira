@@ -5,7 +5,7 @@ import type { FileWithPath } from "@uploadthing/react";
 import type { z } from "zod";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@/ui/dialog";
 import {
   Form,
   FormControl,
@@ -22,17 +22,17 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
+} from "@/ui/form";
+import { Input } from "@/ui/input";
+import { Progress } from "@/ui/progress";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+} from "@/ui/select";
+import { Textarea } from "@/ui/textarea";
 import { useDeleteImage } from "@/hooks/useDeleteImage";
 import { editProfileSchema } from "@/lib/userTypes";
 import { cn } from "@/lib/utils";
@@ -46,8 +46,8 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { generateClientDropzoneAccept } from "uploadthing/client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Skeleton } from "../ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
+import { Skeleton } from "@/ui/skeleton";
 
 const EditProfile = ({
   userData,

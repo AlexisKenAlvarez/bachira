@@ -7,14 +7,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import PostButtons from "@/components/posts/PostButtons";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { HoverCard, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Dialog, DialogContent } from "@/ui/dialog";
+import { HoverCard, HoverCardTrigger } from "@/ui/hover-card";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@/ui/tooltip";
 import { privacyData } from "@/lib/constants";
 import { timeAgo } from "@/lib/utils";
 import reactStringReplace from "react-string-replace";

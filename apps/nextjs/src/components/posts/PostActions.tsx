@@ -2,7 +2,7 @@
 import { api } from "@/trpc/client";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { Button } from "../ui/button";
+import { Button } from "@/ui/button";
 
 import {
   Bookmark,
@@ -20,7 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/ui/dropdown-menu";
 
 import {
   AlertDialog,
@@ -30,16 +30,16 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from "@/ui/alert-dialog";
 
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@/ui/dialog";
 
-import { Separator } from "../ui/separator";
+import { Separator } from "@/ui/separator";
 
 import {
   Form,
@@ -47,9 +47,9 @@ import {
   FormField,
   FormItem,
   FormLabel,
-} from "@/components/ui/form";
+} from "@/ui/form";
 
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { RadioGroup, RadioGroupItem } from "@/ui/radio-group";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";

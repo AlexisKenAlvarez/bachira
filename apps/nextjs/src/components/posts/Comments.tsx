@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { api } from "@/trpc/client";
 import { useInView } from "react-intersection-observer";
 
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "@/ui/skeleton";
 import CommentBox from "./CommentBox";
 import CommentInput from "./CommentInput";
 

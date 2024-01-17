@@ -1,5 +1,5 @@
 "use client";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { api } from "@/trpc/client";
 import {
   Settings,
@@ -11,8 +11,8 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { Button } from "../ui/button";
-import { Skeleton } from "../ui/skeleton";
+import { Button } from "@/ui/button";
+import { Skeleton } from "@/ui/skeleton";
 import CoverButton from "./CoverButton";
 import Link from "next/link";
 import type { FollowData as FollowDataType } from "@/lib/userTypes";

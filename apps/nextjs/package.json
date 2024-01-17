@@ -79,6 +79,7 @@
     "@bachira/prettier-config": "workspace:^0.1.0",
     "@bachira/tailwind-config": "workspace:^0.1.0",
     "@bachira/tsconfig": "workspace:^0.1.0",
+    "@bachira/ui": "workspace:^0.1.0",
     "@types/eslint": "^8.56.0",
     "@types/lodash": "^4.14.202",
     "@types/node": "^18.16.0",

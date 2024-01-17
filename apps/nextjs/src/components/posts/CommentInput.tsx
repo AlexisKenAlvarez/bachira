@@ -7,7 +7,7 @@ import type {
 import type { SuggestionDataItem } from "react-mentions";
 import { useState } from "react";
 import Image from "next/image";
-import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem } from "@/ui/form";
 import { cn, getToMentionUsers } from "@/lib/utils";
 import defaultMentionStyle from "@/styles/commentBoxStyle";
 import { api } from "@/trpc/client";

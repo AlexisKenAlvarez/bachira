@@ -1,8 +1,14 @@
 {
   "extends": "@bachira/tsconfig/base.json",
   "compilerOptions": {
-    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json"
+    "baseUrl": ".",
+    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/components/*": ["./src/components/*"]
+    }
   },
-  "include": ["*.ts", "src"],
-  "exclude": ["node_modules"]
+  "include": ["."
+  ],
+  "exclude": ["dist", "build", "node_modules"],
 }

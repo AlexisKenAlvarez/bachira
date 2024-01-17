@@ -1,13 +1,13 @@
 "use client";
 
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Separator } from "@/components/ui/separator";
+} from "@/ui/dropdown-menu";
+import { Separator } from "@/ui/separator";
 import type { PostType } from "@/lib/postTypes";
 import type {
   DatabaseUser,
@@ -192,6 +192,7 @@ const PostButtons = ({
                     `${process.env.NEXT_PUBLIC_BASE_URL}${post.user.username}/${post.userId}`,
                   );
                 }}
+                className="flex items-center gap-x-2"
               >
                 <Link size={15} /> <p className="">Copy link</p>
               </button>

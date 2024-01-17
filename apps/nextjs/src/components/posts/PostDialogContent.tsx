@@ -5,17 +5,17 @@ import type { DialogUserType, MentionedType } from "@/lib/userTypes";
 import type { SuggestionDataItem } from "react-mentions";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { DialogClose } from "@/components/ui/dialog";
-import { Form, FormControl, FormField } from "@/components/ui/form";
+import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
+import { Button } from "@/ui/button";
+import { DialogClose } from "@/ui/dialog";
+import { Form, FormControl, FormField } from "@/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-} from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "@/ui/select";
+import { Skeleton } from "@/ui/skeleton";
 import { privacyData } from "@/lib/constants";
 import { cn, getToMentionUsers } from "@/lib/utils";
 import defaultMentionStyle from "@/styles/defaultStyle";
@@ -27,7 +27,7 @@ import toast from "react-hot-toast";
 import { Mention, MentionsInput } from "react-mentions";
 import { z } from "zod";
 
-import { Separator } from "../ui/separator";
+import { Separator } from "@/ui/separator";
 import MentionSuggestion from "./MentionSuggestion";
 
 const PostDialogContent = ({

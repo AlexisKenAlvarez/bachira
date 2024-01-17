@@ -6,7 +6,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/ui/dropdown-menu";
 
 import { AnimatePresence } from "framer-motion";
 import { Cog, LogOut, User } from "lucide-react";
@@ -15,9 +15,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useState } from "react";
 import Notifications from "./Notifications";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Input } from "./ui/input";
-import { Skeleton } from "./ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
+import { Input } from "@/ui/input";
+import { Skeleton } from "@/ui/skeleton";
 import SearchUser from "./user/SearchUser";
 import { debounce } from "lodash";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Sheet, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetTrigger } from "@/ui/sheet";
 import { Bell } from "lucide-react";
 import { useEffect, useState } from "react";
 import NotificationData from "./NotificationData";

@@ -10,4 +10,3 @@ export default {
   content: ["./src/**/*.tsx"],
   presets: [baseConfig],
 } satisfies Config;
-
