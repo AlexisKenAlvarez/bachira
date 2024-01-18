@@ -1,4 +1,4 @@
-import { RouterOutputs } from "@bachira/api";
+import type { RouterOutputs } from "@bachira/api";
 import { z } from "zod";
 
 export interface FollowerData {

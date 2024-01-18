@@ -1,9 +1,9 @@
 "use client";
+
 import ImageSmooth from "@/components/shared/ImageSmooth";
 import { Button } from "@/ui/button";
-import { signIn } from "next-auth/react";
-
 import { Github } from "lucide-react";
+import { signIn } from "next-auth/react";
 
 interface AuthPageProps {
   type: "sign in" | "sign up";
@@ -12,10 +12,13 @@ interface AuthPageProps {
 const AuthForm = ({ type }: AuthPageProps) => {
   return (
     <section className="flex h-auto min-h-screen w-full bg-white pb-20 sm:bg-bggrey sm:pb-0">
-      <ImageSmooth src="/background.jpg" className="absolute top-0 left-0 w-full h-full object-cover sm:block hidden" />
-      <div className="w-full place-content-center sm:grid z-10">
+      <ImageSmooth
+        src="/background.jpg"
+        className="absolute left-0 top-0 hidden h-full w-full object-cover sm:block"
+      />
+      <div className="z-10 w-full place-content-center sm:grid">
         <div className="h-full sm:rounded-xl sm:shadow-md">
-          <div className="sm:min-h-20 flex w-full flex-col space-y-4 bg-white px-7 py-8 font-primary sm:w-[26rem] sm:rounded-tl-xl sm:rounded-tr-xl">
+          <div className="flex w-full flex-col space-y-4 bg-white px-7 py-8 font-primary sm:min-h-20 sm:w-[26rem] sm:rounded-tl-xl sm:rounded-tr-xl">
             <div className=" text-center">
               <h1 className="text-2xl font-bold">
                 {type === "sign in"
@@ -33,8 +36,8 @@ const AuthForm = ({ type }: AuthPageProps) => {
               <Button
                 variant="outline"
                 className="relative w-full py-5"
-                onClick={() => {
-                  signIn("google", { callbackUrl: "/" });
+                onClick={async () => {
+                  await signIn("google", { callbackUrl: "/" });
                 }}
               >
                 <svg
@@ -68,9 +71,9 @@ const AuthForm = ({ type }: AuthPageProps) => {
               <Button
                 variant="outline"
                 className="relative w-full py-5"
-                onClick={() => {
+                onClick={async () => {
                   try {
-                    signIn("github");
+                    await signIn("github");
                   } catch (error) {
                     console.log(error);
                   }
@@ -93,7 +96,7 @@ const AuthForm = ({ type }: AuthPageProps) => {
           </div>
         </div>
       </div>
-      <div className="relative hidden w-full items-center overflow-hidden lg:flex z-10">
+      <div className="relative z-10 hidden w-full items-center overflow-hidden lg:flex">
         <div className="">
           <h1 className="block h-fit text-9xl font-bold">Bachira</h1>
           <p className="text-xl">

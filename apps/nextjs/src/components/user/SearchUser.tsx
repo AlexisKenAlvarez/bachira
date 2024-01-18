@@ -1,8 +1,8 @@
-import { api } from "@/trpc/client";
-import { motion } from "framer-motion";
+import { useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { api } from "@/trpc/client";
+import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 
 const SearchUser = ({ searchValue }: { searchValue: string }) => {
@@ -23,9 +23,12 @@ const SearchUser = ({ searchValue }: { searchValue: string }) => {
   );
 
   useEffect(() => {
-    if (inView === true) {
-      fetchNextPage();
-    }
+    void (async () => {
+      if (inView === true) {
+        await fetchNextPage();
+      }
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inView]);
 
   return (
@@ -53,8 +56,8 @@ const SearchUser = ({ searchValue }: { searchValue: string }) => {
                 }
               >
                 <Image
-                  src={user.image as string}
-                  alt={user.username as string}
+                  src={user.image!}
+                  alt={user.username!}
                   className="h-10 w-10 shrink-0 rounded-full"
                   width={500}
                   height={500}
