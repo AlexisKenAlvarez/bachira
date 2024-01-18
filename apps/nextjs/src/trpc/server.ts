@@ -8,7 +8,7 @@ import superjson from "superjson";
 
 import { appRouter } from "@bachira/api";
 import type { AppRouter } from "@bachira/api";
-import { getServerAuthSession } from "@bachira/auth";
+import { auth } from "@bachira/auth";
 import { db } from "@bachira/db";
 
 import { endingLink } from "./shared";
@@ -36,7 +36,7 @@ export const api = createTRPCNextAppDirServer<AppRouter>({
               //   fetch: globalThis.fetch,
               //   // apiKey: env.UPLOADTHING_SECRET,
               // }),
-              session: await getServerAuthSession(),
+              session: await auth(),
               db,
               headers: {
                 cookie: cookies().toString(),
