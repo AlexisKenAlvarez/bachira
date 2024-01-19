@@ -1,22 +1,23 @@
 import "@/styles/globals.css";
 
-import AddUsername from "@/components/auth/AddUsername";
-import TRPCProvider from "@/trpc/TRPCProvider";
-import { getServerAuthSession } from "@bachira/auth";
-import { Montserrat } from "next/font/google";
-
 import type { Metadata } from "next";
-import { Toaster } from "react-hot-toast";
-import Nav from "../components/Nav";
-import Providers from "./providers";
+import { Montserrat } from "next/font/google";
+import AddUsername from "@/components/auth/AddUsername";
 import { api } from "@/trpc/server";
+import TRPCProvider from "@/trpc/TRPCProvider";
+import { Toaster } from "react-hot-toast";
+
+import { getServerAuthSession } from "@bachira/auth";
+
+import Nav from "../components/Nav";
+import { DeleteSession } from "./actions";
+import Providers from "./providers";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
   display: "swap",
 });
-
 
 export const metadata: Metadata = {
   title: "Bachira",
@@ -29,7 +30,12 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerAuthSession()
+  const session = await getServerAuthSession();
+  console.log("🚀 ~ session:", session);
+
+  if (session?.user.notFound) {
+    await DeleteSession();
+  }
 
   const countData =
     session &&
@@ -38,7 +44,6 @@ export default async function RootLayout({
       seen: false,
     }));
 
-  console.log(session?.user)
   return (
     <TRPCProvider>
       <html lang="en">

@@ -9,7 +9,8 @@ import { followership, notification, users } from "@bachira/db/schema/schema";
 
 import { editProfileSchema, pusherServer, toPusherKey } from "../../lib/pusher";
 import { utapi } from "../../lib/uploadthing";
-import { createTRPCRouter, privateProcedure } from "../trpc";
+import { createTRPCRouter, privateProcedure, publicProcedure } from "../trpc";
+import { cookies } from "next/headers";
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
@@ -433,17 +434,11 @@ export const userRouter = createTRPCRouter({
         userFollowing,
       };
     }),
-  test: privateProcedure
-    .input(
-      z.object({
-        msg: z.string(),
-      }),
-    )
-    .query(() => {
-      return {
-        msg: "Hello World",
-      };
-    }),
+  signOut: publicProcedure.mutation(() => {
+    const cookieStore = cookies()
+    cookieStore.delete("next-auth.session-token");
+    cookieStore.delete("next-auth.csrf-token");
+  })
 });
 
 export type UserRouter = typeof userRouter;

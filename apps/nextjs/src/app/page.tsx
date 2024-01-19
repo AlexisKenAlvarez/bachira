@@ -1,14 +1,14 @@
+"use server"
+
 import FeedPosts from "@/components/posts/FeedPosts";
 import Post from "@/components/posts/Post";
 import { getServerAuthSession } from "@bachira/auth";
 import { redirect } from "next/navigation";
-
 // export const runtime = "edge"
 // type SearchParams = Record<string, string | string[] | undefined>;
 
 const page = async () => {
   const session = await getServerAuthSession()
-
 
 
   if (!session || !session?.user) {
