@@ -10,8 +10,8 @@ import { Toaster } from "react-hot-toast";
 import { getServerAuthSession } from "@bachira/auth";
 
 import Nav from "../components/Nav";
-import { DeleteSession } from "./actions";
 import Providers from "./providers";
+import { redirect } from "next/navigation";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -34,7 +34,7 @@ export default async function RootLayout({
   console.log("🚀 ~ session:", session);
 
   if (session?.user.notFound) {
-    await DeleteSession();
+    redirect("/api/signout")
   }
 
   const countData =

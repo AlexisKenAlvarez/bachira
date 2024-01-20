@@ -110,6 +110,7 @@ export const authOptions: NextAuthOptions = {
         },
       };
     },
+    
   },
 
   providers: [
