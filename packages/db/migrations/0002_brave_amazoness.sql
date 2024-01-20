@@ -1,1 +1,0 @@
-ALTER TABLE `bachira_posts` ADD `commentPrivacy` enum('PUBLIC','FOLLOWERS','PRIVATE') DEFAULT 'PUBLIC';

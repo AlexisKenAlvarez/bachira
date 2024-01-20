@@ -6,14 +6,16 @@ import { z } from "zod";
 
 import {
   notification,
+  POST_REPORT_TYPE,
   postComments,
   postLikes,
+  postReports,
   posts,
 } from "@bachira/db/schema/schema";
 
 import { pusherServer, toPusherKey } from "../../lib/pusher";
-import { createTRPCRouter, privateProcedure } from "../trpc";
 import { FollowershipSchema } from "../../lib/zodSchema";
+import { createTRPCRouter, privateProcedure } from "../trpc";
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
@@ -129,7 +131,8 @@ export const postRouter = createTRPCRouter({
       }
 
       const userFollowing = await ctx.db.query.followership.findMany({
-        where: (followership, { eq }) => eq(followership.follower_id, input.userId),
+        where: (followership, { eq }) =>
+          eq(followership.follower_id, input.userId),
       });
 
       let nextCursor;
@@ -242,10 +245,8 @@ export const postRouter = createTRPCRouter({
             }),
           )
           .nullable(),
-        userFollowing: z.array(FollowershipSchema)
-        
+        userFollowing: z.array(FollowershipSchema),
       }),
-
     )
     .mutation(async ({ ctx, input }) => {
       const { toMention } = input;
@@ -261,13 +262,21 @@ export const postRouter = createTRPCRouter({
         where: (posts, { eq }) => eq(posts.id, input.postId),
         columns: {
           commentPrivacy: true,
-        }
-      })
+        },
+      });
 
-      if (postPrivacy?.commentPrivacy === "FOLLOWERS" && input.userFollowing.some((user) => user.following_id !== input.authorId) === false) {
+      if (
+        postPrivacy?.commentPrivacy === "FOLLOWERS" &&
+        input.userFollowing.some(
+          (user) => user.following_id !== input.authorId,
+        ) === false
+      ) {
         console.log("UNPORCS");
         throw new TRPCError({ code: "UNPROCESSABLE_CONTENT" });
-      } else if (postPrivacy?.commentPrivacy === "PRIVATE" && input.authorId !== input.userId) {
+      } else if (
+        postPrivacy?.commentPrivacy === "PRIVATE" &&
+        input.authorId !== input.userId
+      ) {
         throw new TRPCError({ code: "UNPROCESSABLE_CONTENT" });
       }
 
@@ -513,6 +522,21 @@ export const postRouter = createTRPCRouter({
           commentPrivacy: input.privacy,
         })
         .where(eq(posts.id, input.postId));
+    }),
+  reportPost: privateProcedure
+    .input(
+      z.object({
+        postId: z.number(),
+        userId: z.string(),
+        type: z.enum([...POST_REPORT_TYPE]),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.insert(postReports).values({
+        postId: input.postId,
+        userId: input.userId,
+        reportType: input.type,
+      });
     }),
 });
 

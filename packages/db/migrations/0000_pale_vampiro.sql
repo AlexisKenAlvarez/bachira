@@ -9,7 +9,7 @@ CREATE TABLE `bachira_notifications` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`notificationFor` varchar(100) NOT NULL,
 	`notificationFrom` varchar(100) NOT NULL,
-	`type` enum('FOLLOW','LIKE','COMMENT','REPLY') NOT NULL,
+	`type` enum('FOLLOW','LIKE_POST','LIKE_COMMENT','LIKE_REPLY','MENTION_POST','MENTION_COMMENT','COMMENT','REPLY') NOT NULL,
 	`postId` int,
 	`status` enum('READ','UNREAD') DEFAULT 'UNREAD',
 	`seen` boolean DEFAULT false,
@@ -39,6 +39,7 @@ CREATE TABLE `bachira_posts` (
 	`createdAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`updatedAt` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	`privacy` enum('PUBLIC','FOLLOWERS','PRIVATE') DEFAULT 'PUBLIC',
+	`commentPrivacy` enum('PUBLIC','FOLLOWERS','PRIVATE') DEFAULT 'PUBLIC',
 	CONSTRAINT `bachira_posts_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
@@ -63,4 +64,7 @@ CREATE INDEX `follower_idx` ON `bachira_followership` (`follower_id`);--> statem
 CREATE INDEX `following_idx` ON `bachira_followership` (`following_id`);--> statement-breakpoint
 CREATE INDEX `comments_post_idx` ON `bachira_postComments` (`postId`);--> statement-breakpoint
 CREATE INDEX `likes_post_idx` ON `bachira_postLikes` (`postId`);--> statement-breakpoint
-CREATE INDEX `userid` ON `bachira_user` (`id`);
+CREATE INDEX `userid` ON `bachira_user` (`id`);--> statement-breakpoint
+ALTER TABLE `bachira_postComments` ADD CONSTRAINT `bachira_postComments_postId_bachira_posts_id_fk` FOREIGN KEY (`postId`) REFERENCES `bachira_posts`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `bachira_postLikes` ADD CONSTRAINT `bachira_postLikes_id_bachira_posts_id_fk` FOREIGN KEY (`id`) REFERENCES `bachira_posts`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `bachira_posts` ADD CONSTRAINT `bachira_posts_userId_bachira_user_id_fk` FOREIGN KEY (`userId`) REFERENCES `bachira_user`(`id`) ON DELETE cascade ON UPDATE no action;

@@ -26,6 +26,22 @@ export const NOTIFICATION_TYPE = [
   "REPLY",
 ] as const;
 
+export const POST_REPORT_TYPE = [
+  "SEXUAL_CONTENT",
+  "HATEFUL_CONTENT",
+  "VIOLENT_CONTENT",
+  "SPAM",
+  "CHILD_ABUSE",
+] as const;
+
+export const USER_REPORT_TYPE = [
+  "HATE_SPEECH",
+  "SEXUAL_CONTENT",
+  "VIOLENT_CONTENT",
+  "HARASSMENT",
+  "PRETENDING_TO_BE_SOMEONE",
+] as const;
+
 export const NOTIFICATION_STATUS = ["READ", "UNREAD"] as const;
 export const GENDER = ["MALE", "FEMALE", "IDK"] as const;
 export const PRIVACY = ["PUBLIC", "FOLLOWERS", "PRIVATE"] as const;
@@ -94,7 +110,9 @@ export const notification = mysqlTable("notifications", {
 
 export const posts = mysqlTable("posts", {
   id: int("id").primaryKey().notNull().autoincrement(),
-  userId: varchar("userId", { length: 100 }).notNull(),
+  userId: varchar("userId", { length: 100 })
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   text: text("text").notNull(),
   createdAt,
   updatedAt,
@@ -106,7 +124,9 @@ export const postComments = mysqlTable(
   "postComments",
   {
     id: int("id").primaryKey().notNull().autoincrement(),
-    postId: int("postId").notNull(),
+    postId: int("postId")
+      .notNull()
+      .references(() => posts.id, { onDelete: "cascade" }),
     userId: varchar("userId", { length: 100 }).notNull(),
     text: text("text").notNull(),
   },
@@ -121,7 +141,9 @@ export const postLikes = mysqlTable(
   "postLikes",
   {
     id: int("id").primaryKey().notNull().autoincrement(),
-    postId: int("postId").notNull(),
+    postId: int("postId")
+      .notNull()
+      .references(() => posts.id, { onDelete: "cascade" }),
     userId: varchar("userId", { length: 100 }).notNull(),
   },
   (table) => {
@@ -131,5 +153,22 @@ export const postLikes = mysqlTable(
   },
 );
 
-export type User = typeof users.$inferSelect
-export type Followership = typeof followership.$inferSelect
+export const postReports = mysqlTable("postReports", {
+  id: int("id").primaryKey().notNull().autoincrement(),
+  userId: varchar("userId", { length: 255 }).notNull(),
+  postId: int("postId").notNull(),
+  reportType: mysqlEnum("reportType", POST_REPORT_TYPE).notNull(),
+  status: mysqlEnum("status", ["PENDING", "RESOLVED"]).default("PENDING"),
+});
+
+export const userReports = mysqlTable("userReports", {
+  id: int("id").primaryKey().notNull().autoincrement(),
+  userId: varchar("userId", { length: 255 }).notNull(),
+  reportType: mysqlEnum("reportType", USER_REPORT_TYPE).notNull(),
+  status: mysqlEnum("status", ["PENDING", "RESOLVED"]).default("PENDING"),
+});
+
+export type User = typeof users.$inferSelect;
+export type Followership = typeof followership.$inferSelect;
+export type Notification = typeof notification.$inferSelect;
+export type Post = typeof posts.$inferSelect;
