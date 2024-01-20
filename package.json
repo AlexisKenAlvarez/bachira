@@ -10,8 +10,6 @@
     "db:studio": "pnpm turbo --filter @bachira/db db:studio --no-daemon",
     "db:migrate": "pnpm turbo --filter @bachira/db db:generate --no-daemon",
     "dev": "turbo dev --parallel",
-    "format": "turbo format --continue -- --cache --cache-location node_modules/.cache/.prettiercache",
-    "format:fix": "turbo format --continue -- --write --cache --cache-location node_modules/.cache/.prettiercache",
     "lint": "turbo lint --continue -- --cache --cache-location node_modules/.cache/.eslintcache",
     "lint:fix": "turbo lint --continue -- --fix --cache --cache-location node_modules/.cache/.eslintcache",
     "lint:ws": "pnpm dlx sherif@latest",
