@@ -77,7 +77,6 @@ export const authOptions: NextAuthOptions = {
         token.notFound = false;
       }
 
-
       if (user) {
         token.id = user.id;
         token.email = user.email;
@@ -110,7 +109,6 @@ export const authOptions: NextAuthOptions = {
         },
       };
     },
-    
   },
 
   providers: [
