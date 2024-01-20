@@ -15,7 +15,6 @@
   "dependencies": {
     "@bachira/auth": "workspace:^0.1.0",
     "@bachira/db": "workspace:^0.1.0",
-    "@bachira/validators": "workspace:^0.1.0",
     "@trpc/server": "11.0.0-next-alpha.162",
     "superjson": "^2.2.1",
     "zod": "^3.22.4",

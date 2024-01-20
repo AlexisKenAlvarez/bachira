@@ -1,12 +1,11 @@
-import type { DefaultSession } from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
+import type { DefaultSession, NextAuthOptions } from "next-auth";
+import { getServerSession } from "next-auth";
 import GithubProvider from "next-auth/providers/github";
+import GoogleProvider from "next-auth/providers/google";
 
 import { db } from "@bachira/db";
 import { users } from "@bachira/db/schema/schema";
 
-import { getServerSession } from "next-auth";
-import type { NextAuthOptions } from "next-auth";
 export type { Session } from "next-auth";
 
 declare module "next-auth" {
@@ -17,6 +16,7 @@ declare module "next-auth" {
       username: string;
       coverPhoto: string;
       image: string | null;
+      notFound: boolean;
       // ...other properties
       // role: UserRole;
     } & DefaultSession["user"];
@@ -25,12 +25,12 @@ declare module "next-auth" {
   interface User {
     // ...other properties
     // role: UserRole;
-    countId: number
+    countId: number;
     username: string | null;
     coverPhoto: string | null;
+    notFound: boolean;
   }
 }
-
 
 /**
  * Options for NextAuth.js used to configure adapters, providers, callbacks, etc.
@@ -58,8 +58,7 @@ export const authOptions: NextAuthOptions = {
         } else {
           console.log("Count ID", userFromDb.countId);
           user.username = userFromDb.username;
-          user.countId = userFromDb.countId,
-          user.id = userFromDb.id;
+          (user.countId = userFromDb.countId), (user.id = userFromDb.id);
           user.image = userFromDb.image;
           user.coverPhoto = userFromDb.coverPhoto;
         }
@@ -67,11 +66,22 @@ export const authOptions: NextAuthOptions = {
 
       return true;
     },
-    jwt: ({ token, user, trigger, session }) => {
+    jwt: async ({ token, user, trigger, session }) => {
+      const userFromDb = await db.query.users.findFirst({
+        where: (users, { eq }) => eq(users.email, token.email!),
+      });
+
+      if (!userFromDb) {
+        token.notFound = true;
+      } else {
+        token.notFound = false;
+      }
+
+
       if (user) {
         token.id = user.id;
         token.email = user.email;
-        token.countId = user.countId
+        token.countId = user.countId;
         token.username = user.username;
         token.coverPhoto = user.coverPhoto;
         token.image = user.image;
@@ -95,10 +105,12 @@ export const authOptions: NextAuthOptions = {
           id: token.id as string,
           username: token.username as string,
           coverPhoto: token.coverPhoto as string,
-          image: token.image as string
+          image: token.image as string,
+          notFound: token.notFound as boolean,
         },
       };
     },
+    
   },
 
   providers: [
