@@ -21,15 +21,15 @@ type ReportType = RouterOutputs["posts"]["getReports"]["reportData"][0]
 
 export const columns: ColumnDef<ReportType>[] = [
   {
-    accessorKey: "status",
-    header: "Status",
+    accessorKey: "postId",
+    header: "Post_ID",
   },
   {
     accessorKey: "reportType",
     header: "Reason",
   },
   {
-    header: "Text",
+    header: "Author",
     cell: ({ row }) => {
       const data  = row.original;
 
@@ -38,7 +38,7 @@ export const columns: ColumnDef<ReportType>[] = [
   },
   {
     accessorKey: "post.text",
-    header: "Author ID",
+    header: "Content",
   },
   {
     header: "Actions",

@@ -7,7 +7,6 @@ import AddUsername from "@/components/auth/AddUsername";
 import { api } from "@/trpc/server";
 import TRPCProvider from "@/trpc/TRPCProvider";
 import { Toaster } from "react-hot-toast";
-
 import { getServerAuthSession } from "@bachira/auth";
 
 import Nav from "../components/Nav";
@@ -42,6 +41,7 @@ export default async function RootLayout({
       userId: session.user.id,
       seen: false,
     }));
+    
 
   return (
     <TRPCProvider>
@@ -51,7 +51,7 @@ export default async function RootLayout({
             !session.user.username ? (
               <AddUsername email={session.user.email!} />
             ) : (
-              <div className="mx-auto flex min-h-screen w-full max-w-[700px] flex-col">
+              <div className="mx-auto flex min-h-screen w-full max-w-[780px] flex-col">
                 <Nav
                   email={session.user.email!}
                   username={session.user.username}
