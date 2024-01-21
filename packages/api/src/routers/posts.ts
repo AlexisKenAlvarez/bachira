@@ -460,6 +460,7 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         postId: z.number(),
+        fromReport: z.boolean().nullish(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -471,6 +472,12 @@ export const postRouter = createTRPCRouter({
       await ctx.db
         .delete(notification)
         .where(eq(notification.postId, input.postId));
+
+      if (input.fromReport) {
+        await ctx.db
+          .delete(postReports)
+          .where(eq(postReports.postId, input.postId));
+      }
 
       return {
         success: true,
@@ -570,10 +577,23 @@ export const postRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
+      const offset = input.offset ?? 0;
 
       const data = await ctx.db.query.postReports.findMany({
         limit: input.limit ?? 7,
-        offset: input.offset ?? 0,
+        offset: offset - 1 < 0 ? 0 : offset - 1,
+        with: {
+          user: {
+            columns: {
+              username: true,
+            },
+          },
+          post: {
+            columns: {
+              text: true,
+            },
+          },
+        },
       });
 
       return {

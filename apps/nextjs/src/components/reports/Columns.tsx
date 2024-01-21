@@ -1,10 +1,7 @@
-"use client"
+"use client";
 
-import type { ColumnDef } from "@tanstack/react-table";
-import type { PostReport } from "@bachira/db/schema/schema";
-import { MoreHorizontal } from "lucide-react"
-
-import { Button } from "@/ui/button"
+import { api } from "@/trpc/client";
+import { Button } from "@/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,9 +9,17 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/ui/dropdown-menu"
+} from "@/ui/dropdown-menu";
+import type { ColumnDef } from "@tanstack/react-table";
+import { MoreHorizontal } from "lucide-react";
+import toast from "react-hot-toast";
 
-export const columns: ColumnDef<PostReport>[] = [
+import type { RouterOutputs } from "@bachira/api";
+type ReportType = RouterOutputs["posts"]["getReports"]["reportData"][0]
+
+
+
+export const columns: ColumnDef<ReportType>[] = [
   {
     accessorKey: "status",
     header: "Status",
@@ -24,18 +29,30 @@ export const columns: ColumnDef<PostReport>[] = [
     header: "Reason",
   },
   {
-    accessorKey: "userId",
-    header: "Author ID",
+    header: "Text",
+    cell: ({ row }) => {
+      const data  = row.original;
+
+      return data.user.username
+    },
   },
   {
-    accessorKey: "postId",
-    header: "Post ID",
+    accessorKey: "post.text",
+    header: "Author ID",
   },
   {
     header: "Actions",
     id: "actions",
     cell: ({ row }) => {
-      console.log(row.original);
+      const post = row.original;
+
+      const utils = api.useUtils();
+      const deletePost = api.posts.deletePost.useMutation({
+        onSuccess: async () => {
+          toast.success("Post deleted successfully");
+          await utils.posts.getReports.invalidate();
+        },
+      });
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -47,11 +64,20 @@ export const columns: ColumnDef<PostReport>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() =>
+                deletePost.mutate({
+                  postId: post.postId,
+                  fromReport: true,
+                })
+              }
+            >
+              Delete post
+            </DropdownMenuItem>
+            <DropdownMenuItem>Ban user</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      )
+      );
     },
   },
 ];
