@@ -2,6 +2,7 @@ import "@/styles/globals.css";
 
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
+import { redirect } from "next/navigation";
 import AddUsername from "@/components/auth/AddUsername";
 import { api } from "@/trpc/server";
 import TRPCProvider from "@/trpc/TRPCProvider";
@@ -11,7 +12,6 @@ import { getServerAuthSession } from "@bachira/auth";
 
 import Nav from "../components/Nav";
 import Providers from "./providers";
-import { redirect } from "next/navigation";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -31,10 +31,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const session = await getServerAuthSession();
-  console.log("🚀 ~ session:", session);
 
   if (session?.user.notFound) {
-    redirect("/api/signout")
+    redirect("/api/signout");
   }
 
   const countData =

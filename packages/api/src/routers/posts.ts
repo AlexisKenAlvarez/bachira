@@ -4,6 +4,7 @@ import { Redis } from "@upstash/redis";
 import { and, asc, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
+import { sql } from "@bachira/db";
 import {
   notification,
   POST_REPORT_TYPE,
@@ -54,10 +55,7 @@ export const postRouter = createTRPCRouter({
         text: text,
         privacy: privacy,
       });
-      console.log(
-        "🚀 ~ file: posts.ts:77 ~ mentioned.forEach ~ authorImage:",
-        authorImage,
-      );
+
       if (toMention) {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         toMention.forEach(async (toMention) => {
@@ -135,8 +133,16 @@ export const postRouter = createTRPCRouter({
           eq(followership.follower_id, input.userId),
       });
 
+      const postReports = await ctx.db.query.postReports.findMany({
+        where: (postReports, { eq }) => eq(postReports.reportedById, userId),
+      });
+
       let nextCursor;
       const newData: typeof postData = postData.filter((post) => {
+        if (postReports.some((report) => report.postId === post.id)) {
+          return false;
+        }
+
         if (post.privacy === "FOLLOWERS") {
           if (userFollowing.some((user) => user.following_id === post.userId)) {
             return post;
@@ -152,8 +158,8 @@ export const postRouter = createTRPCRouter({
         }
       });
 
-      if (newData.length > limit) {
-        const nextItem = newData.pop(); // return the last item from the array
+      if (postData.length > limit) {
+        const nextItem = postData.pop(); // return the last item from the array
         nextCursor = nextItem?.id;
       }
 
@@ -528,16 +534,59 @@ export const postRouter = createTRPCRouter({
       z.object({
         postId: z.number(),
         userId: z.string(),
-        type: z.enum([...POST_REPORT_TYPE]),
+        type: z.enum([...POST_REPORT_TYPE]).nullish(),
+        reportedById: z.string(),
+        action: z.enum(["REPORT", "UNDO"]),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.insert(postReports).values({
-        postId: input.postId,
-        userId: input.userId,
-        reportType: input.type,
-      });
+      if (input.action === "REPORT") {
+        await ctx.db.insert(postReports).values({
+          postId: input.postId,
+          userId: input.userId,
+          reportType: input.type!,
+          reportedById: input.reportedById,
+        });
+      } else {
+        await ctx.db
+          .delete(postReports)
+          .where(
+            and(
+              eq(postReports.postId, input.postId),
+              eq(postReports.reportedById, input.reportedById),
+            ),
+          );
+      }
+
+      return {
+        action: input.action,
+      };
     }),
+  getReports: privateProcedure
+    .input(
+      z.object({
+        offset: z.number().nullish(),
+        limit: z.number().nullish(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+
+      const data = await ctx.db.query.postReports.findMany({
+        limit: input.limit ?? 7,
+        offset: input.offset ?? 0,
+      });
+
+      return {
+        reportData: data,
+      };
+    }),
+  countReports: privateProcedure.query(async ({ ctx }) => {
+    const count = await ctx.db
+      .select({ count: sql`COUNT(*)` })
+      .from(postReports);
+
+    return count;
+  }),
 });
 
 export type PostRouter = typeof postRouter;

@@ -52,10 +52,6 @@ const PostData = ({
     setPostOpen(true);
   }, []);
 
-  // useEffect(() => {
-  //   console.log(follows, post?.id);
-  // }, [userFollowing])
-
   return (
     <div className="h-fit w-full rounded-md bg-white">
       <Dialog open={postOpen} onOpenChange={setPostOpen}>

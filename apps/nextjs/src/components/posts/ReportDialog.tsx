@@ -16,17 +16,49 @@ const ReportDialog = ({
   setOpen,
   postId,
   authorId,
+  userId,
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
   postId: number;
   authorId: string;
+  userId: string;
 }) => {
+  const utils = api.useUtils();
+
   const reportMutation = api.posts.reportPost.useMutation({
-    onSuccess: () => {
-      toast.success("Post reported successfully");
-      setOpen(false)
+    onSuccess: async ({ action }: { action: "REPORT" | "UNDO" }) => {
+      await utils.posts.getPosts.invalidate();
+      setOpen(false);
+
+      if (action === "REPORT") {
+        toast((t) => (
+          <span className="flex text-sm">
+            Post has been reported and hidden from your feed.
+            <Button
+              variant="secondary"
+              onClick={async () => {
+                try {
+                  await reportMutation.mutateAsync({
+                    postId,
+                    userId: authorId,
+                    reportedById: userId,
+                    action: "UNDO",
+                  });
+
+                  toast.dismiss(t.id)
+                } catch (error) {
+                  console.log(error);
+                }
+              }}
+            >
+              Undo
+            </Button>
+          </span>
+        ));
+      }
     },
+
     onError: () => {
       toast.error("Sorry, something went wrong");
     },
@@ -83,6 +115,8 @@ const ReportDialog = ({
                   type: data.type,
                   postId,
                   userId: authorId,
+                  reportedById: userId,
+                  action: "REPORT",
                 });
               } catch (error) {
                 console.log(error);

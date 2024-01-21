@@ -1,5 +1,9 @@
 "use client";
 
+import type { PostType } from "@/lib/postTypes";
+import type { SessionUser, UserFollowingType } from "@/lib/userTypes";
+import { cn } from "@/lib/utils";
+import { api } from "@/trpc/client";
 import { Dialog, DialogContent, DialogTrigger } from "@/ui/dialog";
 import {
   DropdownMenu,
@@ -8,18 +12,12 @@ import {
   DropdownMenuTrigger,
 } from "@/ui/dropdown-menu";
 import { Separator } from "@/ui/separator";
-import type { PostType } from "@/lib/postTypes";
-import type {
-  DatabaseUser,
-  SessionUser,
-  UserFollowingType,
-} from "@/lib/userTypes";
-import { cn } from "@/lib/utils";
-import { api } from "@/trpc/client";
 import { motion } from "framer-motion";
 import { Link, MessageCircle, Share2, ThumbsUp } from "lucide-react";
 import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
+
+import type { User } from "@bachira/db/schema/schema";
 
 import Comments from "./Comments";
 import LikeDialog from "./LikeDialog";
@@ -27,7 +25,7 @@ import LikeDialog from "./LikeDialog";
 interface postLike {
   postId: number;
   userId: string;
-  user: DatabaseUser;
+  user: Pick<User, "username">;
 }
 
 const PostButtons = ({
@@ -97,7 +95,6 @@ const PostButtons = ({
       setLikeData(context!.previousLikeData);
     },
   });
-
 
   return (
     <div>

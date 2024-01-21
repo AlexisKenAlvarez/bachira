@@ -254,7 +254,13 @@ const PostActions = ({
         </DialogContent>
       </Dialog>
 
-      <ReportDialog open={reportCommentOpen} setOpen={toggleReportComment} postId={postId} authorId={author} />
+      <ReportDialog
+        open={reportCommentOpen}
+        setOpen={toggleReportComment}
+        postId={postId}
+        authorId={author}
+        userId={userId}
+      />
 
       {/* Delete post confirmation */}
       <AlertDialog open={deleteAlert} onOpenChange={setDeleteAlert}>

@@ -156,6 +156,7 @@ export const postLikes = mysqlTable(
 export const postReports = mysqlTable("postReports", {
   id: int("id").primaryKey().notNull().autoincrement(),
   userId: varchar("userId", { length: 255 }).notNull(),
+  reportedById: varchar("reportedById", { length: 255 }).notNull(),
   postId: int("postId").notNull(),
   reportType: mysqlEnum("reportType", POST_REPORT_TYPE).notNull(),
   status: mysqlEnum("status", ["PENDING", "RESOLVED"]).default("PENDING"),
@@ -164,6 +165,7 @@ export const postReports = mysqlTable("postReports", {
 export const userReports = mysqlTable("userReports", {
   id: int("id").primaryKey().notNull().autoincrement(),
   userId: varchar("userId", { length: 255 }).notNull(),
+  reportedById: varchar("reportedById", { length: 255 }).notNull(),
   reportType: mysqlEnum("reportType", USER_REPORT_TYPE).notNull(),
   status: mysqlEnum("status", ["PENDING", "RESOLVED"]).default("PENDING"),
 });
@@ -172,3 +174,4 @@ export type User = typeof users.$inferSelect;
 export type Followership = typeof followership.$inferSelect;
 export type Notification = typeof notification.$inferSelect;
 export type Post = typeof posts.$inferSelect;
+export type PostReport = typeof postReports.$inferSelect;
