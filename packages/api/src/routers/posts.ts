@@ -461,6 +461,7 @@ export const postRouter = createTRPCRouter({
       z.object({
         postId: z.number(),
         fromReport: z.boolean().nullish(),
+        ban: z.boolean().nullish(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -574,12 +575,26 @@ export const postRouter = createTRPCRouter({
       z.object({
         offset: z.number().nullish(),
         limit: z.number().nullish(),
+        status: z.string().nullish(),
+        reason: z.enum([...POST_REPORT_TYPE]).nullish(),
       }),
     )
     .query(async ({ ctx, input }) => {
       const offset = input.offset ?? 0;
+      const status = (input.status as "PENDING" | "RESOLVED") ?? "PENDING";
 
       const data = await ctx.db.query.postReports.findMany({
+        where: (postReports, { eq, and }) => {
+          if (input.reason && input.status)
+            return and(
+              eq(postReports.reportType, input.reason),
+              eq(postReports.status, status),
+            );
+          else if (input.reason)
+            return eq(postReports.reportType, input.reason);
+          else if (input.status) return eq(postReports.status, status);
+          else return eq(postReports.status, status);
+        },
         limit: input.limit ?? 7,
         offset: offset - 1 < 0 ? 0 : offset - 1,
         with: {
@@ -600,13 +615,32 @@ export const postRouter = createTRPCRouter({
         reportData: data,
       };
     }),
-  countReports: privateProcedure.query(async ({ ctx }) => {
-    const count = await ctx.db
+  countReports: privateProcedure
+    .input(
+      z.object({
+        status: z.string().nullish(),
+        reason: z.enum([...POST_REPORT_TYPE]).nullish(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const status = (input.status as "PENDING" | "RESOLVED") ?? "PENDING";
+
+
+      const count = await ctx.db
       .select({ count: sql`COUNT(*)` })
-      .from(postReports);
+      .from(postReports)
+      .where(
+        input.reason && input.status ? 
+        and(
+          eq(postReports.status, status), 
+          eq(postReports.reportType, input.reason)
+          )
+          : 
+          input.reason ? eq(postReports.reportType, input.reason) 
+          : input.status ? eq(postReports.status, status) : undefined);
 
     return count;
-  }),
+    }),
 });
 
 export type PostRouter = typeof postRouter;

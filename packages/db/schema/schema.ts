@@ -35,12 +35,23 @@ export const POST_REPORT_TYPE = [
 ] as const;
 
 export const USER_REPORT_TYPE = [
-  "HATE_SPEECH",
   "SEXUAL_CONTENT",
+  "HATEFUL_CONTENT",
   "VIOLENT_CONTENT",
   "HARASSMENT",
+  "SPAM",
+  "CHILD_ABUSE",
   "PRETENDING_TO_BE_SOMEONE",
 ] as const;
+
+export const DURATION_TYPE = [
+  "MINUTES",
+  "HOURS",
+  "DAYS",
+  "WEEKS",
+  "MONTHS",
+  "YEARS",
+] as const
 
 export const NOTIFICATION_STATUS = ["READ", "UNREAD"] as const;
 export const GENDER = ["MALE", "FEMALE", "IDK"] as const;
@@ -168,6 +179,15 @@ export const userReports = mysqlTable("userReports", {
   reportedById: varchar("reportedById", { length: 255 }).notNull(),
   reportType: mysqlEnum("reportType", USER_REPORT_TYPE).notNull(),
   status: mysqlEnum("status", ["PENDING", "RESOLVED"]).default("PENDING"),
+});
+
+export const bans = mysqlTable("bans", {
+  id: int("id").primaryKey().notNull().autoincrement(),
+  userId: varchar("userId", { length: 255 })
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  reason: mysqlEnum("reason", USER_REPORT_TYPE).notNull(),
+  duration: timestamp("duration", { mode: "date" }).notNull(),
 });
 
 export type User = typeof users.$inferSelect;

@@ -1,26 +1,67 @@
 "use client";
 
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { columns } from "@/components/reports/Columns";
 import { DataTable } from "@/components/reports/Data-Table";
 import PageButtons from "@/components/reports/PageButtons";
 import { api } from "@/trpc/client";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/ui/select";
 import { Separator } from "@/ui/separator";
+
+import { POST_REPORT_TYPE } from "@bachira/db/schema/schema";
 
 const ReportHero = ({
   page,
   itemsPerPage,
-  pages,
+
+  status,
+  reason,
 }: {
   page: number;
   itemsPerPage: number;
-  pages: number;
+
+  status: "pending" | "resolved" | undefined;
+  reason: (typeof POST_REPORT_TYPE)[number] | undefined;
 }) => {
   const offset = (page - 1) * (itemsPerPage + 1);
 
   const { data, isPending } = api.posts.getReports.useQuery({
     offset,
     limit: itemsPerPage,
+    status: status ? status.toUpperCase() : undefined,
+    reason: reason,
   });
+
+  const countReportQuery = api.posts.countReports.useQuery({
+    status: status ? status.toUpperCase() : undefined,
+    reason: reason,
+  });
+
+  const pages = Math.ceil(
+    (countReportQuery.data?.[0]?.count as number) / itemsPerPage,
+  );
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  function handleSort(sortType: "status" | "reason", value: string) {
+    console.log("🚀 ~ handleSort ~ value:", value);
+    const params = new URLSearchParams(searchParams);
+
+    params.set(sortType, value);
+    if (value === "---") {
+      params.delete(sortType);
+    }
+
+    router.push(`${pathname}?${params.toString()}`);
+  }
 
   return (
     <div className="flex flex-1 flex-col font-primary">
@@ -36,12 +77,63 @@ const ReportHero = ({
             <h1 className="text-center">Fetching data...</h1>
           ) : (
             <>
+              <div className="mb-5 flex flex-col gap-5 md:flex-row">
+                <div className="">
+                  <Select
+                    defaultValue={status ?? "pending"}
+                    onValueChange={(data) => handleSort("status", data)}
+                  >
+                    <h1 className="font-medium">Status: </h1>
+                    <SelectTrigger className="w-[180px] border">
+                      <SelectValue
+                        placeholder={
+                          status
+                            ? status.charAt(0).toUpperCase() + status.slice(1)
+                            : "Pending"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="resolved">Resolved</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="">
+                  <Select
+                    defaultValue={reason ?? undefined}
+                    onValueChange={(data) => handleSort("reason", data)}
+                  >
+                    <h1 className="font-medium">Reason: </h1>
+                    <SelectTrigger className="w-[180px] border">
+                      <SelectValue placeholder="---" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="---">---</SelectItem>
+
+                      {POST_REPORT_TYPE.map((type) => (
+                        <SelectItem
+                          value={type}
+                          key={type}
+                          className="capitalize"
+                        >
+                          {type.charAt(0) +
+                            type.replace("_", " ").toLowerCase().slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
               <DataTable columns={columns} data={data?.reportData ?? []} />
               <PageButtons page={page} pages={pages} />
             </>
           )}
         </div>
       </div>
+
+      
     </div>
   );
 };
