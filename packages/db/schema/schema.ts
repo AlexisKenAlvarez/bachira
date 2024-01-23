@@ -186,6 +186,7 @@ export const bans = mysqlTable("bans", {
   userId: varchar("userId", { length: 255 })
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
+  // email: varchar("email", { length: 255 }).notNull(),
   reason: mysqlEnum("reason", USER_REPORT_TYPE).notNull(),
   duration: timestamp("duration", { mode: "date" }).notNull(),
 });
@@ -195,3 +196,4 @@ export type Followership = typeof followership.$inferSelect;
 export type Notification = typeof notification.$inferSelect;
 export type Post = typeof posts.$inferSelect;
 export type PostReport = typeof postReports.$inferSelect;
+export type Ban = typeof bans.$inferSelect;

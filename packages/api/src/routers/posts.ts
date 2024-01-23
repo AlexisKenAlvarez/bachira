@@ -475,9 +475,7 @@ export const postRouter = createTRPCRouter({
         .where(eq(notification.postId, input.postId));
 
       if (input.fromReport) {
-        await ctx.db
-          .delete(postReports)
-          .where(eq(postReports.postId, input.postId));
+        await ctx.db.update(postReports).set({status: "RESOLVED"}).where(eq(postReports.postId, input.postId));
       }
 
       return {

@@ -4,9 +4,11 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import { redirect } from "next/navigation";
 import AddUsername from "@/components/auth/AddUsername";
+import Banned from "@/components/Banned";
 import { api } from "@/trpc/server";
 import TRPCProvider from "@/trpc/TRPCProvider";
 import { Toaster } from "react-hot-toast";
+
 import { getServerAuthSession } from "@bachira/auth";
 
 import Nav from "../components/Nav";
@@ -30,6 +32,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const session = await getServerAuthSession();
+  console.log("🚀 ~ session:", session);
 
   if (session?.user.notFound) {
     redirect("/api/signout");
@@ -41,7 +44,6 @@ export default async function RootLayout({
       userId: session.user.id,
       seen: false,
     }));
-    
 
   return (
     <TRPCProvider>
@@ -50,6 +52,8 @@ export default async function RootLayout({
           {session ? (
             !session.user.username ? (
               <AddUsername email={session.user.email!} />
+            ) : session.user.banned.status === true ? (
+              <Banned banData={session.user.banned} />
             ) : (
               <div className="mx-auto flex min-h-screen w-full max-w-[780px] flex-col">
                 <Nav

@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/ui/select";
 import { Separator } from "@/ui/separator";
+import { Tabs, TabsList, TabsTrigger } from "@/ui/tabs";
 
 import { POST_REPORT_TYPE } from "@bachira/db/schema/schema";
 
@@ -77,28 +78,22 @@ const ReportHero = ({
             <h1 className="text-center">Fetching data...</h1>
           ) : (
             <>
+              <Tabs
+                defaultValue={status ?? "pending"}
+                onValueChange={(data: string) => handleSort("status", data)}
+                className="w-full"
+              >
+                <TabsList className="flex w-full">
+                  <TabsTrigger value="pending" className="w-full">
+                    Pending
+                  </TabsTrigger>
+                  <TabsTrigger value="resolved" className="w-full">
+                    Resolved
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+
               <div className="mb-5 flex flex-col gap-5 md:flex-row">
-                <div className="">
-                  <Select
-                    defaultValue={status ?? "pending"}
-                    onValueChange={(data) => handleSort("status", data)}
-                  >
-                    <h1 className="font-medium">Status: </h1>
-                    <SelectTrigger className="w-[180px] border">
-                      <SelectValue
-                        placeholder={
-                          status
-                            ? status.charAt(0).toUpperCase() + status.slice(1)
-                            : "Pending"
-                        }
-                      />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="resolved">Resolved</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
 
                 <div className="">
                   <Select
@@ -132,8 +127,6 @@ const ReportHero = ({
           )}
         </div>
       </div>
-
-      
     </div>
   );
 };

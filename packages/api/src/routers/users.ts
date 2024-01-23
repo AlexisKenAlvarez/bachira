@@ -478,6 +478,18 @@ export const userRouter = createTRPCRouter({
         success: true,
       };
     }),
+  getBannedUser: privateProcedure.input(z.object({
+    userId: z.string(),
+  })).mutation(async ({ ctx, input }) => {
+
+    const data = await ctx.db.query.bans.findFirst({
+      where: (bans, {eq}) => eq(bans.userId, input.userId)
+    })
+
+    return {
+      bannedUser: data
+    }
+  })
 });
 
 export type UserRouter = typeof userRouter;

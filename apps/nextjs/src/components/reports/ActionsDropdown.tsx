@@ -20,6 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/ui/dropdown-menu";
+
 import { Label } from "@/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/ui/radio-group";
 import { Separator } from "@/ui/separator";
@@ -34,7 +35,6 @@ import type { DURATION_TYPE } from "@bachira/db/schema/schema";
 type ReportType = RouterOutputs["posts"]["getReports"]["reportData"][0];
 
 const ActionsDropdown = ({ post }: { post: ReportType }) => {
-  const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [deletePostOpen, setDeletePostOpen] = useState(false);
   const [ban, setBan] = useState(false);
   const [duration, setDuration] = useState(10);
@@ -47,12 +47,7 @@ const ActionsDropdown = ({ post }: { post: ReportType }) => {
   const deletePost = api.posts.deletePost.useMutation({
     onMutate: async ({ ban }: { ban?: boolean | null | undefined }) => {
       if (ban) {
-        await banMutation.mutateAsync({
-          userId: post.userId,
-          duration: duration,
-          durationType: durationType,
-          reason: post.reportType,
-        });
+        await banUser();
       }
     },
     onSuccess: async () => {
@@ -61,6 +56,15 @@ const ActionsDropdown = ({ post }: { post: ReportType }) => {
       setDeletePostOpen(false);
     },
   });
+
+  const banUser = async () => {
+    await banMutation.mutateAsync({
+      userId: post.userId,
+      duration: duration,
+      durationType: durationType,
+      reason: post.reportType,
+    });
+  }
 
   return (
     <>
@@ -77,31 +81,11 @@ const ActionsDropdown = ({ post }: { post: ReportType }) => {
           <DropdownMenuItem onClick={() => setDeletePostOpen(true)}>
             Delete post
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setConfirmationOpen(true)}>
-            Ban user
+          <DropdownMenuItem>
+            Dismiss
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-
-      <Dialog open={confirmationOpen} onOpenChange={setConfirmationOpen}>
-        <DialogTrigger asChild></DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Are you absolutely sure?</DialogTitle>
-            <DialogDescription>
-              This action cannot be undone. This will also permanently delete
-              this user&apos;s data and posts all over the platform.
-            </DialogDescription>
-          </DialogHeader>
-
-          <DialogFooter>
-            <Button variant="destructive">Confirm</Button>
-            <DialogClose>
-              <Button variant="secondary">Cancel</Button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <Dialog
         open={deletePostOpen}
@@ -177,7 +161,7 @@ const ActionsDropdown = ({ post }: { post: ReportType }) => {
               </RadioGroup>
 
               <Slider
-                defaultValue={[10]}
+                defaultValue={[duration]}
                 max={100}
                 min={1}
                 step={1}
