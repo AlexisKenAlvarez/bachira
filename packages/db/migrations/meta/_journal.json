@@ -8,6 +8,13 @@
       "when": 1705728318605,
       "tag": "0000_pale_vampiro",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1706076734891,
+      "tag": "0001_redundant_deathstrike",
+      "breakpoints": true
     }
   ]
 }
