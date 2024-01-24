@@ -5,12 +5,19 @@ import { and, asc, eq, like, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import type { User } from "@bachira/db/schema/schema";
-import { followership, notification, users } from "@bachira/db/schema/schema";
+import {
+  bans,
+  followership,
+  notification,
+  USER_REPORT_TYPE,
+  users,
+} from "@bachira/db/schema/schema";
 
 import { editProfileSchema, pusherServer, toPusherKey } from "../../lib/pusher";
 import { utapi } from "../../lib/uploadthing";
-import { createTRPCRouter, privateProcedure, publicProcedure } from "../trpc";
-import { cookies } from "next/headers";
+import { createTRPCRouter, privateProcedure } from "../trpc";
+import { DURATION_TYPE } from "@bachira/db/schema/schema"
+
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
@@ -434,10 +441,54 @@ export const userRouter = createTRPCRouter({
         userFollowing,
       };
     }),
-  signOut: publicProcedure.mutation(() => {
-    const cookieStore = cookies()
-    cookieStore.delete("next-auth.session-token");
-    cookieStore.delete("next-auth.csrf-token");
+  banUser: privateProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        reason: z.enum([...USER_REPORT_TYPE]),
+        duration: z.number().min(1).max(100),
+        durationType: z.enum([...DURATION_TYPE]), // TODO: add duration type
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const durationType = input.durationType
+      const currentDate = new Date();
+      const duration = new Date(currentDate);
+
+      if (durationType === "MINUTES") {
+        duration.setMinutes(duration.getMinutes() + input.duration);
+      } else if (durationType === "HOURS") {
+        duration.setHours(duration.getHours() + input.duration);
+      } else if (durationType === "DAYS") {
+        duration.setDate(duration.getDate() + input.duration);
+      } else if (durationType === "WEEKS") {
+        duration.setDate(duration.getDate() + input.duration * 7);
+      } else if (durationType === "MONTHS") {
+        duration.setMonth(duration.getMonth() + input.duration);
+      } else if (durationType === "YEARS") {
+        duration.setFullYear(duration.getFullYear() + input.duration);
+      }
+
+      await ctx.db.insert(bans).values({
+        userId: input.userId,
+        reason: input.reason,
+        duration: duration,
+      })
+      return {
+        success: true,
+      };
+    }),
+  getBannedUser: privateProcedure.input(z.object({
+    userId: z.string(),
+  })).mutation(async ({ ctx, input }) => {
+
+    const data = await ctx.db.query.bans.findFirst({
+      where: (bans, {eq}) => eq(bans.userId, input.userId)
+    })
+
+    return {
+      bannedUser: data
+    }
   })
 });
 

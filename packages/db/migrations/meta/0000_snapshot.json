@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "9e7329a3-0d6f-4002-881f-8d26bec3c49c",
+  "id": "0c75b53e-cc3a-4a21-84fb-708c841402e4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "bachira_followership": {
@@ -82,7 +82,7 @@
         },
         "type": {
           "name": "type",
-          "type": "enum('FOLLOW','LIKE','COMMENT','REPLY')",
+          "type": "enum('FOLLOW','LIKE_POST','LIKE_COMMENT','LIKE_REPLY','MENTION_POST','MENTION_COMMENT','COMMENT','REPLY')",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -172,7 +172,21 @@
           "isUnique": false
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "bachira_postComments_postId_bachira_posts_id_fk": {
+          "name": "bachira_postComments_postId_bachira_posts_id_fk",
+          "tableFrom": "bachira_postComments",
+          "tableTo": "bachira_posts",
+          "columnsFrom": [
+            "postId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {
         "bachira_postComments_id": {
           "name": "bachira_postComments_id",
@@ -217,7 +231,21 @@
           "isUnique": false
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "bachira_postLikes_id_bachira_posts_id_fk": {
+          "name": "bachira_postLikes_id_bachira_posts_id_fk",
+          "tableFrom": "bachira_postLikes",
+          "tableTo": "bachira_posts",
+          "columnsFrom": [
+            "id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {
         "bachira_postLikes_id": {
           "name": "bachira_postLikes_id",
@@ -276,10 +304,32 @@
           "notNull": false,
           "autoincrement": false,
           "default": "'PUBLIC'"
+        },
+        "commentPrivacy": {
+          "name": "commentPrivacy",
+          "type": "enum('PUBLIC','FOLLOWERS','PRIVATE')",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'PUBLIC'"
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "bachira_posts_userId_bachira_user_id_fk": {
+          "name": "bachira_posts_userId_bachira_user_id_fk",
+          "tableFrom": "bachira_posts",
+          "tableTo": "bachira_user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {
         "bachira_posts_id": {
           "name": "bachira_posts_id",

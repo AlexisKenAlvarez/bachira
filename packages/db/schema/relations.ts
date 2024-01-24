@@ -1,7 +1,17 @@
 import { relations } from "drizzle-orm";
-import { followership, notification, users, postComments, postLikes, posts } from "./schema";
 
-export const postRelations = relations(posts, ({many, one}) => ({
+import {
+  followership,
+  notification,
+  postComments,
+  postLikes,
+  postReports,
+  posts,
+  userReports,
+  users,
+} from "./schema";
+
+export const postRelations = relations(posts, ({ many, one }) => ({
   user: one(users, {
     fields: [posts.userId],
     references: [users.id],
@@ -9,7 +19,28 @@ export const postRelations = relations(posts, ({many, one}) => ({
   }),
   comments: many(postComments, { relationName: "postComments" }),
   likes: many(postLikes, { relationName: "postLikes" }),
-}))
+}));
+
+export const postReportRelations = relations(postReports, ({ one }) => ({
+  post: one(posts, {
+    fields: [postReports.postId],
+    references: [posts.id],
+    relationName: "postReports",
+  }),
+  user: one(users, {
+    fields: [postReports.userId],
+    references: [users.id],
+    relationName: "reportedAuthor",
+  }),
+}));
+
+export const userReportRelations = relations(userReports, ({ one }) => ({
+  user: one(users, {
+    fields: [userReports.userId],
+    references: [users.id],
+    relationName: "userReports",
+  }),
+}));
 
 export const postCommentRelations = relations(postComments, ({ one }) => ({
   post: one(posts, {
@@ -22,7 +53,7 @@ export const postCommentRelations = relations(postComments, ({ one }) => ({
     references: [users.id],
     relationName: "user_postComments",
   }),
-}))
+}));
 
 export const postLikeRelations = relations(postLikes, ({ one }) => ({
   post: one(posts, {
@@ -35,7 +66,7 @@ export const postLikeRelations = relations(postLikes, ({ one }) => ({
     references: [users.id],
     relationName: "user_postLikes",
   }),
-}))
+}));
 
 export const userRelations = relations(users, ({ many }) => ({
   follower: many(followership, { relationName: "user_follower" }),
@@ -46,7 +77,7 @@ export const userRelations = relations(users, ({ many }) => ({
   }),
   posts: many(posts, { relationName: "user_posts" }),
   postComments: many(postComments, { relationName: "user_postComments" }),
-  postLikes: many(postLikes, { relationName: "user_postLikes" })
+  postLikes: many(postLikes, { relationName: "user_postLikes" }),
 }));
 
 export const followRelations = relations(followership, ({ one }) => ({

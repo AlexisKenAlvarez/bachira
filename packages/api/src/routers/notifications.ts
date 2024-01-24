@@ -58,9 +58,12 @@ export const notificationRouter = createTRPCRouter({
         .from(notification)
         .where(
           and(
-            eq(notification.notificationFor, input.userId),
-            eq(notification.seen, input.seen),
-          ),
+            and(
+              eq(notification.notificationFor, input.userId),
+              eq(notification.seen, input.seen),
+            )
+          )
+          ,
         );
 
       return count;

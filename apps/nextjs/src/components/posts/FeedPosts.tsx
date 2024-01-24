@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
-import type { SessionUser } from "@/lib/userTypes";
-import { api } from "@/trpc/client";
-import { notFound } from "next/navigation";
-import { useEffect } from "react";
-import { useInView } from "react-intersection-observer";
-import { Skeleton } from "@/ui/skeleton";
 
+import type { SessionUser } from "@/lib/userTypes";
+import { useEffect } from "react";
+import { notFound } from "next/navigation";
+import { api } from "@/trpc/client";
+import { Skeleton } from "@/ui/skeleton";
+import { useInView } from "react-intersection-observer";
 
 import PostData from "./PostData";
 
@@ -20,10 +20,9 @@ const FeedPosts = ({
 }) => {
   const [ref, inView] = useInView();
 
-
   const followingQuery = api.user.postFollowing.useQuery({
-    userId: user.id
-  })
+    userId: user.id,
+  });
 
   const { data, fetchNextPage, isLoading, isError } =
     api.posts.getPosts.useInfiniteQuery(
@@ -38,20 +37,31 @@ const FeedPosts = ({
         },
         retry: false,
         refetchOnWindowFocus: "always",
-        
       },
     );
 
   if (isError) {
-    notFound()
+    notFound();
   }
+
+  useEffect(() => {
+    void (() => {
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      data?.pages.forEach(async (page) => {
+        if (page.postData.length === 0 && page.nextCursor !== null) {
+          console.log(page.nextCursor);
+          await fetchNextPage();
+        }
+      });
+    })();
+  }, [data]);
 
   useEffect(() => {
     void (async () => {
       if (inView === true) {
         await fetchNextPage();
       }
-    })()
+    })();
   }, [inView]);
 
   return (
@@ -67,7 +77,12 @@ const FeedPosts = ({
                   : undefined
               }
             >
-              <PostData user={user} post={post} singlePage={postId ? true : false} userFollowing={followingQuery.data?.userFollowing ?? []} />
+              <PostData
+                user={user}
+                post={post}
+                singlePage={postId ? true : false}
+                userFollowing={followingQuery.data?.userFollowing ?? []}
+              />
             </div>
           );
         }),

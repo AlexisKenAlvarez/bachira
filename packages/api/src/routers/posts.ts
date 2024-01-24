@@ -4,16 +4,19 @@ import { Redis } from "@upstash/redis";
 import { and, asc, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
+import { sql } from "@bachira/db";
 import {
   notification,
+  POST_REPORT_TYPE,
   postComments,
   postLikes,
+  postReports,
   posts,
 } from "@bachira/db/schema/schema";
 
 import { pusherServer, toPusherKey } from "../../lib/pusher";
-import { createTRPCRouter, privateProcedure } from "../trpc";
 import { FollowershipSchema } from "../../lib/zodSchema";
+import { createTRPCRouter, privateProcedure } from "../trpc";
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
@@ -52,10 +55,7 @@ export const postRouter = createTRPCRouter({
         text: text,
         privacy: privacy,
       });
-      console.log(
-        "🚀 ~ file: posts.ts:77 ~ mentioned.forEach ~ authorImage:",
-        authorImage,
-      );
+
       if (toMention) {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         toMention.forEach(async (toMention) => {
@@ -101,12 +101,12 @@ export const postRouter = createTRPCRouter({
       const limit = input.limit ?? 10;
 
       const postData = await ctx.db.query.posts.findMany({
-        where: (posts, { gt, lt, eq }) =>
+        where: (posts, { gt, lt, eq, and }) =>
           postId
-            ? eq(posts.id, postId)
+            ? and(eq(posts.id, postId), eq(posts.isDeleted, false))
             : input.cursor
-              ? lt(posts.id, cursor ?? 0)
-              : gt(posts.id, cursor ?? 0),
+              ? and(lt(posts.id, cursor ?? 0), eq(posts.isDeleted, false))
+              : and(gt(posts.id, cursor ?? 0), eq(posts.isDeleted, false)),
 
         with: {
           user: true,
@@ -129,11 +129,20 @@ export const postRouter = createTRPCRouter({
       }
 
       const userFollowing = await ctx.db.query.followership.findMany({
-        where: (followership, { eq }) => eq(followership.follower_id, input.userId),
+        where: (followership, { eq }) =>
+          eq(followership.follower_id, input.userId),
+      });
+
+      const postReports = await ctx.db.query.postReports.findMany({
+        where: (postReports, { eq }) => eq(postReports.reportedById, userId),
       });
 
       let nextCursor;
       const newData: typeof postData = postData.filter((post) => {
+        if (postReports.some((report) => report.postId === post.id)) {
+          return false;
+        }
+
         if (post.privacy === "FOLLOWERS") {
           if (userFollowing.some((user) => user.following_id === post.userId)) {
             return post;
@@ -149,8 +158,8 @@ export const postRouter = createTRPCRouter({
         }
       });
 
-      if (newData.length > limit) {
-        const nextItem = newData.pop(); // return the last item from the array
+      if (postData.length > limit) {
+        const nextItem = postData.pop(); // return the last item from the array
         nextCursor = nextItem?.id;
       }
 
@@ -242,10 +251,8 @@ export const postRouter = createTRPCRouter({
             }),
           )
           .nullable(),
-        userFollowing: z.array(FollowershipSchema)
-        
+        userFollowing: z.array(FollowershipSchema),
       }),
-
     )
     .mutation(async ({ ctx, input }) => {
       const { toMention } = input;
@@ -261,13 +268,21 @@ export const postRouter = createTRPCRouter({
         where: (posts, { eq }) => eq(posts.id, input.postId),
         columns: {
           commentPrivacy: true,
-        }
-      })
+        },
+      });
 
-      if (postPrivacy?.commentPrivacy === "FOLLOWERS" && input.userFollowing.some((user) => user.following_id !== input.authorId) === false) {
+      if (
+        postPrivacy?.commentPrivacy === "FOLLOWERS" &&
+        input.userFollowing.some(
+          (user) => user.following_id !== input.authorId,
+        ) === false
+      ) {
         console.log("UNPORCS");
         throw new TRPCError({ code: "UNPROCESSABLE_CONTENT" });
-      } else if (postPrivacy?.commentPrivacy === "PRIVATE" && input.authorId !== input.userId) {
+      } else if (
+        postPrivacy?.commentPrivacy === "PRIVATE" &&
+        input.authorId !== input.userId
+      ) {
         throw new TRPCError({ code: "UNPROCESSABLE_CONTENT" });
       }
 
@@ -445,6 +460,8 @@ export const postRouter = createTRPCRouter({
     .input(
       z.object({
         postId: z.number(),
+        fromReport: z.boolean().nullish(),
+        ban: z.boolean().nullish(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -456,6 +473,35 @@ export const postRouter = createTRPCRouter({
       await ctx.db
         .delete(notification)
         .where(eq(notification.postId, input.postId));
+
+      return {
+        success: true,
+      };
+    }),
+  adminAction: privateProcedure
+    .input(
+      z.object({
+        postId: z.number(),
+        ban: z.boolean().nullish(),
+        type: z.enum(["DELETE", "DISMISS"]),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (input.type === "DELETE") {
+        await ctx.db
+          .update(posts)
+          .set({ isDeleted: true })
+          .where(eq(posts.id, input.postId));
+
+        await ctx.db
+          .delete(notification)
+          .where(eq(notification.postId, input.postId));
+      }
+
+      await ctx.db
+        .update(postReports)
+        .set({ status: "RESOLVED" })
+        .where(eq(postReports.postId, input.postId));
 
       return {
         success: true,
@@ -513,6 +559,112 @@ export const postRouter = createTRPCRouter({
           commentPrivacy: input.privacy,
         })
         .where(eq(posts.id, input.postId));
+    }),
+  reportPost: privateProcedure
+    .input(
+      z.object({
+        postId: z.number(),
+        userId: z.string(),
+        type: z.enum([...POST_REPORT_TYPE]).nullish(),
+        reportedById: z.string(),
+        action: z.enum(["REPORT", "UNDO"]),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (input.action === "REPORT") {
+        await ctx.db.insert(postReports).values({
+          postId: input.postId,
+          userId: input.userId,
+          reportType: input.type!,
+          reportedById: input.reportedById,
+        });
+      } else {
+        await ctx.db
+          .delete(postReports)
+          .where(
+            and(
+              eq(postReports.postId, input.postId),
+              eq(postReports.reportedById, input.reportedById),
+            ),
+          );
+      }
+
+      return {
+        action: input.action,
+      };
+    }),
+  getReports: privateProcedure
+    .input(
+      z.object({
+        offset: z.number().nullish(),
+        limit: z.number().nullish(),
+        status: z.string().nullish(),
+        reason: z.enum([...POST_REPORT_TYPE]).nullish(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const offset = input.offset ?? 0;
+      const status = (input.status as "PENDING" | "RESOLVED") ?? "PENDING";
+
+      const data = await ctx.db.query.postReports.findMany({
+        where: (postReports, { eq, and }) => {
+          if (input.reason && input.status)
+            return and(
+              eq(postReports.reportType, input.reason),
+              eq(postReports.status, status),
+            );
+          else if (input.reason)
+            return eq(postReports.reportType, input.reason);
+          else if (input.status) return eq(postReports.status, status);
+          else return eq(postReports.status, status);
+        },
+        limit: input.limit ?? 7,
+        offset: offset - 1 < 0 ? 0 : offset - 1,
+        with: {
+          user: {
+            columns: {
+              username: true,
+            },
+          },
+          post: {
+            columns: {
+              text: true,
+            },
+          },
+        },
+      });
+
+      return {
+        reportData: data,
+      };
+    }),
+  countReports: privateProcedure
+    .input(
+      z.object({
+        status: z.string().nullish(),
+        reason: z.enum([...POST_REPORT_TYPE]).nullish(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const status = (input.status as "PENDING" | "RESOLVED") ?? "PENDING";
+
+      const count = await ctx.db
+        .select({ count: sql`COUNT(*)` })
+        .from(postReports)
+        .where(
+          input.reason && input.status
+            ? and(
+                eq(postReports.status, status),
+                eq(postReports.reportType, input.reason),
+              )
+            : input.reason
+              ? eq(postReports.reportType, input.reason)
+              : input.status
+                ? eq(postReports.status, status)
+                : undefined,
+        );
+
+      return count;
     }),
 });
 

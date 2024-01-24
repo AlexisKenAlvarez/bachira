@@ -1,17 +1,17 @@
 "use client";
 
-import { Sheet, SheetTrigger } from "@/ui/sheet";
-import { Bell } from "lucide-react";
 import { useEffect, useState } from "react";
-import NotificationData from "./NotificationData";
-
+import Image from "next/image";
 import { notifications } from "@/lib/constants";
 import { pusherClient } from "@/lib/pusher";
-import { toPusherKey } from "@bachira/api/lib/pusher";
 import { api } from "@/trpc/client";
-import { X } from "lucide-react";
-import Image from "next/image";
+import { Sheet, SheetTrigger } from "@/ui/sheet";
+import { Bell, X } from "lucide-react";
 import toast from "react-hot-toast";
+
+import { toPusherKey } from "@bachira/api/lib/pusher";
+
+import NotificationData from "./NotificationData";
 
 interface NotificationType {
   image: string;
@@ -32,16 +32,13 @@ const Notifications = ({
   const [recentNotif, setRecentNotif] = useState<NotificationType[]>([]);
   const [open, setOpen] = useState(false);
   const seen = api.notifications.seenNotifications.useMutation();
+  const utils = api.useUtils();
 
-  
-
-  const notificationHandler = (data: NotificationType) => {
-    console.log(
-      "🚀 ~ file: Notifications.tsx:49 ~ notificationHandler ~ data:",
-      data,
-    );
+  const notificationHandler = async (data: NotificationType) => {
     const alreadyNotified = recentNotif.some((el) => {
-      if (el.type === "LIKE") {
+      console.log(el.type);
+
+      if (el.type === "LIKE_POST") {
         return (
           el.notificationFrom === data.notificationFrom &&
           el.type === data.type &&
@@ -58,7 +55,8 @@ const Notifications = ({
       console.log("Not sending notification, already notified");
     } else {
       setRecentNotif((prev) => [...prev, data]);
-      
+      await utils.notifications.getNotifications.invalidate();
+
       toast.dismiss("follow_toast");
       toast((t) => (
         <div className=" flex gap-3">
@@ -66,7 +64,7 @@ const Notifications = ({
             className="absolute -right-[3px] -top-[3px] rounded-full border border-black/50 p-[2px] opacity-60"
             onClick={() => {
               console.log("Toast closed");
-              toast.dismiss(t.id)
+              toast.dismiss(t.id);
             }}
           >
             <X size={10} />
@@ -80,7 +78,7 @@ const Notifications = ({
           />
 
           <div className="flex flex-col justify-center gap-0">
-            <h1 className=" max-w-20 inline-block truncate overflow-ellipsis font-primary font-bold md:max-w-[14rem]">
+            <h1 className=" inline-block max-w-20 truncate overflow-ellipsis font-primary font-bold md:max-w-[14rem]">
               {data.notificationFrom}
             </h1>
             <p className="-mt-[5px]">
@@ -105,9 +103,8 @@ const Notifications = ({
       );
       pusherClient.unbind("incoming_notification", notificationHandler);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recentNotif]);
-
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>

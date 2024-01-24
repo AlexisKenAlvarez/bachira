@@ -1,27 +1,8 @@
 "use client";
+
+import type { CommentPrivacyType } from "@/lib/postTypes";
+import { useCallback, useState } from "react";
 import { api } from "@/trpc/client";
-import { useState } from "react";
-import toast from "react-hot-toast";
-import { Button } from "@/ui/button";
-
-import {
-  Bookmark,
-  FlagTriangleRight,
-  Loader,
-  MessageCircle,
-  MoreHorizontal,
-  Pencil,
-  Trash,
-} from "lucide-react";
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/ui/dropdown-menu";
-
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -31,29 +12,33 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/ui/alert-dialog";
-
+import { Button } from "@/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/ui/dialog";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/ui/dialog";
-
-import { Separator } from "@/ui/separator";
-
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-} from "@/ui/form";
-
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/ui/dropdown-menu";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/ui/radio-group";
+import { Separator } from "@/ui/separator";
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Bookmark,
+  FlagTriangleRight,
+  Loader,
+  MessageCircle,
+  MoreHorizontal,
+  Pencil,
+  Trash,
+} from "lucide-react";
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import { z } from "zod";
-import type { CommentPrivacyType } from "@/lib/postTypes";
+
+import ReportDialog from "./ReportDialog";
 
 const PostActions = ({
   author,
@@ -66,11 +51,16 @@ const PostActions = ({
   postId: number;
   userId: string;
   openEdit: () => void;
-  commentPrivacy: CommentPrivacyType
+  commentPrivacy: CommentPrivacyType;
 }) => {
   const [deleteAlert, setDeleteAlert] = useState(false);
   const [commentPrivacyOpen, setCommentPrivacyOpen] = useState(false);
+  const [reportCommentOpen, setReportCommentOpen] = useState(false);
   const utils = api.useUtils();
+
+  const toggleReportComment = useCallback((open: boolean) => {
+    setReportCommentOpen(open);
+  }, []);
 
   const commentPrivacySchema = z.object({
     commentPrivacy: z.enum(["PUBLIC", "FOLLOWERS", "PRIVATE"], {
@@ -96,7 +86,7 @@ const PostActions = ({
   });
 
   const commentPrivacyMutation = api.posts.editCommentPrivacy.useMutation({
-    onSuccess:async () => {
+    onSuccess: async () => {
       toast.success("Comment privacy updated.");
       await utils.posts.getPosts.invalidate({ postId });
       setCommentPrivacyOpen(false);
@@ -183,7 +173,10 @@ const PostActions = ({
 
           {/* Other actions */}
           {author !== userId && (
-            <DropdownMenuItem className="group items-start gap-3 pr-5 text-left">
+            <DropdownMenuItem
+              className="group items-start gap-3 pr-5 text-left"
+              onClick={() => setReportCommentOpen(true)}
+            >
               <FlagTriangleRight
                 className="mt-1 transition-colors duration-100 ease-in-out group-hover:text-rd"
                 size={23}
@@ -260,6 +253,14 @@ const PostActions = ({
           </Form>
         </DialogContent>
       </Dialog>
+
+      <ReportDialog
+        open={reportCommentOpen}
+        setOpen={toggleReportComment}
+        postId={postId}
+        authorId={author}
+        userId={userId}
+      />
 
       {/* Delete post confirmation */}
       <AlertDialog open={deleteAlert} onOpenChange={setDeleteAlert}>

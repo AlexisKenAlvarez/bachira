@@ -2,7 +2,9 @@ import "@/styles/globals.css";
 
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
+import { redirect } from "next/navigation";
 import AddUsername from "@/components/auth/AddUsername";
+import Banned from "@/components/Banned";
 import { api } from "@/trpc/server";
 import TRPCProvider from "@/trpc/TRPCProvider";
 import { Toaster } from "react-hot-toast";
@@ -11,7 +13,6 @@ import { getServerAuthSession } from "@bachira/auth";
 
 import Nav from "../components/Nav";
 import Providers from "./providers";
-import { redirect } from "next/navigation";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -34,7 +35,7 @@ export default async function RootLayout({
   console.log("🚀 ~ session:", session);
 
   if (session?.user.notFound) {
-    redirect("/api/signout")
+    redirect("/api/signout");
   }
 
   const countData =
@@ -51,8 +52,10 @@ export default async function RootLayout({
           {session ? (
             !session.user.username ? (
               <AddUsername email={session.user.email!} />
+            ) : session.user.banned.status === true ? (
+              <Banned banData={session.user.banned} />
             ) : (
-              <div className="mx-auto flex min-h-screen w-full max-w-[700px] flex-col">
+              <div className="mx-auto flex min-h-screen w-full max-w-[780px] flex-col">
                 <Nav
                   email={session.user.email!}
                   username={session.user.username}

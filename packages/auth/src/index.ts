@@ -3,10 +3,17 @@ import { getServerSession } from "next-auth";
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 
+import type { USER_REPORT_TYPE } from "@bachira/db/schema/schema";
 import { db } from "@bachira/db";
 import { users } from "@bachira/db/schema/schema";
 
 export type { Session } from "next-auth";
+
+export interface BanType {
+  status: boolean;
+  reason?: (typeof USER_REPORT_TYPE)[number];
+  duration?: Date;
+}
 
 declare module "next-auth" {
   interface Session extends DefaultSession {
@@ -17,6 +24,7 @@ declare module "next-auth" {
       coverPhoto: string;
       image: string | null;
       notFound: boolean;
+      banned: BanType;
       // ...other properties
       // role: UserRole;
     } & DefaultSession["user"];
@@ -29,6 +37,7 @@ declare module "next-auth" {
     username: string | null;
     coverPhoto: string | null;
     notFound: boolean;
+    banned: BanType;
   }
 }
 
@@ -71,6 +80,37 @@ export const authOptions: NextAuthOptions = {
         where: (users, { eq }) => eq(users.email, token.email!),
       });
 
+      const bannedUser = await db.query.bans.findFirst({
+        where: (bans, { eq }) => eq(bans.userId, token.id as string),
+      });
+
+      if (bannedUser) {
+
+        const now = new Date();
+        const banDate = new Date(bannedUser.duration)
+
+        if (now > banDate) {
+          token.banned = {
+            status: false,
+            reason: bannedUser.reason,
+            duration: bannedUser.duration,
+          };
+        } else {
+          token.banned = {
+            status: true,
+            reason: bannedUser.reason,
+            duration: bannedUser.duration,
+          };
+        }
+ 
+      } else {
+        token.banned = {
+          status: false,
+          reason: undefined,
+          duration: undefined,
+        };
+      }
+
       if (!userFromDb) {
         token.notFound = true;
       } else {
@@ -106,6 +146,7 @@ export const authOptions: NextAuthOptions = {
           coverPhoto: token.coverPhoto as string,
           image: token.image as string,
           notFound: token.notFound as boolean,
+          banned: token.banned as BanType,
         },
       };
     },

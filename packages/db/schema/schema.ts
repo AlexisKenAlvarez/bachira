@@ -26,6 +26,33 @@ export const NOTIFICATION_TYPE = [
   "REPLY",
 ] as const;
 
+export const POST_REPORT_TYPE = [
+  "SEXUAL_CONTENT",
+  "HATEFUL_CONTENT",
+  "VIOLENT_CONTENT",
+  "SPAM",
+  "CHILD_ABUSE",
+] as const;
+
+export const USER_REPORT_TYPE = [
+  "SEXUAL_CONTENT",
+  "HATEFUL_CONTENT",
+  "VIOLENT_CONTENT",
+  "HARASSMENT",
+  "SPAM",
+  "CHILD_ABUSE",
+  "PRETENDING_TO_BE_SOMEONE",
+] as const;
+
+export const DURATION_TYPE = [
+  "MINUTES",
+  "HOURS",
+  "DAYS",
+  "WEEKS",
+  "MONTHS",
+  "YEARS",
+] as const
+
 export const NOTIFICATION_STATUS = ["READ", "UNREAD"] as const;
 export const GENDER = ["MALE", "FEMALE", "IDK"] as const;
 export const PRIVACY = ["PUBLIC", "FOLLOWERS", "PRIVATE"] as const;
@@ -94,19 +121,29 @@ export const notification = mysqlTable("notifications", {
 
 export const posts = mysqlTable("posts", {
   id: int("id").primaryKey().notNull().autoincrement(),
-  userId: varchar("userId", { length: 100 }).notNull(),
+  userId: varchar("userId", { length: 100 })
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   text: text("text").notNull(),
   createdAt,
   updatedAt,
   privacy: mysqlEnum("privacy", PRIVACY).default("PUBLIC"),
   commentPrivacy: mysqlEnum("commentPrivacy", PRIVACY).default("PUBLIC"),
-});
+  isDeleted: boolean("isDeleted").default(false),
+}, (table) => {
+  return {
+    deleteIdx: index("delete_idx").on(table.isDeleted)
+  }
+}
+);
 
 export const postComments = mysqlTable(
   "postComments",
   {
     id: int("id").primaryKey().notNull().autoincrement(),
-    postId: int("postId").notNull(),
+    postId: int("postId")
+      .notNull()
+      .references(() => posts.id, { onDelete: "cascade" }),
     userId: varchar("userId", { length: 100 }).notNull(),
     text: text("text").notNull(),
   },
@@ -121,7 +158,9 @@ export const postLikes = mysqlTable(
   "postLikes",
   {
     id: int("id").primaryKey().notNull().autoincrement(),
-    postId: int("postId").notNull(),
+    postId: int("postId")
+      .notNull()
+      .references(() => posts.id, { onDelete: "cascade" }),
     userId: varchar("userId", { length: 100 }).notNull(),
   },
   (table) => {
@@ -131,5 +170,36 @@ export const postLikes = mysqlTable(
   },
 );
 
-export type User = typeof users.$inferSelect
-export type Followership = typeof followership.$inferSelect
+export const postReports = mysqlTable("postReports", {
+  id: int("id").primaryKey().notNull().autoincrement(),
+  userId: varchar("userId", { length: 255 }).notNull(),
+  reportedById: varchar("reportedById", { length: 255 }).notNull(),
+  postId: int("postId").notNull(),
+  reportType: mysqlEnum("reportType", POST_REPORT_TYPE).notNull(),
+  status: mysqlEnum("status", ["PENDING", "RESOLVED"]).default("PENDING"),
+});
+
+export const userReports = mysqlTable("userReports", {
+  id: int("id").primaryKey().notNull().autoincrement(),
+  userId: varchar("userId", { length: 255 }).notNull(),
+  reportedById: varchar("reportedById", { length: 255 }).notNull(),
+  reportType: mysqlEnum("reportType", USER_REPORT_TYPE).notNull(),
+  status: mysqlEnum("status", ["PENDING", "RESOLVED"]).default("PENDING"),
+});
+
+export const bans = mysqlTable("bans", {
+  id: int("id").primaryKey().notNull().autoincrement(),
+  userId: varchar("userId", { length: 255 })
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  // email: varchar("email", { length: 255 }).notNull(),
+  reason: mysqlEnum("reason", USER_REPORT_TYPE).notNull(),
+  duration: timestamp("duration", { mode: "date" }).notNull(),
+});
+
+export type User = typeof users.$inferSelect;
+export type Followership = typeof followership.$inferSelect;
+export type Notification = typeof notification.$inferSelect;
+export type Post = typeof posts.$inferSelect;
+export type PostReport = typeof postReports.$inferSelect;
+export type Ban = typeof bans.$inferSelect;
