@@ -63,7 +63,7 @@ export const postRouter = createTRPCRouter({
             where: (user, { eq }) => eq(user.username, toMention.username),
           });
 
-          if (user) {
+          if (user?.id !== userId) {
             await ctx.db.insert(notification).values({
               notificationFrom: userId,
               notificationFor: toMention.id,
@@ -72,7 +72,7 @@ export const postRouter = createTRPCRouter({
             });
 
             await pusherServer.trigger(
-              toPusherKey(`user:${user.id}:incoming_notification`),
+              toPusherKey(`user:${user?.id}:incoming_notification`),
               "incoming_notification",
               {
                 notificationFrom: username,

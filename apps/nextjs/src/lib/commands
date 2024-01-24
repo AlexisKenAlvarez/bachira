@@ -1,2 +1,2 @@
 - DROP ALL DATABASE
-DROP TABLE IF EXISTS bachira_followership, bachira_notifications, bachira_postComments, bachira_postLikes, bachira_posts, bachira_user
+DROP TABLE IF EXISTS bachira_followership, bachira_notifications, bachira_postComments, bachira_postLikes, bachira_posts, bachira_user, bachira_bans;
