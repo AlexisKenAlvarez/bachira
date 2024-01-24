@@ -20,7 +20,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/ui/dropdown-menu";
-
 import { Label } from "@/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/ui/radio-group";
 import { Separator } from "@/ui/separator";
@@ -36,6 +35,8 @@ type ReportType = RouterOutputs["posts"]["getReports"]["reportData"][0];
 
 const ActionsDropdown = ({ post }: { post: ReportType }) => {
   const [deletePostOpen, setDeletePostOpen] = useState(false);
+  const [dismissOpen, setDismissOpen] = useState(false);
+
   const [ban, setBan] = useState(false);
   const [duration, setDuration] = useState(10);
   const [durationType, setDurationType] =
@@ -44,7 +45,7 @@ const ActionsDropdown = ({ post }: { post: ReportType }) => {
   const banMutation = api.user.banUser.useMutation();
 
   const utils = api.useUtils();
-  const deletePost = api.posts.deletePost.useMutation({
+  const deletePost = api.posts.adminAction.useMutation({
     onMutate: async ({ ban }: { ban?: boolean | null | undefined }) => {
       if (ban) {
         await banUser();
@@ -64,7 +65,7 @@ const ActionsDropdown = ({ post }: { post: ReportType }) => {
       durationType: durationType,
       reason: post.reportType,
     });
-  }
+  };
 
   return (
     <>
@@ -81,11 +82,42 @@ const ActionsDropdown = ({ post }: { post: ReportType }) => {
           <DropdownMenuItem onClick={() => setDeletePostOpen(true)}>
             Delete post
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setDismissOpen(true)}>
             Dismiss
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <Dialog open={dismissOpen} onOpenChange={setDismissOpen}>
+        <DialogTrigger asChild></DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Are you absolutely sure?</DialogTitle>
+            <DialogDescription>
+              This will dismiss this report and will not delete the post.
+            </DialogDescription>
+          </DialogHeader>
+          <Separator />
+
+          <DialogFooter>
+            <Button
+              variant="destructive"
+              onClick={() =>
+                deletePost.mutate({
+                  postId: post.postId,
+                  ban,
+                  type: "DISMISS",
+                })
+              }
+            >
+              Confirm
+            </Button>
+            <DialogClose>
+              <Button variant="secondary">Cancel</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         open={deletePostOpen}
@@ -177,8 +209,8 @@ const ActionsDropdown = ({ post }: { post: ReportType }) => {
               onClick={() =>
                 deletePost.mutate({
                   postId: post.postId,
-                  fromReport: true,
                   ban,
+                  type: "DELETE",
                 })
               }
             >

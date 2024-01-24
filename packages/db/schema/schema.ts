@@ -129,7 +129,13 @@ export const posts = mysqlTable("posts", {
   updatedAt,
   privacy: mysqlEnum("privacy", PRIVACY).default("PUBLIC"),
   commentPrivacy: mysqlEnum("commentPrivacy", PRIVACY).default("PUBLIC"),
-});
+  isDeleted: boolean("isDeleted").default(false),
+}, (table) => {
+  return {
+    deleteIdx: index("delete_idx").on(table.isDeleted)
+  }
+}
+);
 
 export const postComments = mysqlTable(
   "postComments",

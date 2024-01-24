@@ -101,12 +101,12 @@ export const postRouter = createTRPCRouter({
       const limit = input.limit ?? 10;
 
       const postData = await ctx.db.query.posts.findMany({
-        where: (posts, { gt, lt, eq }) =>
+        where: (posts, { gt, lt, eq, and }) =>
           postId
-            ? eq(posts.id, postId)
+            ? and(eq(posts.id, postId), eq(posts.isDeleted, false))
             : input.cursor
-              ? lt(posts.id, cursor ?? 0)
-              : gt(posts.id, cursor ?? 0),
+              ? and(lt(posts.id, cursor ?? 0), eq(posts.isDeleted, false))
+              : and(gt(posts.id, cursor ?? 0), eq(posts.isDeleted, false)),
 
         with: {
           user: true,
@@ -474,9 +474,34 @@ export const postRouter = createTRPCRouter({
         .delete(notification)
         .where(eq(notification.postId, input.postId));
 
-      if (input.fromReport) {
-        await ctx.db.update(postReports).set({status: "RESOLVED"}).where(eq(postReports.postId, input.postId));
+      return {
+        success: true,
+      };
+    }),
+  adminAction: privateProcedure
+    .input(
+      z.object({
+        postId: z.number(),
+        ban: z.boolean().nullish(),
+        type: z.enum(["DELETE", "DISMISS"]),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (input.type === "DELETE") {
+        await ctx.db
+          .update(posts)
+          .set({ isDeleted: true })
+          .where(eq(posts.id, input.postId));
+
+        await ctx.db
+          .delete(notification)
+          .where(eq(notification.postId, input.postId));
       }
+
+      await ctx.db
+        .update(postReports)
+        .set({ status: "RESOLVED" })
+        .where(eq(postReports.postId, input.postId));
 
       return {
         success: true,
@@ -623,21 +648,23 @@ export const postRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const status = (input.status as "PENDING" | "RESOLVED") ?? "PENDING";
 
-
       const count = await ctx.db
-      .select({ count: sql`COUNT(*)` })
-      .from(postReports)
-      .where(
-        input.reason && input.status ? 
-        and(
-          eq(postReports.status, status), 
-          eq(postReports.reportType, input.reason)
-          )
-          : 
-          input.reason ? eq(postReports.reportType, input.reason) 
-          : input.status ? eq(postReports.status, status) : undefined);
+        .select({ count: sql`COUNT(*)` })
+        .from(postReports)
+        .where(
+          input.reason && input.status
+            ? and(
+                eq(postReports.status, status),
+                eq(postReports.reportType, input.reason),
+              )
+            : input.reason
+              ? eq(postReports.reportType, input.reason)
+              : input.status
+                ? eq(postReports.status, status)
+                : undefined,
+        );
 
-    return count;
+      return count;
     }),
 });
 
