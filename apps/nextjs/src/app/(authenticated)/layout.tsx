@@ -1,5 +1,4 @@
-import { authOptions } from "@bachira/auth";
-import { getServerSession } from "next-auth";
+import { api } from "@/trpc/server";
 import { redirect } from "next/navigation";
 
 
@@ -8,9 +7,9 @@ export default async function authLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
+  const data = await api.user.getSession()
 
-  if (!session) {
+  if (!data.session) {
     redirect('/signin')
   }
 

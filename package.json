@@ -9,6 +9,7 @@
     "db:push": "pnpm turbo --filter @bachira/db db:push --no-daemon",
     "db:studio": "pnpm turbo --filter @bachira/db db:studio --no-daemon",
     "db:migrate": "pnpm turbo --filter @bachira/db db:generate --no-daemon",
+    "supabase:generate": "pnpm --filter @bachira/api generate",
     "dev": "turbo dev --parallel",
     "lint": "turbo lint --continue -- --cache --cache-location node_modules/.cache/.eslintcache",
     "lint:fix": "turbo lint --continue -- --fix --cache --cache-location node_modules/.cache/.eslintcache",

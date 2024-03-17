@@ -1,51 +1,58 @@
-import { cookies, headers } from "next/headers";
-import { loggerLink } from "@trpc/client";
-import { experimental_nextCacheLink as nextCacheLink } from "@trpc/next/app-dir/links/nextCache";
-import { experimental_createTRPCNextAppDirServer as createTRPCNextAppDirServer } from "@trpc/next/app-dir/server";
-// import { env } from "env.mjs";
-// import { experimental_nextHttpLink as nextHttpLink } from "@trpc/next/app-dir/links/nextHttp";
-import superjson from "superjson";
+import type { CookieOptions } from "@supabase/ssr";
+import { cache } from "react";
+import { headers } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
-import { appRouter } from "@bachira/api";
-import type { AppRouter } from "@bachira/api";
-import { getServerAuthSession } from "@bachira/auth";
-import { db } from "@bachira/db";
 
-import { endingLink } from "./shared";
+
+import { createCaller, createTRPCContext } from "@bachira/api";
+
+import { env } from "@/env.mjs";
 
 /**
- * This client invokes procedures directly on the server without fetching over HTTP.
+ * This wraps the `createTRPCContext` helper and provides the required context for the tRPC API when
+ * handling a tRPC call from a React Server Component.
  */
-export const api = createTRPCNextAppDirServer<AppRouter>({
-  config() {
-    return {
-      transformer: superjson,
-      links: [
-        loggerLink({
-          enabled: () => true,
-        }),
-        endingLink({
-          headers: Object.fromEntries(headers().entries()),
-        }),
-        nextCacheLink({
-          revalidate: false,
-          router: appRouter,
-          async createContext() {
-            return {
-              // utapi: new UTApi({
-              //   fetch: globalThis.fetch,
-              //   // apiKey: env.UPLOADTHING_SECRET,
-              // }),
-              session: await getServerAuthSession(),
-              db,
-              headers: {
-                cookie: cookies().toString(),
-                "x-trpc-source": "rsc-invoke",
-              },
-            };
-          },
-        }),
-      ],
-    };
-  },
+const createContext = cache(async () => {
+  const heads = new Headers(headers());
+  heads.set("x-trpc-source", "rsc");
+  const cookieStore = cookies();
+
+  const supabase = createServerClient(
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.SUPABASE_SERVICE_ROLE_KEY,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value, ...options });
+          } catch (error) {
+            // The `set` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
+        },
+        remove(name: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value: "", ...options });
+          } catch (error) {
+            // The `delete` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
+        },
+      },
+    },
+  );
+
+  return createTRPCContext({
+    headers: heads,
+    supabase,
+  });
 });
+
+export const api = createCaller(createContext);

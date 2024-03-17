@@ -1,44 +1,32 @@
 "use client";
+
+import type { Session } from "@supabase/gotrue-js";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import ImageSmooth from "@/components/shared/ImageSmooth";
+import { supabase } from "@/supabase/supabaseClient";
+import { api } from "@/trpc/client";
 import { Button } from "@/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/ui/form";
 import { Input } from "@/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { Loader } from "lucide-react";
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import { z } from "zod";
 
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-} from "@/ui/form";
-import { api } from "@/trpc/client";
-import { Loader } from "lucide-react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
+type ExtendedSession = Session & {
+  user: {
+    user_metadata: {
+      full_name?: string;
+      avatar_url?: string;
+    };
+  };
+};
 
-const AddUsername = ({ email }: { email: string }) => {
-  const { data: session, update } = useSession();
+const AddUsername = ({ session }: { session: ExtendedSession }) => {
   const router = useRouter();
-
-  const updateUsername = api.user.updateUsername.useMutation({
-    onSuccess: async () => {
-      const newSession = {
-        ...session,
-        user: {
-          ...session?.user,
-          username: usernameForm.getValues("username"),
-        },
-      };
-
-      await update(newSession);
-
-      router.refresh();
-    },
-  });
+  const addUsernameMutation = api.user.createUser.useMutation();
 
   const [debounce, setDebounce] = useState(false);
 
@@ -66,12 +54,17 @@ const AddUsername = ({ email }: { email: string }) => {
     return pattern.test(input);
   }
 
+  if (!session) return null;
+
   return (
-    <section className="flex z-10 h-auto min-h-screen w-full bg-white pb-20 sm:bg-bggrey sm:pb-0">
-      <ImageSmooth src="/background.jpg" className="absolute top-0 left-0 w-full h-full object-cover sm:block hidden" />
-      <div className="w-full place-content-center sm:grid z-10">
+    <section className="z-10 flex h-auto min-h-screen w-full bg-white pb-20 sm:bg-bggrey sm:pb-0">
+      <ImageSmooth
+        src="/background.jpg"
+        className="absolute left-0 top-0 hidden h-full w-full object-cover sm:block"
+      />
+      <div className="z-10 w-full place-content-center sm:grid">
         <div className="h-full sm:rounded-xl sm:shadow-md">
-          <div className="sm:min-h-20 flex w-full flex-col space-y-4 bg-white px-7 py-10 font-primary sm:w-[26rem] sm:rounded-xl">
+          <div className="flex w-full flex-col space-y-4 bg-white px-7 py-10 font-primary sm:min-h-20 sm:w-[26rem] sm:rounded-xl">
             <div className="text-center">
               <h1 className="text-2xl font-bold">Enter username</h1>
               <h2 className="">
@@ -88,10 +81,21 @@ const AddUsername = ({ email }: { email: string }) => {
 
                     try {
                       if (isValidInput(data.username)) {
-                        await updateUsername.mutateAsync({
-                          username: data.username.trim(),
-                          email,
+                        await addUsernameMutation.mutateAsync({
+                          email: session.user.email!,
+                          username: data.username,
+                          id: session.user.id,
+                          image: session.user.user_metadata.avatar_url!,
+                          name: session.user.user_metadata.full_name!,
                         });
+
+                        await supabase.auth.updateUser({
+                          data: {
+                            username: data.username,
+                          },
+                        });
+
+                        router.refresh();
                       } else {
                         toast.error("Username must only contain alphabets");
                         setDebounce(false);
@@ -135,11 +139,9 @@ const AddUsername = ({ email }: { email: string }) => {
           </div>
         </div>
       </div>
-      <div className="relative hidden w-full  font-primary items-center overflow-hidden lg:flex z-10">
+      <div className="relative z-10 hidden  w-full items-center overflow-hidden font-primary lg:flex">
         <div className="">
-          <h1 className="block h-fit text-9xl font-bold">
-            Bachira
-          </h1>
+          <h1 className="block h-fit text-9xl font-bold">Bachira</h1>
           <p className="text-xl">
             Just one step ahead to experience the best social media in the
             world.
