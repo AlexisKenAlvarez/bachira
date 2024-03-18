@@ -6,6 +6,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 export type Database = {
   public: {
     Tables: {
@@ -87,7 +88,22 @@ export type Database = {
           status?: Database["public"]["Enums"]["notification_status"] | null
           type?: Database["public"]["Enums"]["notification_type"]
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "public_notifications_notificationFor_fkey"
+            columns: ["notificationFor"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "public_notifications_notificationFrom_fkey"
+            columns: ["notificationFrom"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       postComments: {
         Row: {

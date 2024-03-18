@@ -4,8 +4,6 @@ import { headers } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-
-
 import { createCaller, createTRPCContext } from "@bachira/api";
 
 import { env } from "@/env.mjs";
