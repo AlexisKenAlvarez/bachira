@@ -32,17 +32,15 @@ export default async function RootLayout({
   // const data = await api.user.getSession()
   const supabase = supabaseServer();
 
-  const { data } = await supabase.auth.getSession();
+  const session = await api.user.getSession()
 
-  if (data.session) {
+  if (session) {
     const isCreated = await api.user.isCreated({
-      email: data.session.user.email!,
+      email: session.email!,
     });
 
-    console.log("🚀 ~ data:", data.session.user.user_metadata.username);
-
     const countData = await api.notifications.countNotifications({
-      userId: data.session.user.id,
+      userId: session.id,
       seen: false,
     });
     console.log("🚀 ~ countData:", countData)
@@ -52,14 +50,14 @@ export default async function RootLayout({
         <html lang="en">
           <body className={`${montserrat.variable} bg-bg font-sans`}>
             {!isCreated ? (
-              <AddUsername session={data.session} />
+              <AddUsername session={session} />
             ) : (
               <div className="mx-auto flex min-h-screen w-full max-w-[780px] flex-col">
                 <Nav
-                  email={data.session.user.email!}
-                  username={data.session.user.user_metadata.username as string}
-                  image={data.session.user.user_metadata.avatar_url as string}
-                  userId={data.session.user.id}
+                  email={session.email!}
+                  username={session.user_metadata.username as string}
+                  image={session.user_metadata.avatar_url as string}
+                  userId={session.id}
                   notifCount={countData ?? 0}
                 />
 
@@ -98,48 +96,4 @@ export default async function RootLayout({
       </TRPCProvider>
     );
   }
-
-  // if (session?.user.notFound) {
-  //   redirect("/api/signout");
-  // }
-
-  //   return (
-  //     <TRPCProvider>
-  //       <html lang="en">
-  //         <body className={`${montserrat.variable} bg-bg font-sans`}>
-  //           {session ? (
-  //             !session.user.username ? (
-  //               <AddUsername email={session.user.email!} />
-  //             ) : session.user.banned.status === true ? (
-  //               <Banned banData={session.user.banned} />
-  //             ) : (
-  //               <div className="mx-auto flex min-h-screen w-full max-w-[780px] flex-col">
-  //                 <Nav
-  //                   email={session.user.email!}
-  //                   username={session.user.username}
-  //                   image={session.user.image!}
-  //                   userId={session.user.id}
-  //                   notifCount={countData ? (countData[0]?.count as number) : 0}
-  //                 />
-
-  //                 <Providers>
-  //                   <div className="flex flex-1 flex-col">{children}</div>
-  //                 </Providers>
-  //               </div>
-  //             )
-  //           ) : (
-  //             <Providers>{children}</Providers>
-  //           )}
-  //           <Toaster
-  //             position="bottom-left"
-  //             gutter={10}
-  //             toastOptions={{
-  //               duration: 5000,
-  //             }}
-  //           />
-  //         </body>
-  //       </html>
-  //     </TRPCProvider>
-  //   );
-  // }
 }

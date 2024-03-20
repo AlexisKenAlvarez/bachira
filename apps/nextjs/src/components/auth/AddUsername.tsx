@@ -14,13 +14,12 @@ import { Loader } from "lucide-react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { z } from "zod";
+import { RouterOutputs } from "@bachira/api";
 
-type ExtendedSession = Session & {
-  user: {
-    user_metadata: {
-      full_name?: string;
-      avatar_url?: string;
-    };
+type ExtendedSession = RouterOutputs["user"]["getSession"] & {
+  user_metadata: {
+    full_name?: string;
+    avatar_url?: string;
   };
 };
 
@@ -82,11 +81,11 @@ const AddUsername = ({ session }: { session: ExtendedSession }) => {
                     try {
                       if (isValidInput(data.username)) {
                         await addUsernameMutation.mutateAsync({
-                          email: session.user.email!,
+                          email: session.email!,
                           username: data.username,
-                          id: session.user.id,
-                          image: session.user.user_metadata.avatar_url!,
-                          name: session.user.user_metadata.full_name!,
+                          id: session.id,
+                          image: session.user_metadata.avatar_url!,
+                          name: session.user_metadata.full_name!,
                         });
 
                         await supabase.auth.updateUser({

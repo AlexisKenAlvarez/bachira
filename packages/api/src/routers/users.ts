@@ -16,7 +16,11 @@ export const userRouter = createTRPCRouter({
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
 
-    return data;
+    if (!data.session) {
+      return null
+    }
+
+    return data.session?.user;
   }),
   isCreated: privateProcedure
     .input(

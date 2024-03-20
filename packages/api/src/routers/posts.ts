@@ -1,8 +1,9 @@
-// import { TRPCError } from "@trpc/server";
-// import { Ratelimit } from "@upstash/ratelimit";
-// import { Redis } from "@upstash/redis";
-// import { and, asc, desc, eq } from "drizzle-orm";
-// import { z } from "zod";
+import { TRPCError } from "@trpc/server";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
+import { and, asc, desc, eq } from "drizzle-orm";
+import { z } from "zod";
+import { createTRPCRouter, privateProcedure } from "../trpc";
 
 // import { sql } from "@bachira/db";
 // import {
@@ -18,17 +19,77 @@
 // import { FollowershipSchema } from "../../lib/zodSchema";
 // import { createTRPCRouter, privateProcedure } from "../trpc";
 
-// const redis = new Redis({
-//   url: process.env.UPSTASH_REDIS_REST_URL!,
-//   token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-// });
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
 
-// const rateLimiter = new Ratelimit({
-//   redis,
-//   limiter: Ratelimit.fixedWindow(6, "10 s"),
-// });
+const rateLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.fixedWindow(6, "10 s"),
+});
 
-// export const postRouter = createTRPCRouter({
+export const postRouter = createTRPCRouter({
+    createPost: privateProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        text: z.string(),
+        privacy: z.enum(["PUBLIC", "FOLLOWERS", "PRIVATE"]),
+        toMention: z
+          .array(
+            z.object({
+              username: z.string(),
+              id: z.string(),
+              image: z.string(),
+            }),
+          )
+          .nullable(),
+        authorImage: z.string().nullish(),
+        username: z.string().nullish(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { toMention, userId, text, privacy, authorImage, username } = input;
+      const postData = await ctx.db.insert(posts).values({
+        userId: userId,
+        text: text,
+        privacy: privacy,
+      });
+
+      if (toMention) {
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        toMention.forEach(async (toMention) => {
+          const user = await ctx.db.query.users.findFirst({
+            where: (user, { eq }) => eq(user.username, toMention.username),
+          });
+
+          if (user?.id !== userId) {
+            await ctx.db.insert(notification).values({
+              notificationFrom: userId,
+              notificationFor: toMention.id,
+              postId: +postData.insertId,
+              type: "MENTION_POST",
+            });
+
+            await pusherServer.trigger(
+              toPusherKey(`user:${user?.id}:incoming_notification`),
+              "incoming_notification",
+              {
+                notificationFrom: username,
+                type: "MENTION_POST",
+                image: authorImage,
+                postId: +postData.insertId,
+              },
+            );
+          }
+        });
+      }
+    }),
+})
+export type PostRouter = typeof postRouter;
+
+
 //   createPost: privateProcedure
 //     .input(
 //       z.object({
@@ -668,4 +729,3 @@
 //     }),
 // });
 
-// export type PostRouter = typeof postRouter;

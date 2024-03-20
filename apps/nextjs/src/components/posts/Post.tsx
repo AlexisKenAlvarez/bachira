@@ -2,27 +2,29 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Skeleton } from "@/ui/skeleton";
-import type { Session } from "next-auth";
 
 import { useCallback, useState } from "react";
 
 import { Dialog, DialogContent, DialogTrigger } from "@/ui/dialog";
 
 import PostDialogContent from "./PostDialogContent";
+import { RouterOutputs } from "@bachira/api";
 
-const Post = ({ userData }: { userData: Session }) => {
+const Post = ({ session }: { session: RouterOutputs["user"]["getSession"] }) => {
   const [postOpen, setPostOpen] = useState(false);
 
   const closeDialog = useCallback(() => {
     setPostOpen(false)
   }, [])
 
+  if (!session) return null;
+
   return (
     <section className="w-full rounded-md bg-white p-5">
       <div className="flex items-center gap-2">
         <Avatar className="h-10 w-10">
           <AvatarImage
-            src={userData.user.image ?? ''}
+            src={session.user_metadata.avatar_url ?? ''}
             className="object-cover"
           />
           <AvatarFallback>
@@ -40,9 +42,9 @@ const Post = ({ userData }: { userData: Session }) => {
           <DialogContent>
             <PostDialogContent
               user={{
-                userId: userData.user.id,
-                username: userData.user.username,
-                userImage: userData.user.image ?? '',
+                userId: session.id,
+                username: session.user_metadata.username,
+                userImage: session.user_metadata.avatar_url ?? '',
               }}
               closeDialog={closeDialog}
             />
