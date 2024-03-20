@@ -3,6 +3,8 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { and, asc, desc, eq } from "drizzle-orm";
 import { z } from "zod";
+
+import { pusherServer, toPusherKey } from "../../lib/pusher";
 import { createTRPCRouter, privateProcedure } from "../trpc";
 
 // import { sql } from "@bachira/db";
@@ -30,7 +32,7 @@ const rateLimiter = new Ratelimit({
 });
 
 export const postRouter = createTRPCRouter({
-    createPost: privateProcedure
+  createPost: privateProcedure
     .input(
       z.object({
         userId: z.string(),
@@ -50,25 +52,61 @@ export const postRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { toMention, userId, text, privacy, authorImage, username } = input;
-      const postData = await ctx.db.insert(posts).values({
-        userId: userId,
-        text: text,
-        privacy: privacy,
-      });
+      // const postData = await ctx.db.insert(posts).values({
+      //   userId: userId,
+      //   text: text,
+      //   privacy: privacy,
+      // });
 
-      if (toMention) {
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        toMention.forEach(async (toMention) => {
-          const user = await ctx.db.query.users.findFirst({
-            where: (user, { eq }) => eq(user.username, toMention.username),
-          });
+      // if (toMention) {
+      //   // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      //   toMention.forEach(async (toMention) => {
+      //     const user = await ctx.db.query.users.findFirst({
+      //       where: (user, { eq }) => eq(user.username, toMention.username),
+      //     });
 
-          if (user?.id !== userId) {
-            await ctx.db.insert(notification).values({
-              notificationFrom: userId,
-              notificationFor: toMention.id,
-              postId: +postData.insertId,
+      //     if (user?.id !== userId) {
+      //       await ctx.db.insert(notification).values({
+      //         notificationFrom: userId,
+      //         notificationFor: toMention.id,
+      //         postId: +postData.insertId,
+      //         type: "MENTION_POST",
+      //       });
+
+      //       await pusherServer.trigger(
+      //         toPusherKey(`user:${user?.id}:incoming_notification`),
+      //         "incoming_notification",
+      //         {
+      //           notificationFrom: username,
+      //           type: "MENTION_POST",
+      //           image: authorImage,
+      //           postId: +postData.insertId,
+      //         },
+      //       );
+      //     }
+      //   });
+      // }
+
+      const {data: postData} = await ctx.supabase.from("posts").insert({
+        userId: input.userId,
+        text: input.text,
+        privacy: input.privacy,
+      }).select("id")
+      
+
+      if (input.toMention && postData) {
+        input.toMention.forEach(async (toMentionUser) => {
+          const { data: user } = await ctx.supabase
+            .from("user")
+            .select("*")
+            .eq("username", toMentionUser.username)
+            .single();
+
+          if (user?.id !== input.userId) {
+            await ctx.supabase.from("notifications").insert({
+              notificationFrom: input.userId,
+              notificationFor: toMentionUser.id,
+              postId: postData[0]?.id,
               type: "MENTION_POST",
             });
 
@@ -76,19 +114,18 @@ export const postRouter = createTRPCRouter({
               toPusherKey(`user:${user?.id}:incoming_notification`),
               "incoming_notification",
               {
-                notificationFrom: username,
+                notificationFrom: input.username,
                 type: "MENTION_POST",
-                image: authorImage,
-                postId: +postData.insertId,
+                image: input.authorImage,
+                postId: postData[0]?.id,
               },
             );
           }
         });
       }
     }),
-})
+});
 export type PostRouter = typeof postRouter;
-
 
 //   createPost: privateProcedure
 //     .input(
@@ -728,4 +765,3 @@ export type PostRouter = typeof postRouter;
 //       return count;
 //     }),
 // });
-
