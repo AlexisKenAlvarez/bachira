@@ -1,6 +1,5 @@
 "use client";
 
-import type { Session } from "@supabase/gotrue-js";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ImageSmooth from "@/components/shared/ImageSmooth";
@@ -14,7 +13,7 @@ import { Loader } from "lucide-react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { z } from "zod";
-import { RouterOutputs } from "@bachira/api";
+import type { RouterOutputs } from "@bachira/api";
 
 type ExtendedSession = RouterOutputs["user"]["getSession"] & {
   user_metadata: {

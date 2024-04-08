@@ -2,7 +2,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-import type { SessionUser } from "@/lib/userTypes";
 import { useEffect } from "react";
 import { notFound } from "next/navigation";
 import { api } from "@/trpc/client";
@@ -10,15 +9,18 @@ import { Skeleton } from "@/ui/skeleton";
 import { useInView } from "react-intersection-observer";
 
 import PostData from "./PostData";
+import type { RouterOutputs } from "@bachira/api";
 
 const FeedPosts = ({
   user,
   postId,
 }: {
-  user: SessionUser;
+  user: NonNullable<RouterOutputs["user"]["getSession"]>;
   postId?: number;
 }) => {
+
   const [ref, inView] = useInView();
+
 
   const followingQuery = api.user.postFollowing.useQuery({
     userId: user.id,
@@ -29,7 +31,7 @@ const FeedPosts = ({
       {
         limit: postId ? 1 : 10,
         postId,
-        userId: user.id,
+        userId: user?.id,
       },
       {
         getNextPageParam: (lastPage) => {

@@ -38,6 +38,7 @@ const LikeDialog = ({
       })()
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [inView]);
+    console.log("🚀 ~ data:", data)
 
   return (
     <div className="space-y-3">
@@ -57,7 +58,7 @@ const LikeDialog = ({
       <div className="content max-h-[20rem] space-y-4  pt-2 text-left">
         {data?.pages.map((page, i) => (
           <div className="space-y-4" key={i}>
-            {page.likeData.map((user, j) => (
+            {page.likeData?.map((user, j) => (
               <Link
                 href={`/${user.user.username}`}
                 key={user?.id}
@@ -67,7 +68,7 @@ const LikeDialog = ({
                   className="flex gap-3 rounded-md px-4 py-3 transition-all  duration-300 ease-in-out hover:bg-slate-100"
                   ref={
                     data?.pages.length - 1 === i &&
-                    page.likeData.length - 1 === j
+                    page.likeData!.length - 1 === j
                       ? ref
                       : undefined
                   }

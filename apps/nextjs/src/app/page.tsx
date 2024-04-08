@@ -1,7 +1,7 @@
 "use server"
 
+import FeedPosts from "@/components/posts/FeedPosts";
 import Post from "@/components/posts/Post";
-import { supabaseServer } from "@/supabase/supabaseServer";
 import { api } from "@/trpc/server";
 
 import { redirect } from "next/navigation";
@@ -12,7 +12,7 @@ const page = async () => {
   const session = await api.user.getSession()
 
   if (!session) {
-    redirect("/auth/signin");
+    redirect("/signin");
   }
 
   return (
@@ -20,7 +20,7 @@ const page = async () => {
       <div className="mt-4 w-full h-auto">
         <Post session={session} /> 
         <div className="mt-4 min-h-screen w-full rounded-md font-primary pb-10">
-          {/* <FeedPosts user={session.user}  /> */}
+          <FeedPosts user={session}  />
         </div>
       </div>
     </div>

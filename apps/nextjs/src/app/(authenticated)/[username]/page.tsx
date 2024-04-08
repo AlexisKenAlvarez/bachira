@@ -1,34 +1,35 @@
-
+import { notFound, redirect } from "next/navigation";
+import UserProfile from "@/components/user/UserProfile";
 import { api } from "@/trpc/server";
-import { redirect } from "next/navigation";
 
 const page = async ({ params }: { params: { username: string } }) => {
-  // const userData = await api.user.getUser.query({ username: params.username });
-  const data = await api.user.getSession()
-  console.log(params);
+  const userData = await api.user.getUser({
+    username: params.username,
+  });
+  const session = await api.user.getSession();
 
-  // if (!userData) {
-  //   notFound();
-  // }
+  if (!userData) {
+    notFound();
+  }
 
-  if (!data.session) {
+  if (!session) {
     redirect("/signin");
   }
 
-  // const data = await api.user.checkFollowing.query({
-  //   user_id: session?.user.id,
-  //   following_id: userData.id,
-  // });
+  const data = await api.user.checkFollowing({
+    user_id: session.id,
+    following_id: userData.id!,
+  });
 
-  // const inProfile = session?.user.id === userData.id;
+  const inProfile = session.id === userData.id;
 
   return (
-    // <UserProfile
-    //   userData={userData}
-    //   inProfile={inProfile}
-    //   isFollowing={data ? data?.isFollowing : false}
-    // />
-    <div className=""></div>
+    <UserProfile
+      session={session}
+      userData={userData}
+      inProfile={inProfile}
+      isFollowing={data ? data?.isFollowing : false}
+    />
   );
 };
 

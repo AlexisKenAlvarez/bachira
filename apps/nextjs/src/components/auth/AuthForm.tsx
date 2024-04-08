@@ -37,7 +37,7 @@ const AuthForm = ({ type }: AuthPageProps) => {
                 variant="outline"
                 className="relative w-full py-5"
                 onClick={async () => {
-                  const { data, error } = await supabase.auth.signInWithOAuth({
+                  const { error } = await supabase.auth.signInWithOAuth({
                     provider: "google",
                     options: {
                       redirectTo: `${location.origin}/auth/callback`
@@ -49,7 +49,6 @@ const AuthForm = ({ type }: AuthPageProps) => {
                     return
                   }
 
-                  console.log(data);
                 }}
               >
                 <svg

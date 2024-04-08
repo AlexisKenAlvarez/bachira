@@ -1,4 +1,3 @@
-import type { RouterOutputs } from "@bachira/api";
 import type { User } from "@bachira/db/schema/schema";
 
 export interface CommentType {
@@ -24,4 +23,3 @@ export interface PostEditType {
 }
 
 export type CommentPrivacyType = "PUBLIC" | "FOLLOWERS" | "PRIVATE";
-export type PostType = RouterOutputs["posts"]["getPosts"]["postData"][0];

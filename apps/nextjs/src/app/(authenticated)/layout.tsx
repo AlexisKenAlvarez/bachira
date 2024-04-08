@@ -7,9 +7,10 @@ export default async function authLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const data = await api.user.getSession()
+  const session = await api.user.getSession()
 
-  if (!data.session) {
+  if (!session) {
+    console.log("NO SESSIOJNDOIEANODINAWEOI");
     redirect('/signin')
   }
 

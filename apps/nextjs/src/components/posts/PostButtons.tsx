@@ -1,7 +1,5 @@
 "use client";
 
-import type { PostType } from "@/lib/postTypes";
-import type { SessionUser, UserFollowingType } from "@/lib/userTypes";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/client";
 import { Dialog, DialogContent, DialogTrigger } from "@/ui/dialog";
@@ -17,15 +15,16 @@ import { Link, MessageCircle, Share2, ThumbsUp } from "lucide-react";
 import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 
-import type { User } from "@bachira/db/schema/schema";
-
+import type { RouterOutputs } from "@bachira/api";
 import Comments from "./Comments";
 import LikeDialog from "./LikeDialog";
 
 interface postLike {
-  postId: number;
-  userId: string;
-  user: Pick<User, "username">;
+  postId: number,
+  user: {
+    username: string,
+    id: string
+  } | null
 }
 
 const PostButtons = ({
@@ -36,13 +35,13 @@ const PostButtons = ({
   userFollowing,
 }: {
   postLiked: boolean;
-  post: PostType;
-  user: SessionUser;
+  post: RouterOutputs["posts"]["getPosts"]["postData"][0];
+  user:  NonNullable<RouterOutputs["user"]["getSession"]>;
   singlePage: boolean;
-  userFollowing: UserFollowingType;
+  userFollowing: NonNullable<RouterOutputs["user"]["postFollowing"]["userFollowing"]>;
 }) => {
   const [liked, setLiked] = useState(postLiked);
-  const [likeData, setLikeData] = useState<postLike[]>(post.likes);
+  const [likeData, setLikeData] = useState<postLike[]>(post.likes)
   const [commentOpen, setCommentOpen] = useState(false);
   const [likeOpen, setLikeOpen] = useState(false);
   const utils = api.useUtils();
@@ -58,9 +57,9 @@ const PostButtons = ({
       if (!liked) {
         const newLike: postLike = {
           postId: post.id,
-          userId: user.id,
           user: {
-            username: user.username,
+            id: user.id,
+            username: user.user_metadata.username as string,
           },
         };
 
@@ -74,7 +73,7 @@ const PostButtons = ({
         ]);
       } else {
         setLikeData((prevState) =>
-          prevState.filter((like) => like.userId !== user.id),
+          prevState.filter((like) => like.user?.id !== user.id),
         );
       }
 
@@ -111,7 +110,7 @@ const PostButtons = ({
 
                     {likeData.map((like, i) => (
                       <h2 className="text-sm text-subtle" key={i}>
-                        {like.user.username}
+                        {like.user?.username}
                       </h2>
                     ))}
                   </div>
@@ -148,10 +147,10 @@ const PostButtons = ({
             likeMutation.mutate({
               postId: post.id,
               userId: user.id,
-              authorId: post.userId,
+              authorId: post.author.id,
               action: liked ? "UNLIKE" : "LIKE",
-              username: user.username,
-              image: user.image ?? "",
+              username: user.user_metadata.username as string,
+              image: user.user_metadata.avatar_url as string ?? "",
             });
           }}
         >
@@ -186,7 +185,7 @@ const PostButtons = ({
               <button
                 onClick={async () => {
                   await navigator.clipboard.writeText(
-                    `${process.env.NEXT_PUBLIC_BASE_URL}${post.user.username}/${post.userId}`,
+                    `${process.env.NEXT_PUBLIC_BASE_URL}${post.author.username}/${post.author.id}`,
                   );
                 }}
                 className="flex items-center gap-x-2"
@@ -203,7 +202,7 @@ const PostButtons = ({
         user={user}
         commentOpen={commentOpen}
         singlePage={singlePage}
-        commentPrivacy={post.commentPrivacy!}
+        commentPrivacy={post.comment_privacy}
         post={post}
       />
     </div>

@@ -2,15 +2,14 @@ import AddUsername from "@/components/auth/AddUsername";
 
 import "@/styles/globals.css";
 
-import { supabaseServer } from "@/supabase/supabaseServer";
 import TRPCProvider from "@/trpc/TRPCProvider";
 import { api } from "@/trpc/server";
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 
-import Providers from "./providers";
 import Nav from "@/components/Nav";
+import Providers from "./providers";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -29,8 +28,6 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // const data = await api.user.getSession()
-  const supabase = supabaseServer();
 
   const session = await api.user.getSession()
 
@@ -43,7 +40,6 @@ export default async function RootLayout({
       userId: session.id,
       seen: false,
     });
-    console.log("🚀 ~ countData:", countData)
 
     return (
       <TRPCProvider>

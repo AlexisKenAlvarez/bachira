@@ -90,7 +90,7 @@ const PostDialogContent = ({
   ) => {
     setToMention(query);
 
-    const transformedDataArray = mentionQuery.data?.searchedUsers.map(
+    const transformedDataArray = mentionQuery.data?.searchedUsers?.map(
       (item) => ({
         display: item.username,
         id: item.id,
@@ -106,7 +106,7 @@ const PostDialogContent = ({
   };
 
   const handleAdd = (id: string | number, display: string) => {
-    const userData = mentionQuery.data?.searchedUsers.filter(
+    const userData = mentionQuery.data?.searchedUsers?.filter(
       (user) => user.username === display,
     );
     console.log(id);

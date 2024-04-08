@@ -1,8 +1,4 @@
-import { authOptions } from "@bachira/auth";
-import { db } from "@bachira/db";
-import { users } from "@bachira/db/schema/schema";
-import { eq } from "drizzle-orm";
-import { getServerSession } from "next-auth";
+import { api } from "@/trpc/server";
 import { createUploadthing } from "uploadthing/next";
 import type { FileRouter } from "uploadthing/server";
 import { z } from "zod";
@@ -19,25 +15,26 @@ export const ourFileRouter = {
       }),
     )
     .middleware(async ({ input }) => {
-      const session = await getServerSession(authOptions);
+      const session = await api.user.getSession()
 
       // If you throw, the user will not be able to upload
       if (!session) throw new Error("Unauthorized");
 
       // Whatever is returned here is accessible in onUploadComplete as `metadata`
-      return { success: true, userId: session.user.id, update: input.update };
+      return { success: true, userId: session.id, update: input.update };
     })
-    .onUploadComplete(async ({ file, metadata }) => {
+    .onUploadComplete( ({ file }) => {
       console.log("Upload done, File url: ", file.url);
 
-      await db
-        .update(users)
-        .set(
-          metadata.update === "cover"
-            ? { coverPhoto: file.url }
-            : { image: file.url },
-        )
-        .where(eq(users.id, metadata.userId));
+      // await db
+      //   .update(users)
+      //   .set(
+      //     metadata.update === "cover"
+      //       ? { coverPhoto: file.url }
+      //       : { image: file.url },
+      //   )
+      //   .where(eq(users.id, metadata.userId));
+
     }),
 } satisfies FileRouter;
 

@@ -8,7 +8,7 @@ import { useCallback, useState } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "@/ui/dialog";
 
 import PostDialogContent from "./PostDialogContent";
-import { RouterOutputs } from "@bachira/api";
+import type { RouterOutputs } from "@bachira/api";
 
 const Post = ({ session }: { session: RouterOutputs["user"]["getSession"] }) => {
   const [postOpen, setPostOpen] = useState(false);
@@ -24,7 +24,7 @@ const Post = ({ session }: { session: RouterOutputs["user"]["getSession"] }) => 
       <div className="flex items-center gap-2">
         <Avatar className="h-10 w-10">
           <AvatarImage
-            src={session.user_metadata.avatar_url ?? ''}
+            src={session.user_metadata.avatar_url as string ?? ''}
             className="object-cover"
           />
           <AvatarFallback>
@@ -43,8 +43,8 @@ const Post = ({ session }: { session: RouterOutputs["user"]["getSession"] }) => 
             <PostDialogContent
               user={{
                 userId: session.id,
-                username: session.user_metadata.username,
-                userImage: session.user_metadata.avatar_url ?? '',
+                username: session.user_metadata.username as string,
+                userImage: session.user_metadata.avatar_url as string ?? '',
               }}
               closeDialog={closeDialog}
             />
