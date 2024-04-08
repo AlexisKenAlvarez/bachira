@@ -1,6 +1,5 @@
 // Importing env files here to validate on build
 import "./src/env.mjs";
-import "@bachira/auth/env.js";
 
 /** @type {import("next").NextConfig} */
 const config = {
@@ -9,10 +8,10 @@ const config = {
   /** Enables hot reloading for local packages without a build step */
   transpilePackages: [
     "@bachira/api",
-    "@bachira/auth",
     "@bachira/db",
     "@bachira/ui",
     "@bachira/validators",
+    "@bachira/supabase"
   ],
 
   /** We already do linting and typechecking as separate tasks in CI */

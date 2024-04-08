@@ -1,4 +1,4 @@
-import { getServerAuthSession } from "@bachira/auth";
+import { supabaseServer } from "@/supabase/supabaseServer";
 import { redirect } from "next/navigation";
 
 export default async function authLayout({
@@ -6,10 +6,12 @@ export default async function authLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerAuthSession();
+  const supabase = supabaseServer();
+  const { data } = await supabase.auth.getSession();
+  
 
-  if (session) {
-    redirect('/')
+  if (data.session) {
+    redirect("/");
   }
 
   return <section>{children}</section>;

@@ -7,7 +7,6 @@ import {
   UserPlus2,
   Link as LinkIcon,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -23,16 +22,18 @@ const UserProfile = ({
   userData,
   inProfile,
   isFollowing,
+  session
 }: {
+  session: NonNullable<RouterOutputs["user"]["getSession"]>;
   userData: RouterOutputs["user"]["getUser"];
   inProfile: boolean;
   isFollowing: boolean;
 }) => {
-  const { data: session, status } = useSession();
+
   const [follows, setFollow] = useState<boolean>(isFollowing);
   const [userFollowData, setFollowData] = useState<FollowDataType>({
-    followers: userData!.followers,
-    following: userData!.following,
+    followers: userData!.followers ?? 0,
+    following: userData!.following ?? 0,
   });
 
   const followUser = api.user.followUser.useMutation({
@@ -110,18 +111,18 @@ const UserProfile = ({
         if (follows) {
           // Unfollow user
           await unfollow.mutateAsync({
-            followerId: session!.user.id,
+            followerId: session.id,
             followingId: userData.id,
             action: "unfollow",
           });
         } else {
           // Follow user
           await followUser.mutateAsync({
-            followerName: session!.user.username,
-            followerId: session!.user.id,
+            followerName: session.user_metadata.username as string,
+            followerId: session.id,
             followingId: userData.id,
             action: "follow",
-            image: session!.user.image!,
+            image: session.user_metadata.avatar_url as string,
           });
         }
       }
@@ -202,12 +203,12 @@ const UserProfile = ({
               <FollowData
                 type="Following"
                 value={userFollowData.following}
-                userId={userData.id}
+                userId={userData.id!}
               />
               <FollowData
                 type="Followers"
                 value={userFollowData.followers}
-                userId={userData.id}
+                userId={userData.id!}
               />
             </div>
 
@@ -234,6 +235,7 @@ const UserProfile = ({
         </div>
       )}
     </>
+
   );
 };
 

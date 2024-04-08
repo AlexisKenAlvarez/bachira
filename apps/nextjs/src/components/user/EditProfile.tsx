@@ -5,6 +5,12 @@ import type { FileWithPath } from "@uploadthing/react";
 import type { z } from "zod";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useDeleteImage } from "@/hooks/useDeleteImage";
+import { editProfileSchema } from "@/lib/userTypes";
+import { cn } from "@/lib/utils";
+import { supabase } from "@/supabase/supabaseClient";
+import { api } from "@/trpc/client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
 import { Button } from "@/ui/button";
 import {
   Dialog,
@@ -32,34 +38,42 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/ui/select";
+import { Skeleton } from "@/ui/skeleton";
 import { Textarea } from "@/ui/textarea";
-import { useDeleteImage } from "@/hooks/useDeleteImage";
-import { editProfileSchema } from "@/lib/userTypes";
-import { cn } from "@/lib/utils";
-import { api } from "@/trpc/client";
 import { useUploadThing } from "@/utils/uploadthing";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DialogClose } from "@radix-ui/react-dialog";
 import { useDropzone } from "@uploadthing/react/hooks";
-import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { generateClientDropzoneAccept } from "uploadthing/client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
-import { Skeleton } from "@/ui/skeleton";
-
 const EditProfile = ({
-  userData,
+  userDataQueryServer,
+  username,
 }: {
-  userData: NonNullable<userDataOutput>;
+  userDataQueryServer: NonNullable<userDataOutput>;
+  username: string;
 }) => {
-  const { data: session, update } = useSession();
+  const { data: userData }: { data: NonNullable<userDataOutput> } =
+    api.user.getUser.useQuery(
+      {
+        username,
+      },
+      {
+        initialData: userDataQueryServer,
+      },
+    );
+
+  const saveProfile = api.user.saveProfile.useMutation({});
+  const updateProfileMutation = api.user.uploadProfile.useMutation();
+  const utils = api.useUtils()
+
   const [disabled, setDisabled] = useState(true);
   const { deleteImage } = useDeleteImage();
   const [open, setOpen] = useState(false);
   const router = useRouter();
-  const saveProfile = api.user.saveProfile.useMutation({});
+
   const [files, setFiles] = useState<File[]>([]);
   const onDrop = useCallback((acceptedFiles: FileWithPath[]) => {
     setFiles(acceptedFiles);
@@ -68,16 +82,23 @@ const EditProfile = ({
   const { startUpload, permittedFileInfo } = useUploadThing("imageUploader", {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     onClientUploadComplete: async (data) => {
+      toast.dismiss("uploadToast");
       toast.success("Image uploaded!", { id: "uploadToast", duration: 3000 });
-      const newSession = {
-        ...session,
-        user: {
-          ...session?.user,
-          image: data ? data[0]?.url : "",
-        },
-      };
+      console.log("MUST BE DISMISSED");
 
-      await update(newSession);
+      await updateProfileMutation.mutateAsync({
+        userId: userData.id!,
+        image: data[0]?.url ?? "",
+      }); 
+
+      await supabase.auth.updateUser({
+        data: {
+          avatar_url: data ? data[0]?.url : "",
+        },
+      });
+
+      await utils.user.getUser.invalidate()
+
       router.refresh();
     },
     onUploadError: () => {
@@ -109,37 +130,38 @@ const EditProfile = ({
   });
 
   useEffect(() => {
-    void ( async () => {
+    void (async () => {
       if (files.length > 0) {
-        await deleteImage({
-          deleteFrom: "profile",
-          image: userData.image ?? '',
-          userId: userData.id,
-          withToast: false,
-          deleteFromDb: true,
-        });
-  
-        setOpen(false);
-        await startUpload(files, {
-          update: "profile",
-        });
         toast.loading("Uploading image. Do not leave the page", {
           id: "uploadToast",
           duration: Infinity,
         });
+
+        await deleteImage({
+          deleteFrom: "profile",
+          image: userData.image ?? "",
+          userId: userData.id,
+          withToast: false,
+          deleteFromDb: true,
+        });
+
+        setOpen(false);
+        await startUpload(files, {
+          update: "profile",
+        });
+
       }
-    })()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [files]);
 
   async function onSubmit(values: z.infer<typeof editProfileSchema>) {
-    console.log(values);
     toast.loading("Saving profile...", {
       id: "saveProfile",
       duration: Infinity,
     });
     const data = await saveProfile.mutateAsync({
-      id: userData.id,
+      id: userData.id!,
       userData: {
         bio: userData.bio ?? "",
         gender: userData.gender as "MALE" | "FEMALE" | "IDK" | undefined,
@@ -171,7 +193,7 @@ const EditProfile = ({
     } else {
       setDisabled(true);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.watch("bio"), form.watch("gender"), form.watch("website")]);
 
   return (
@@ -180,10 +202,7 @@ const EditProfile = ({
       <div className="my-4 mt-8 flex gap-x-2">
         <div className="w-[7.5rem]">
           <Avatar className="h-14 w-14">
-            <AvatarImage
-              src={userData.image ?? ''}
-              className="object-cover"
-            />
+            <AvatarImage src={userData.image ?? ""} className="object-cover" />
             <AvatarFallback>
               <Skeleton className="h-full w-full rounded-full object-cover" />
             </AvatarFallback>
@@ -244,21 +263,17 @@ const EditProfile = ({
                             onClick={async () => {
                               await deleteImage({
                                 deleteFrom: "profile",
-                                image: userData.image ?? '',
+                                image: userData.image ?? "",
                                 userId: userData.id,
                                 withToast: true,
                                 deleteFromDb: true,
                               });
 
-                              const newSession = {
-                                ...session,
-                                user: {
-                                  ...session?.user,
+                              await supabase.auth.updateUser({
+                                data: {
                                   image: "",
                                 },
-                              };
-
-                              await update(newSession);
+                              });
 
                               router.refresh();
                               setOpen(false);

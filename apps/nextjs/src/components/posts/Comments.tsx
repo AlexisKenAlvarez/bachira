@@ -1,14 +1,15 @@
 "use client";
 
-import type { CommentPrivacyType, PostType } from "@/lib/postTypes";
-import type { SessionUser, UserFollowingType } from "@/lib/userTypes";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import type { CommentPrivacyType } from "@/lib/postTypes";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/client";
+import { Skeleton } from "@/ui/skeleton";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useInView } from "react-intersection-observer";
 
-import { Skeleton } from "@/ui/skeleton";
+import type { RouterOutputs } from "@bachira/api";
+
 import CommentBox from "./CommentBox";
 import CommentInput from "./CommentInput";
 
@@ -20,12 +21,12 @@ const Comments = ({
   post,
   userFollowing,
 }: {
-  user: SessionUser;
+  user: NonNullable<RouterOutputs["user"]["getSession"]>;
   commentOpen: boolean;
   singlePage: boolean;
   commentPrivacy: CommentPrivacyType;
-  post: PostType;
-  userFollowing: UserFollowingType;
+  post: RouterOutputs["posts"]["getPosts"]["postData"][0];
+  userFollowing: NonNullable<RouterOutputs["user"]["postFollowing"]["userFollowing"]>;
 }) => {
   const [follows, setFollow] = useState(false);
 
@@ -50,20 +51,20 @@ const Comments = ({
     {
       id: "FOLLOWERS",
       message:
-        user.id === post.userId
+        user.id === post.author.id
           ? "Write a comment..."
           : follows
             ? "Write a comment..."
             : "Only users following the author can comment on this post.",
-      disabled: user.id === post.userId ? false : follows ? false : true,
+      disabled: user.id === post.author.id ? false : follows ? false : true,
     },
     {
       id: "PRIVATE",
       message:
-        user.id === post.userId
+        user.id === post.author.id
           ? "Write a comment..."
           : "Only the author can comment on this post.",
-      disabled: user.id === post.userId ? false : follows ? true : true,
+      disabled: user.id === post.author.id ? false : follows ? true : true,
     },
   ];
 
@@ -79,7 +80,7 @@ const Comments = ({
   useEffect(() => {
     setFollow(
       userFollowing?.some(
-        (obj: { following_id: string }) => obj.following_id === post?.userId,
+        (obj: { following_id: string }) => obj.following_id === post?.author.id,
       ) ?? false,
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -91,7 +92,7 @@ const Comments = ({
         " z-10 max-h-0 overflow-hidden opacity-0 transition-all duration-500 ease-in-out",
         {
           "max-h-72 overflow-visible opacity-100":
-            commentOpen || (data?.pages[0]?.commentData.length ?? -1 > 0),
+            commentOpen || (data?.pages[0]?.commentData?.length ?? -1 > 0),
         },
         { "max-h-full overflow-visible opacity-100": singlePage },
       )}
@@ -106,7 +107,7 @@ const Comments = ({
                 if (singlePage) {
                   await fetchNextPage();
                 } else {
-                  router.push(`/${post.user.username}/${post.id}`);
+                  router.push(`/${post.author.username}/${post.id}`);
                 }
               }}
             >
@@ -118,7 +119,7 @@ const Comments = ({
           {singlePage ? (
             <>
               {data?.pages.map((page, i) =>
-                page.commentData.map((commentData, j) => (
+                page.commentData?.map((commentData, j) => (
                   <div
                     key={commentData.id}
                     ref={
@@ -151,7 +152,7 @@ const Comments = ({
                 ))}
             </>
           ) : (
-            data?.pages[0]?.commentData.slice(0, 1).map((commentData) => (
+            data?.pages[0]?.commentData?.slice(0, 1).map((commentData) => (
               <div key={commentData.id}>
                 <CommentBox
                   data={commentData}
@@ -171,7 +172,7 @@ const Comments = ({
           ?.disabled === false ? (
         <CommentInput user={user} post={post} userFollowing={userFollowing} />
       ) : (
-        <p className="text-subtle text-center text-sm p-5">
+        <p className="p-5 text-center text-sm text-subtle">
           {
             commentPrivacyList.find((item) => item.id === commentPrivacy)
               ?.message

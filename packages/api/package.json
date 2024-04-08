@@ -9,15 +9,18 @@
   "scripts": {
     "clean": "rm -rf .turbo node_modules",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "generate": "supabase gen types typescript --project-id kqajcqtczsuffhmisusc --schema public > ./lib/supabase.ts"
   },
   "dependencies": {
-    "@bachira/auth": "workspace:^0.1.0",
     "@bachira/db": "workspace:^0.1.0",
+    "@supabase/supabase-js": "^2.39.8",
     "@trpc/server": "11.0.0-next-alpha.162",
+    "crypto": "^1.0.1",
+    "pusher": "^5.2.0",
+    "supabase": ">=1.8.1",
     "superjson": "^2.2.1",
-    "zod": "^3.22.4",
-    "pusher": "^5.1.3"
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@bachira/eslint-config": "workspace:^0.2.0",
@@ -32,6 +35,9 @@
     "extends": [
       "@bachira/eslint-config/base"
     ]
+  },
+  "browser": {
+    "crypto": false
   },
   "prettier": "@bachira/prettier-config"
 }

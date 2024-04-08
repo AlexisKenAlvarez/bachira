@@ -3,7 +3,7 @@
 import ImageSmooth from "@/components/shared/ImageSmooth";
 import { Button } from "@/ui/button";
 import { Github } from "lucide-react";
-import { signIn } from "next-auth/react";
+import { supabase } from "@/supabase/supabaseClient";
 
 interface AuthPageProps {
   type: "sign in" | "sign up";
@@ -37,7 +37,18 @@ const AuthForm = ({ type }: AuthPageProps) => {
                 variant="outline"
                 className="relative w-full py-5"
                 onClick={async () => {
-                  await signIn("google", { callbackUrl: "/" });
+                  const { error } = await supabase.auth.signInWithOAuth({
+                    provider: "google",
+                    options: {
+                      redirectTo: `${location.origin}/auth/callback`
+                    }
+                  })
+
+                  if (error) {
+                    console.log(error)
+                    return
+                  }
+
                 }}
               >
                 <svg
@@ -72,11 +83,11 @@ const AuthForm = ({ type }: AuthPageProps) => {
                 variant="outline"
                 className="relative w-full py-5"
                 onClick={async () => {
-                  try {
-                    await signIn("github");
-                  } catch (error) {
-                    console.log(error);
-                  }
+                  const { data } = await supabase.auth.signInWithOAuth({
+                    provider: "github",
+                  })
+
+                  console.log(data);
                 }}
               >
                 <Github className="absolute left-2 text-2xl" />

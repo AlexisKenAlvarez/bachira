@@ -2,8 +2,14 @@
   "extends": "@bachira/tsconfig/base.json",
   "compilerOptions": {
     "incremental": true,
-    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json"
+    
+    "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo.json",
+    "paths": {
+      "crypto": [
+        "./node_modules/crypto-js"
+      ]
+    }
   },
-  "include": ["src"],
+  "include": ["src", "lib"],
   "exclude": ["node_modules"]
 }

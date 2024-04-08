@@ -1,20 +1,19 @@
-import type { CommentType, PostType } from "@/lib/postTypes";
-import type { SessionUser, UserFollowingType } from "@/lib/userTypes";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { api } from "@/trpc/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/ui/dropdown-menu";
-import { api } from "@/trpc/client";
 import { MoreHorizontal } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import reactStringReplace from "react-string-replace";
 
 import { HoverCard, HoverCardTrigger } from "@/ui/hover-card";
+import type { RouterOutputs } from "@bachira/api";
 import ProfileCommentCard from "../user/ProfileCommentCard";
 
 const CommentBox = ({
@@ -23,10 +22,10 @@ const CommentBox = ({
   post,
   userFollowing,
 }: {
-  data: CommentType;
-  user: SessionUser;
-  post: PostType;
-  userFollowing: UserFollowingType;
+  data: RouterOutputs["posts"]["getComments"]["commentData"][0];
+  user: NonNullable<RouterOutputs["user"]["getSession"]>;
+  post: RouterOutputs["posts"]["getPosts"]["postData"][0];
+  userFollowing: NonNullable<RouterOutputs["user"]["postFollowing"]["userFollowing"]>;
 }) => {
   const router = useRouter();
 
@@ -54,7 +53,7 @@ const CommentBox = ({
       <div className="relative mt-1 h-8 w-8 shrink-0 overflow-hidden rounded-full">
         <HoverCard openDelay={250}>
           <HoverCardTrigger asChild>
-            <Link href={`/${data.user.username}`}>
+            <Link href={`/${data.user.id}`}>
               <Image
                 src={data.user.image ?? ""}
                 width="500"
@@ -70,7 +69,7 @@ const CommentBox = ({
             userFollowing={
               userFollowing?.some(
                 (obj: { following_id: string }) =>
-                  obj.following_id === data?.userId,
+                  obj.following_id === data?.user.id,
               ) ?? false
             }
           />
@@ -92,14 +91,14 @@ const CommentBox = ({
             userFollowing={
               userFollowing?.some(
                 (obj: { following_id: string }) =>
-                  obj.following_id === data?.userId,
+                  obj.following_id === data?.user.id,
               ) ?? false
             }
           />
         </HoverCard>
 
         <pre className="font-primary">
-          {reactStringReplace(data.text, /@\[([^\]]+)\]/g, (match, i) => (
+          {reactStringReplace(data.text!, /@\[([^\]]+)\]/g, (match, i) => (
             <Link
               href={`/${match}`}
               color="geekblue"
@@ -120,7 +119,7 @@ const CommentBox = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent className="font-primary font-medium">
           <DropdownMenuItem>Report comment</DropdownMenuItem>
-          {user.id === data.userId && (
+          {user.id === data.user.id && (
             <DropdownMenuItem
               className="text-rd/90 focus:text-rd/100"
               onClick={() => {

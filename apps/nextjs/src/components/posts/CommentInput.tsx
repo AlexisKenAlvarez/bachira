@@ -1,23 +1,22 @@
-import type { PostType } from "@/lib/postTypes";
+
 import type {
-  MentionedType,
-  SessionUser,
-  UserFollowingType,
+  MentionedType
 } from "@/lib/userTypes";
-import type { SuggestionDataItem } from "react-mentions";
-import { useState } from "react";
-import Image from "next/image";
-import { Form, FormControl, FormField, FormItem } from "@/ui/form";
 import { cn, getToMentionUsers } from "@/lib/utils";
 import defaultMentionStyle from "@/styles/commentBoxStyle";
 import { api } from "@/trpc/client";
+import { Form, FormControl, FormField, FormItem } from "@/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SendHorizontal } from "lucide-react";
+import Image from "next/image";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
+import type { SuggestionDataItem } from "react-mentions";
 import { Mention, MentionsInput } from "react-mentions";
 import { z } from "zod";
 
+import type { RouterOutputs } from "@bachira/api";
 import MentionSuggestion from "./MentionSuggestion";
 
 const CommentInput = ({
@@ -25,9 +24,9 @@ const CommentInput = ({
   post,
   userFollowing,
 }: {
-  user: SessionUser;
-  post: PostType;
-  userFollowing: UserFollowingType;
+  user: NonNullable<RouterOutputs["user"]["getSession"]>;
+  post: RouterOutputs["posts"]["getPosts"]["postData"][0];
+  userFollowing: NonNullable<RouterOutputs["user"]["postFollowing"]["userFollowing"]>;
 }) => {
   const utils = api.useUtils();
   const [toMention, setToMention] = useState("");
@@ -73,7 +72,7 @@ const CommentInput = ({
   ) => {
     setToMention(query);
 
-    const transformedDataArray = mentionQuery.data?.searchedUsers.map(
+    const transformedDataArray = mentionQuery.data?.searchedUsers?.map(
       (item) => ({
         display: item.username,
         id: item.id,
@@ -89,7 +88,7 @@ const CommentInput = ({
   };
 
   const handleAdd = (id: string | number, display: string) => {
-    const userData = mentionQuery.data?.searchedUsers.filter(
+    const userData = mentionQuery.data?.searchedUsers?.filter(
       (user) => user.username === display,
     );
     console.log(id);
@@ -111,8 +110,8 @@ const CommentInput = ({
         <Image
           width="500"
           height="500"
-          src={user.image ?? ""}
-          alt={user.username}
+          src={user.user_metadata.avatar_url as string ?? ""}
+          alt={user.user_metadata.username as string}
           className="h-full w-full object-cover"
         />
       </div>
@@ -125,9 +124,9 @@ const CommentInput = ({
                 text: data.comment,
                 postId: post.id,
                 userId: user.id,
-                authorId: post.userId,
-                username: user.username,
-                image: user.image ?? "",
+                authorId: post.author.id,
+                username: user.user_metadata.username as string,
+                image: user.user_metadata.avatar_url as string ?? "",
                 toMention,
                 userFollowing,
               });

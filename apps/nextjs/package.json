@@ -16,7 +16,6 @@
   "dependencies": {
     "@auth/drizzle-adapter": "^0.3.12",
     "@bachira/api": "workspace:*",
-    "@bachira/auth": "workspace:^0.1.0",
     "@bachira/db": "workspace:^0.1.0",
     "@bachira/ui": "workspace:^0.1.0",
     "@hookform/resolvers": "^3.3.4",
@@ -34,6 +33,7 @@
     "@radix-ui/react-separator": "^1.0.3",
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-tooltip": "^1.0.7",
+    "@supabase/ssr": "^0.1.0",
     "@t3-oss/env-nextjs": "^0.7.1",
     "@tanstack/react-query": "^5.17.7",
     "@tanstack/react-query-devtools": "^5.17.7",
@@ -55,7 +55,6 @@
     "lodash": "^4.17.21",
     "lucide-react": "^0.299.0",
     "next": "^14.0.4",
-    "next-auth": "^4.24.5",
     "next13-progressbar": "^1.0.4",
     "pusher-js": "^8.3.0",
     "react": "18.2.0",

@@ -1,22 +1,21 @@
-import type { CommentType } from "@/lib/postTypes";
-import type { SessionUser } from "@/lib/userTypes";
-import { api } from "@/trpc/client";
-import { Settings, UserCheck2, UserPlus2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
-
+import { api } from "@/trpc/client";
 import { Button } from "@/ui/button";
 import { HoverCardContent } from "@/ui/hover-card";
+import { Settings, UserCheck2, UserPlus2 } from "lucide-react";
+import toast from "react-hot-toast";
+
+import type { RouterOutputs } from "@bachira/api";
 
 const ProfileCommentCard = ({
   user,
   data,
   userFollowing,
 }: {
-  data?: CommentType;
-  user: SessionUser;
+  data: RouterOutputs["posts"]["getComments"]["commentData"][0];
+  user: NonNullable<RouterOutputs["user"]["getSession"]>;
   userFollowing: boolean;
 }) => {
   const utils = api.useUtils();
@@ -48,17 +47,17 @@ const ProfileCommentCard = ({
         // Unfollow user
         await followMutation.mutateAsync({
           followerId: user.id,
-          followingId: data?.userId,
+          followingId: data?.user.id,
           action: "unfollow",
         });
       } else {
         // Follow user
         await followMutation.mutateAsync({
-          followerName: user.username,
+          followerName: user.user_metadata.username as string,
           followerId: user.id,
-          followingId: data?.userId,
+          followingId: data?.user.id,
           action: "follow",
-          image: user.image!,
+          image: user.user_metadata.avatar_url as string,
         });
       }
     } catch (error) {
@@ -100,7 +99,7 @@ const ProfileCommentCard = ({
         </div>
       </div>
       <div className="flex gap-x-2">
-        {data?.userId === user.id ? (
+        {data?.user.id === user.id ? (
           <Button
             className="group w-full gap-x-2 px-6 text-sm font-semibold"
             disabled={!user}

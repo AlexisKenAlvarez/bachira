@@ -7,7 +7,6 @@ import superjson from "superjson";
 
 import { api } from "./client";
 import { getUrl } from "./shared";
-import { SessionProvider } from "next-auth/react";
 
 export default function TRPCProvider({
   children,
@@ -39,13 +38,11 @@ export default function TRPCProvider({
 
   return (
     <>
-    <SessionProvider>
       <api.Provider client={trpcClient} queryClient={queryClient}>
         <QueryClientProvider client={queryClient}>
           {children}
         </QueryClientProvider>
       </api.Provider>
-      </SessionProvider>
     </>
   );
 }

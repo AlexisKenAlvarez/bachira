@@ -7,12 +7,12 @@ import Link from "next/link";
 import { notifications } from "@/lib/constants";
 import { timeAgo } from "@/lib/utils";
 import { api } from "@/trpc/client";
+import { SheetContent, SheetHeader, SheetTitle } from "@/ui/sheet";
 import { Separator } from "@radix-ui/react-dropdown-menu";
 import { User } from "lucide-react";
+import { useInView } from "react-intersection-observer";
 
 import UserSkeleton from "./skeleton/UserSkeleton";
-import { SheetContent, SheetHeader, SheetTitle } from "@/ui/sheet";
-import { useInView } from "react-intersection-observer";
 
 const NotificationData = ({
   userId,
@@ -36,6 +36,8 @@ const NotificationData = ({
         refetchOnMount: true,
       },
     );
+
+  console.log("🚀 ~ notif data:", data);
 
   const read = api.notifications.readNotifications.useMutation({
     onSuccess: async () => {
@@ -71,8 +73,8 @@ const NotificationData = ({
       if (inView === true) {
         await fetchNextPage();
       }
-    })()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inView]);
 
   return (
@@ -87,18 +89,20 @@ const NotificationData = ({
         <div className="mt-2">
           {data?.pages.map((page, i) => (
             <div className="" key={i}>
-              {page.notifications.map((notif, j) => (
+              {page.notifications?.length}
+              {page.notifications?.map((notif, j) => (
                 <Link
                   key={notif.id}
                   href={
                     toProfile.includes(notif.type)
-                      ? `/${notif.notificationFrom.username}`
+                      ? `/${notif.notificationFrom.id}`
                       : toPost.includes(notif.type)
                         ? `${process.env.NEXT_PUBLIC_BASE_URL}${notif.notificationFor.username}/${notif.postId}`
                         : ""
                   }
                   ref={
-                    data?.pages.length - 1 === i && page.notifications.length - 1 === j
+                    data?.pages.length - 1 === i &&
+                    page.notifications!.length - 1 === j
                       ? ref
                       : undefined
                   }
@@ -138,14 +142,14 @@ const NotificationData = ({
                           )}
                         </p>
                         <p className="-mt-[2px] font-primary text-xs font-semibold text-primary">
-                          {timeAgo(notif.createdAt.toString())}
+                          {timeAgo(notif.createdAt!.toString())}
                         </p>
                       </div>
                     </div>
                   </div>
                 </Link>
               ))}
-              {page.notifications.length === 0 && (
+              {!page.notifications && (
                 <h1 className="text-center font-primary text-sm text-subtle">
                   You have no notifications.
                 </h1>

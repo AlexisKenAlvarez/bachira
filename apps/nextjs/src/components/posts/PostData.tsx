@@ -1,12 +1,8 @@
 "use client";
 
-import type { PostType } from "@/lib/postTypes";
-import type { SessionUser, UserFollowingType } from "@/lib/userTypes";
-import React, { useCallback, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import PostButtons from "@/components/posts/PostButtons";
+import { privacyData } from "@/lib/constants";
+import { timeAgo } from "@/lib/utils";
 import { Dialog, DialogContent } from "@/ui/dialog";
 import { HoverCard, HoverCardTrigger } from "@/ui/hover-card";
 import {
@@ -15,9 +11,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/ui/tooltip";
-import { privacyData } from "@/lib/constants";
-import { timeAgo } from "@/lib/utils";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, { useCallback, useState } from "react";
 import reactStringReplace from "react-string-replace";
+
+import type { RouterOutputs } from "@bachira/api";
 
 import ProfileCardContent from "../user/ProfileCardContent";
 import PostActions from "./PostActions";
@@ -29,10 +29,10 @@ const PostData = ({
   singlePage,
   userFollowing,
 }: {
-  user: SessionUser;
-  post: PostType;
+  user: NonNullable<RouterOutputs["user"]["getSession"]>;
+  post: RouterOutputs["posts"]["getPosts"]["postData"][0];
   singlePage: boolean;
-  userFollowing: UserFollowingType;
+  userFollowing: NonNullable<RouterOutputs["user"]["postFollowing"]["userFollowing"]>;
 }) => {
   const [postOpen, setPostOpen] = useState(false);
   const router = useRouter();
@@ -52,20 +52,22 @@ const PostData = ({
     setPostOpen(true);
   }, []);
 
+  const date = new Date(post.createdAt);
+
   return (
     <div className="h-fit w-full rounded-md bg-white">
       <Dialog open={postOpen} onOpenChange={setPostOpen}>
         <DialogContent>
           <PostDialogContent
             user={{
-              userId: post.userId,
-              username: post.user.username!,
-              userImage: post.user.image ?? "",
+              userId: post.author.id,
+              username: post.author.username,
+              userImage: post.author.image ?? "",
             }}
             closeDialog={closeEdit}
             post={{
               postId: post.id,
-              author: post.user.username!,
+              author: post.author.username,
               postText: post.text,
               privacy: (post.privacy as "PUBLIC") ? "FOLLOWERS" : "PRIVATE",
             }}
@@ -78,12 +80,12 @@ const PostData = ({
             <div className="relative h-10 w-10 overflow-hidden rounded-full">
               <HoverCard openDelay={250}>
                 <HoverCardTrigger asChild>
-                  <Link href={`/${post.user.username}`}>
+                  <Link href={`/${post.author.username}`}>
                     <Image
-                      src={post.user.image ?? ""}
+                      src={post.author.image ?? ""}
                       width="500"
                       height="500"
-                      alt={post.user.username ?? ""}
+                      alt={post.author.username ?? ""}
                       className="absolute left-0 top-0 h-full w-full object-cover"
                     />
                   </Link>
@@ -94,7 +96,7 @@ const PostData = ({
                   userFollowing={
                     userFollowing?.some(
                       (obj: { following_id: string }) =>
-                        obj.following_id === post?.userId,
+                        obj.following_id === post.author.id,
                     ) ?? false
                   }
                 />
@@ -103,9 +105,9 @@ const PostData = ({
             <div className="">
               <HoverCard openDelay={250}>
                 <HoverCardTrigger>
-                  <button onClick={() => router.push(`/${post.user.username}`)}>
+                  <button onClick={() => router.push(`/${post.author.username}`)}>
                     <h1 className="w-fit cursor-pointer font-semibold">
-                      {post.user.username}
+                      {post.author.username}
                     </h1>
                   </button>
                 </HoverCardTrigger>
@@ -115,7 +117,7 @@ const PostData = ({
                   userFollowing={
                     userFollowing?.some(
                       (obj: { following_id: string }) =>
-                        obj.following_id === post?.userId,
+                        obj.following_id === post.author.id,
                     ) ?? false
                   }
                 />
@@ -126,7 +128,7 @@ const PostData = ({
                   <Tooltip>
                     <TooltipTrigger
                       onClick={() =>
-                        router.push(`/${post.user.username}/${post.id}`)
+                        router.push(`/${post.author.username}/${post.id}`)
                       }
                     >
                       <p className="flex items-center gap-x-2 text-xs opacity-60">
@@ -135,13 +137,14 @@ const PostData = ({
                     </TooltipTrigger>
                     <TooltipContent className="">
                       <p className="text-xs text-subtle">
-                        {post.createdAt.toLocaleString("en-US", options)}{" "}
-                        {post.createdAt.toLocaleTimeString("en-US", {
+                        {date.toLocaleString("en-US", options)}{" "}
+                        {date.toLocaleTimeString("en-US", {
                           hour12: true,
                           hour: "numeric",
                           minute: "numeric",
                         })}
                       </p>
+
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -170,13 +173,12 @@ const PostData = ({
             </div>
           </div>
           <PostActions
-            author={post.userId}
+            author={post.author.id}
             userId={user.id}
             postId={post.id}
             openEdit={openEdit}
             commentPrivacy={
-              // eslint-disable-next-line @typescript-eslint/non-nullable-type-assertion-style
-              post.commentPrivacy as "PUBLIC" | "FOLLOWERS" | "PRIVATE"
+              post.comment_privacy as "PUBLIC" | "FOLLOWERS" | "PRIVATE"
             }
           />
         </div>
@@ -202,7 +204,7 @@ const PostData = ({
         userFollowing={userFollowing}
         user={user}
         postLiked={
-          post.likes.some((obj) => obj.userId === user.id) ? true : false
+          post.likes.some((obj) => obj.user?.id === user.id) ? true : false
         }
       />
     </div>

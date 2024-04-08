@@ -1,23 +1,13 @@
 import { TRPCError } from "@trpc/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
-import { and, asc, eq, like, sql } from "drizzle-orm";
 import { z } from "zod";
 
-import type { User } from "@bachira/db/schema/schema";
-import {
-  bans,
-  followership,
-  notification,
-  USER_REPORT_TYPE,
-  users,
-} from "@bachira/db/schema/schema";
+import { DURATION_TYPE, USER_REPORT_TYPE } from "@bachira/db/schema/schema";
 
 import { editProfileSchema, pusherServer, toPusherKey } from "../../lib/pusher";
 import { utapi } from "../../lib/uploadthing";
-import { createTRPCRouter, privateProcedure } from "../trpc";
-import { DURATION_TYPE } from "@bachira/db/schema/schema"
-
+import { createTRPCRouter, privateProcedure, publicProcedure } from "../trpc";
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
@@ -31,12 +21,22 @@ const rateLimiter = new Ratelimit({
 
 export const userRouter = createTRPCRouter({
   getUsers: privateProcedure.query(async ({ ctx }) => {
-    const data = await ctx.db.query.users.findMany({});
+    const { data } = await ctx.supabase.from("users").select("*");
 
-    if (data[0]) {
-      return data;
+    return data;
+  }),
+  getSession: publicProcedure.query(async ({ ctx }) => {
+    const { data, error } = await ctx.supabase.auth.getSession();
+
+    if (error) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
     }
-    return null;
+
+    if (!data.session) {
+      return null;
+    }
+
+    return data.session?.user;
   }),
   getUser: privateProcedure
     .input(
@@ -45,35 +45,108 @@ export const userRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const userSelect = await ctx.db
-        .select({
-          id: users.id,
-        })
-        .from(users)
-        .where(eq(users.username, input.username));
+      const { data: userSelect } = await ctx.supabase
+        .from("user")
+        .select(" id ")
+        .eq("username", input.username);
 
-      if (userSelect[0]) {
-        const data = await ctx.db.query.users.findFirst({
-          where: (users, { eq }) => eq(users.username, input.username),
-          extras: {
-            followers:
-              sql`(SELECT count(*) from ${followership} WHERE following_id = ${userSelect[0].id})`.as(
-                "followers",
-              ),
+      if (userSelect?.[0]) {
+        const { data: userData } = await ctx.supabase
+          .from("user")
+          .select()
+          .eq("username", input.username)
+          .single();
 
-            following:
-              sql`(SELECT count(*) from ${followership} WHERE follower_id = ${userSelect[0].id})`.as(
-                "following",
-              ),
+        const { count: followersCount } = await ctx.supabase
+          .from("followership")
+          .select()
+          .eq("following_id", userSelect[0].id);
+
+        const { count: followingCount } = await ctx.supabase
+          .from("followership")
+          .select()
+          .eq("follower_id", userSelect[0].id);
+
+        const data = {
+          ...userData,
+          followers: followersCount,
+          following: followingCount,
+        };
+
+        return data;
+      }
+
+      return null;
+    }),
+  isCreated: privateProcedure
+    .input(
+      z.object({
+        email: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { data } = await ctx.supabase
+        .from("user")
+        .select()
+        .eq("email", input.email)
+        .single();
+
+      if (data) {
+        const { error } = await ctx.supabase.auth.updateUser({
+          data: {
+            username: data.username,
           },
         });
 
-        return data as User & {
-          following: number;
-          followers: number;
-        };
+        if (error) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        }
       }
-      return null;
+
+      return data;
+    }),
+  createUser: privateProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        username: z.string(),
+        email: z.string(),
+        name: z.string(),
+        image: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { error } = await ctx.supabase.from("user").insert({
+        id: input.id,
+        username: input.username,
+        email: input.email,
+        name: input.name,
+        image: input.image,
+      });
+
+      if (error) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      }
+
+      return true;
+    }),
+
+  mentionUser: privateProcedure
+    .input(
+      z.object({
+        username: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { data: searchedUsers } = await ctx.supabase
+        .from("user")
+        .select("username, id, image, countId")
+        .ilike("username", `${input.username}%`)
+        .limit(8);
+
+      return {
+        searchedUsers,
+      };
     }),
   checkFollowing: privateProcedure
     .input(
@@ -83,18 +156,18 @@ export const userRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const data = await ctx.db.query.users.findFirst({
-        where: (users, { eq }) => eq(users.id, input.user_id),
-        with: {
-          follower: true,
-        },
-      });
+      const { data } = await ctx.supabase
+        .from("user")
+        .select(`*, follower_id:followership ( * )`)
+        .eq("id", input.user_id)
+        .single();
 
       if (data && data !== null) {
-        const isFollowing = data.follower.filter(
+        const isFollowing = data.follower_id.filter(
           (val: { following_id: string }) =>
             val.following_id === input.following_id,
         );
+
         console.log(isFollowing);
         return {
           isFollowing: isFollowing.length > 0,
@@ -114,23 +187,26 @@ export const userRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const existing = await ctx.db.query.users.findFirst({
-        where: (users, { eq }) => eq(users.username, input.username),
-      });
+      const { data: existing } = await ctx.supabase
+        .from("user")
+        .select()
+        .eq("username", input.username)
+        .single();
 
       if (existing) {
         throw new TRPCError({ code: "UNPROCESSABLE_CONTENT" });
       }
 
-      await ctx.db
-        .update(users)
-        .set({ username: input.username })
-        .where(eq(users.email, input.email));
+      await ctx.supabase
+        .from("user")
+        .update({ username: input.username })
+        .eq("email", input.email);
 
       return {
         success: true,
       };
     }),
+
   followUser: privateProcedure
     .input(
       z.object({
@@ -142,57 +218,21 @@ export const userRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { success } = await rateLimiter.limit(ctx.session.user.id);
+      const { success } = await rateLimiter.limit(ctx.user.id);
       if (!success) {
         throw new TRPCError({ code: "TOO_MANY_REQUESTS" });
       }
-      const followPrepare = ctx.db
-        .insert(followership)
-        .values({
-          follower_id: sql.placeholder("follower_id"),
-          following_id: sql.placeholder("following_id"),
-        })
-        .prepare();
-
-      const notificationPrepare = ctx.db
-        .insert(notification)
-        .values({
-          notificationFrom: sql.placeholder("notificationFrom"),
-          notificationFor: sql.placeholder("notificationFor"),
-          type: "FOLLOW",
-        })
-        .prepare();
-
-      const deletePrepare = ctx.db
-        .delete(followership)
-        .where(
-          and(
-            eq(followership.follower_id, sql.placeholder("user_id")),
-            eq(followership.following_id, sql.placeholder("followingId")),
-          ),
-        )
-        .prepare();
-
-      const deleteNotifPrepare = ctx.db
-        .delete(notification)
-        .where(
-          and(
-            eq(notification.notificationFrom, sql.placeholder("user_id")),
-            eq(notification.notificationFor, sql.placeholder("followingId")),
-            eq(notification.type, sql.placeholder("type")),
-          ),
-        )
-        .prepare();
 
       if (input.action === "follow") {
-        await followPrepare.execute({
+        await ctx.supabase.from("followership").insert({
           follower_id: input.followerId,
-          following_id: input.followingId,
+          following_id: input.followingId!,
         });
 
-        await notificationPrepare.execute({
+        await ctx.supabase.from("notifications").insert({
           notificationFrom: input.followerId,
-          notificationFor: input.followingId,
+          notificationFor: input.followingId!,
+          type: "FOLLOW",
         });
 
         await pusherServer.trigger(
@@ -209,16 +249,18 @@ export const userRouter = createTRPCRouter({
           success: true,
         };
       } else if (input.action === "unfollow") {
-        await deletePrepare.execute({
-          user_id: input.followerId,
-          followingId: input.followingId,
-        });
+        await ctx.supabase
+          .from("followership")
+          .delete()
+          .eq("follower_id", input.followerId)
+          .eq("following_id", input.followingId!);
 
-        await deleteNotifPrepare.execute({
-          user_id: input.followerId,
-          followingId: input.followingId,
-          type: "FOLLOW",
-        });
+        await ctx.supabase
+          .from("notifications")
+          .delete()
+          .eq("notificationFrom", input.followerId)
+          .eq("notificationFor", input.followingId!)
+          .eq("type", "FOLLOW");
       }
 
       return {
@@ -238,36 +280,43 @@ export const userRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const limit = input.limit ?? 10;
 
-      const followers = await ctx.db.query.followership.findMany({
-        where: (followership, { eq, gt, and }) =>
-          and(
-            eq(
-              input.type === "followers"
-                ? followership.following_id
-                : followership.follower_id,
-              input.userId,
-            ),
-            gt(followership.id, input.cursor ?? 0),
-          ),
-        orderBy: asc(followership.id),
-        limit: limit + 1,
-        with: {
-          follower: true,
-          following: true,
-        },
-      });
+      async function getFollowers() {
+        if (input.type === "followers") {
+          const { data } = await ctx.supabase
+            .from("followership")
+            .select(`*, follower_id:user ( * ), following_id:user ( * ) `)
+            .eq("following_id", input.userId)
+            .order("id", { ascending: true })
+            .limit(limit + 1);
+
+          return data;
+        } else {
+          const { data } = await ctx.supabase
+            .from("followership")
+            .select(`*, follower_id:user ( * ), following_id:user ( * ) `)
+            .eq("follower_id", input.userId)
+            .order("id", { ascending: true })
+            .limit(limit + 1);
+
+          return data;
+        }
+      }
+
+      const followers = await getFollowers();
 
       let nextCursor;
 
-      if (followers.length > limit) {
-        const nextItem = followers.pop(); // return the last item from the array
-        nextCursor = nextItem?.id;
-      }
+      if (followers) {
+        if (followers.length > limit) {
+          const nextItem = followers.pop(); // return the last item from the array
+          nextCursor = nextItem?.id;
+        }
 
-      return {
-        followers,
-        nextCursor,
-      };
+        return {
+          followers,
+          nextCursor,
+        };
+      }
     }),
   searchUser: privateProcedure
     .input(
@@ -281,27 +330,26 @@ export const userRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const limit = input.limit ?? 10;
 
-      const searchedUsers = await ctx.db.query.users.findMany({
-        where: (users, { like, gt, and }) =>
-          and(
-            like(users.username, `${input.searchValue}%`),
-            gt(users.countId, input.cursor ?? 0),
-          ),
-        orderBy: asc(users.countId),
-        limit: limit + 1,
-      });
+      const { data: searchedUsers } = await ctx.supabase
+        .from("user")
+        .select()
+        .ilike("username", `${input.searchValue}%`)
+        .gt("countId", input.cursor ?? 0)
+        .limit(limit + 1);
 
       let nextCursor;
 
-      if (searchedUsers.length > limit) {
-        const nextItem = searchedUsers.pop(); // return the last item from the array
-        nextCursor = nextItem?.countId;
-      }
+      if (searchedUsers) {
+        if (searchedUsers.length > limit) {
+          const nextItem = searchedUsers.pop(); // return the last item from the array
+          nextCursor = nextItem?.countId;
+        }
 
-      return {
-        searchedUsers,
-        nextCursor,
-      };
+        return {
+          searchedUsers,
+          nextCursor,
+        };
+      }
     }),
   uploadCover: privateProcedure
     .input(
@@ -311,15 +359,39 @@ export const userRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      await ctx.db
-        .update(users)
-        .set({ coverPhoto: input.image })
-        .where(eq(users.id, input.userId));
+      await ctx.supabase
+        .from("user")
+        .update({
+          coverPhoto: input.image,
+        })
+        .eq("id", input.userId);
 
       return {
         success: true,
       };
     }),
+  uploadProfile: privateProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        image: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { error } = await ctx.supabase
+        .from("user")
+        .update({
+          image: input.image,
+        })
+        .eq("id", input.userId);
+
+      if (error) {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      }
+
+      return true
+    }),
+
   deleteImage: privateProcedure
     .input(
       z.object({
@@ -343,14 +415,21 @@ export const userRouter = createTRPCRouter({
       };
 
       if (input.deleteFromDb && input.userId) {
-        await ctx.db
-          .update(users)
-          .set(
-            input.deleteFrom === "cover"
-              ? { coverPhoto: null }
-              : { image: null },
-          )
-          .where(eq(users.id, input.userId));
+        if (input.deleteFrom === "cover") {
+          await ctx.supabase
+            .from("user")
+            .update({
+              coverPhoto: null,
+            })
+            .eq("id", input.userId);
+        } else {
+          await ctx.supabase
+            .from("user")
+            .update({
+              image: undefined,
+            })
+            .eq("id", input.userId);
+        }
 
         await deleteIfUtf(input.imageKey);
 
@@ -365,7 +444,6 @@ export const userRouter = createTRPCRouter({
         };
       }
     }),
-
   saveProfile: privateProcedure
     .input(
       z.object({
@@ -375,54 +453,35 @@ export const userRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { userData, newData, id } = input;
-
-      if (userData.bio !== newData.bio) {
-        await ctx.db
-          .update(users)
-          .set({ bio: newData.bio })
-          .where(eq(users.id, id));
+      if (input.userData.bio !== input.newData.bio) {
+        await ctx.supabase
+          .from("user")
+          .update({
+            bio: input.newData.bio,
+          })
+          .eq("id", input.id);
       }
 
-      if (userData.gender !== newData.gender) {
-        await ctx.db
-          .update(users)
-          .set({ gender: newData.gender })
-          .where(eq(users.id, id));
+      if (input.userData.gender !== input.newData.gender) {
+        await ctx.supabase
+          .from("user")
+          .update({
+            gender: input.newData.gender,
+          })
+          .eq("id", input.id);
       }
 
-      if (userData.website !== newData.website) {
-        await ctx.db
-          .update(users)
-          .set({ website: newData.website })
-          .where(eq(users.id, id));
+      if (input.userData.website !== input.newData.website) {
+        await ctx.supabase
+          .from("user")
+          .update({
+            website: input.newData.website,
+          })
+          .eq("id", input.id);
       }
 
       return {
         success: true,
-      };
-    }),
-  mentionUser: privateProcedure
-    .input(
-      z.object({
-        username: z.string(),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      const searchedUsers = await ctx.db
-        .select({
-          username: sql<string>`(${users.username})`.as("display"),
-          id: users.id,
-          image: users.image,
-          countId: users.countId,
-        })
-        .from(users)
-        .orderBy(asc(users.countId))
-        .limit(8)
-        .where(and(like(users.username, `${input.username}%`)));
-
-      return {
-        searchedUsers,
       };
     }),
   postFollowing: privateProcedure
@@ -432,10 +491,10 @@ export const userRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const userFollowing = await ctx.db.query.followership.findMany({
-        where: (followership, { eq }) =>
-          eq(followership.follower_id, input.userId),
-      });
+      const { data: userFollowing } = await ctx.supabase
+        .from("followership")
+        .select()
+        .eq("follower_id", input.userId);
 
       return {
         userFollowing,
@@ -451,7 +510,7 @@ export const userRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const durationType = input.durationType
+      const durationType = input.durationType;
       const currentDate = new Date();
       const duration = new Date(currentDate);
 
@@ -469,27 +528,32 @@ export const userRouter = createTRPCRouter({
         duration.setFullYear(duration.getFullYear() + input.duration);
       }
 
-      await ctx.db.insert(bans).values({
+      await ctx.supabase.from("bans").insert({
         userId: input.userId,
         reason: input.reason,
-        duration: duration,
-      })
+        duration: duration.toISOString(), // Convert duration to string
+      });
       return {
         success: true,
       };
     }),
-  getBannedUser: privateProcedure.input(z.object({
-    userId: z.string(),
-  })).mutation(async ({ ctx, input }) => {
+  getBannedUser: privateProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { data } = await ctx.supabase
+        .from("bans")
+        .select()
+        .eq("userId", input.userId)
+        .single();
 
-    const data = await ctx.db.query.bans.findFirst({
-      where: (bans, {eq}) => eq(bans.userId, input.userId)
-    })
-
-    return {
-      bannedUser: data
-    }
-  })
+      return {
+        bannedUser: data,
+      };
+    }),
 });
 
 export type UserRouter = typeof userRouter;

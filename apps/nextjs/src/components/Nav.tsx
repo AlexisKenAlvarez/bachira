@@ -10,7 +10,6 @@ import {
 
 import { AnimatePresence } from "framer-motion";
 import { Cog, LogOut, User } from "lucide-react";
-import { signOut } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useState } from "react";
@@ -20,6 +19,7 @@ import { Input } from "@/ui/input";
 import { Skeleton } from "@/ui/skeleton";
 import SearchUser from "./user/SearchUser";
 import { debounce } from "lodash";
+import { supabase } from "@/supabase/supabaseClient";
 
 const Nav = ({
   email,
@@ -136,7 +136,7 @@ const Nav = ({
             <DropdownMenuItem
               className="flex items-center gap-[4px]"
               onClick={async() => {
-                await signOut({ callbackUrl: "/signin" });
+                await supabase.auth.signOut()
               }}
             >
               <LogOut size={16} />

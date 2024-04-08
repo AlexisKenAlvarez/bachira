@@ -2,27 +2,25 @@
 
 import FeedPosts from "@/components/posts/FeedPosts";
 import Post from "@/components/posts/Post";
-import { getServerAuthSession } from "@bachira/auth";
+import { api } from "@/trpc/server";
+
 import { redirect } from "next/navigation";
 // export const runtime = "edge"
 // type SearchParams = Record<string, string | string[] | undefined>;
 
 const page = async () => {
-  const session = await getServerAuthSession()
+  const session = await api.user.getSession()
 
-
-  if (!session || !session?.user) {
-    redirect("/api/auth/signin");
+  if (!session) {
+    redirect("/signin");
   }
-
 
   return (
     <div className="flex-1">
-
       <div className="mt-4 w-full h-auto">
-        <Post userData={session} />
+        <Post session={session} /> 
         <div className="mt-4 min-h-screen w-full rounded-md font-primary pb-10">
-          <FeedPosts user={session.user}  />
+          <FeedPosts user={session}  />
         </div>
       </div>
     </div>

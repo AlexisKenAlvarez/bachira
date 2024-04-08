@@ -1,5 +1,4 @@
-import type { PostType } from "@/lib/postTypes";
-import type { SessionUser } from "@/lib/userTypes";
+
 import { api } from "@/trpc/client";
 import { Settings, UserCheck2, UserPlus2 } from "lucide-react";
 import Image from "next/image";
@@ -9,14 +8,15 @@ import toast from "react-hot-toast";
 
 import { Button } from "@/ui/button";
 import { HoverCardContent } from "@/ui/hover-card";
+import type { RouterOutputs } from "@bachira/api";
 
 const ProfileCardContent = ({
   user,
   post,
   userFollowing,
 }: {
-  post: PostType;
-  user: SessionUser;
+  post: RouterOutputs["posts"]["getPosts"]["postData"][0];
+  user: NonNullable<RouterOutputs["user"]["getSession"]>;
   userFollowing: boolean;
 }) => {
   const utils = api.useUtils();
@@ -48,17 +48,17 @@ const ProfileCardContent = ({
         // Unfollow user
         await followMutation.mutateAsync({
           followerId: user.id,
-          followingId: post?.userId,
+          followingId: post?.author.id,
           action: "unfollow",
         });
       } else {
         // Follow user
         await followMutation.mutateAsync({
-          followerName: user.username,
+          followerName: user.user_metadata.username as string,
           followerId: user.id,
-          followingId: post?.userId,
+          followingId: post?.author.id,
           action: "follow",
-          image: user.image!,
+          image: user.user_metadata.avatar_url as string,
         });
       }
 
@@ -72,7 +72,6 @@ const ProfileCardContent = ({
     setFollow(userFollowing);
   }, [userFollowing])
   
-
   return (
     <HoverCardContent
       side="bottom"
@@ -85,8 +84,8 @@ const ProfileCardContent = ({
           <Image
             width={600}
             height={600}
-            alt={post?.user.username ?? ""}
-            src={post?.user.image ?? ""}
+            alt={post?.author.username ?? ""}
+            src={post?.author.image ?? ""}
             className="w-11 rounded-full"
           />
         </div>
@@ -95,15 +94,15 @@ const ProfileCardContent = ({
           <div className="flex h-auto w-full justify-between font-primary">
             <div className="">
               <h2 className=" commit w-62 truncate text-base font-bold">
-                @{post?.user.username}
+                @{post?.author.username}
               </h2>
-              <h3 className="text-sm font-medium">{post?.user.name}</h3>
+              <h3 className="text-sm font-medium">{post?.author.name}</h3>
             </div>
           </div>
         </div>
       </div>
       <div className="flex gap-x-2">
-        {post?.userId === user.id ? (
+        {post?.author.id === user.id ? (
           <Button
             className="group w-full gap-x-2 px-6 text-sm font-semibold"
             disabled={!user}

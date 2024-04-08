@@ -28,7 +28,7 @@ const FollowQueryData = ({
           },
           {
             getNextPageParam: (lastPage) => {
-              return lastPage.nextCursor;
+              return lastPage?.nextCursor;
             },
           },
         )
@@ -40,7 +40,7 @@ const FollowQueryData = ({
           },
           {
             getNextPageParam: (lastPage) => {
-              return lastPage.nextCursor;
+              return lastPage?.nextCursor;
             },
           },
         );
@@ -66,12 +66,12 @@ const FollowQueryData = ({
       <div className="content max-h-[20rem] space-y-4 overflow-y-scroll text-left">
         {data?.pages.map((page, i) => (
           <div className="space-y-4" key={i}>
-            {page.followers.map((follower, j) => (
+            {page?.followers.map((follower, j) => (
               <Link
                 href={`/${
                   type === "Followers"
-                    ? follower.follower?.username
-                    : follower.following?.username
+                    ? follower.follower_id.username
+                    : follower.following_id.username
                 }`}
                 key={follower?.id}
                 ref={
@@ -85,10 +85,10 @@ const FollowQueryData = ({
                   <Image
                     src={
                       type === "Followers"
-                        ? follower.follower?.image ?? ""
-                        : follower.following?.image ?? ""
+                        ? follower.follower_id.image ?? ""
+                        : follower.following_id.image ?? ""
                     }
-                    alt={follower.follower?.name ?? ""}
+                    alt={follower.follower_id.name ?? ""}
                     className="h-11 w-11 rounded-full object-cover"
                     width={500}
                     height={500}
@@ -97,14 +97,14 @@ const FollowQueryData = ({
                   <div className="flex flex-col justify-center">
                     <h1 className="max-w-[6rem] truncate font-primary font-bold md:max-w-[14rem]">
                       {type === "Followers"
-                        ? follower.follower?.username
-                        : follower.following?.username}
+                        ? follower.follower_id.username
+                        : follower.following_id.username}
                     </h1>
 
                     <h2 className="max-w-[8rem] truncate font-primary text-sm md:max-w-[10rem]">
                       {type === "Followers"
-                        ? follower.follower?.name
-                        : follower.following?.name}
+                        ? follower.follower_id.name
+                        : follower.following_id.name}
                     </h2>
                   </div>
                 </div>

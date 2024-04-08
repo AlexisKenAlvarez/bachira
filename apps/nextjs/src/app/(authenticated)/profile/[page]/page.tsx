@@ -1,19 +1,18 @@
 import EditProfile from "@/components/user/EditProfile";
-import { getServerAuthSession } from "@bachira/auth";
 import { api } from "@/trpc/server";
 import React from "react";
 
 const page = async ({ params }: { params: { page: string } }) => {
 
-  const session = await getServerAuthSession()
-  const userData = await api.user.getUser.query({
-    username: session?.user.username ?? "",
+  const session = await api.user.getSession()
+  const userData = await api.user.getUser({
+    username: session?.user_metadata.username as string ?? "",
   });
 
   const pages = [
     {
       slug: "edit",
-      component: <EditProfile userData={userData!} />,
+      component: <EditProfile userDataQueryServer={userData!} username={session?.user_metadata.username as string ?? ""} />,
     },
   ];
 

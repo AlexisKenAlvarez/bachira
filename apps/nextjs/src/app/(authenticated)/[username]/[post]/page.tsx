@@ -1,18 +1,18 @@
-import FeedPosts from "@/components/posts/FeedPosts";
-import { authOptions } from "@bachira/auth";
-import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
+import FeedPosts from "@/components/posts/FeedPosts";
+import { api } from "@/trpc/server";
 
 const page = async ({ params }: { params: { post: number } }) => {
-  const session = await getServerSession(authOptions);
+  const session = await api.user.getSession();
+  console.log(params);
 
-  if (!session || !session?.user) {
-    redirect("/api/auth/signin");
+  if (!session) {
+    redirect("/signin");
   }
 
   return (
-    <div className="font-primary mt-4 pb-5">
-      <FeedPosts user={session.user} postId={+params.post} />
+    <div className="mt-4 pb-5 font-primary">
+      <FeedPosts user={session} postId={+params.post} />
     </div>
   );
 };
