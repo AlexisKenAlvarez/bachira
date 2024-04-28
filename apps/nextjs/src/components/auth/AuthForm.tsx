@@ -40,7 +40,7 @@ const AuthForm = ({ type }: AuthPageProps) => {
                   const { error } = await supabase.auth.signInWithOAuth({
                     provider: "google",
                     options: {
-                      redirectTo: `${location.origin}/auth/callback`
+                      redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}auth/callback`
                     }
                   })
 
