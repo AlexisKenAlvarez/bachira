@@ -8,6 +8,7 @@ export default async function authLayout({
 }) {
   const supabase = supabaseServer();
   const { data } = await supabase.auth.getSession();
+  console.log("🚀 ~ data:", data)
   
 
   if (data.session) {

@@ -10,6 +10,7 @@ import { redirect } from "next/navigation";
 
 const page = async () => {
   const session = await api.user.getSession()
+  console.log("🚀 ~ page ~ session:", session)
 
   if (!session) {
     redirect("/signin");
