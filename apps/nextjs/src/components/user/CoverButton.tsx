@@ -28,7 +28,6 @@ const CoverButton = ({
 
   const { startUpload, permittedFileInfo } = useUploadThing("imageUploader", {
     onClientUploadComplete: () => {
-      toast.success("Image uploaded!", { id: "uploadToast", duration: 3000 });
       router.refresh();
     },
     onUploadError: () => {
@@ -66,13 +65,22 @@ const CoverButton = ({
         });
 
         setOpen(false);
-        await startUpload(files, {
-          update: "cover",
-        });
-        toast.loading("Uploading image. Do not leave the page", {
-          id: "uploadToast",
-          duration: Infinity,
-        });
+
+        const promise = new Promise((resolve, reject) => {
+          startUpload(files, {
+            update: "cover",
+          }).then(() => {
+            resolve(true)
+          }).catch(() => {
+            reject(false)
+          })
+        })
+        
+        await toast.promise(promise, {
+          error: "Error uploading image",
+          loading: "Uploading image. Do not leave the page",
+          success: "Image uploaded!",
+        })
       }
     })()
     

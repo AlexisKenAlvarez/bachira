@@ -78,7 +78,7 @@ export const userRouter = createTRPCRouter({
 
       return null;
     }),
-  isCreated: privateProcedure
+  isCreated: publicProcedure
     .input(
       z.object({
         email: z.string(),
@@ -351,7 +351,7 @@ export const userRouter = createTRPCRouter({
         };
       }
     }),
-  uploadCover: privateProcedure
+  uploadCover: publicProcedure
     .input(
       z.object({
         userId: z.string(),

@@ -10,6 +10,7 @@ interface AuthPageProps {
 }
 
 const AuthForm = ({ type }: AuthPageProps) => {
+
   return (
     <section className="flex h-auto min-h-screen w-full bg-white pb-20 sm:bg-bggrey sm:pb-0">
       <ImageSmooth
@@ -40,7 +41,7 @@ const AuthForm = ({ type }: AuthPageProps) => {
                   const { error } = await supabase.auth.signInWithOAuth({
                     provider: "google",
                     options: {
-                      redirectTo: `http://bachira.me/auth/callback`,
+                      redirectTo: `${window.location.origin}/auth/callback`,
                     },
                   })
 

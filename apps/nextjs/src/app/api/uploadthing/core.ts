@@ -23,8 +23,13 @@ export const ourFileRouter = {
       // Whatever is returned here is accessible in onUploadComplete as `metadata`
       return { success: true, userId: session.id, update: input.update };
     })
-    .onUploadComplete( ({ file }) => {
+    .onUploadComplete( async ({ file, metadata }) => {
       console.log("Upload done, File url: ", file.url);
+
+      await api.user.uploadCover({
+        image: file.url,
+        userId: metadata.userId,
+      })
 
       // await db
       //   .update(users)

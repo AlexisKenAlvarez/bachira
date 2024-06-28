@@ -137,6 +137,7 @@ const Nav = ({
               className="flex items-center gap-[4px]"
               onClick={async() => {
                 await supabase.auth.signOut()
+                window.location.href = "/"
               }}
             >
               <LogOut size={16} />
