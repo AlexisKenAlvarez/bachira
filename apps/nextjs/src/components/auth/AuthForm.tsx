@@ -41,7 +41,7 @@ const AuthForm = ({ type }: AuthPageProps) => {
                   const { error } = await supabase.auth.signInWithOAuth({
                     provider: "google",
                     options: {
-                      redirectTo: `/auth/callback`,
+                      redirectTo: `https://www.bachira.me/auth/callback`,
                     },
                   })
 
