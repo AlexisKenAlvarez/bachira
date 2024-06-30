@@ -109,8 +109,8 @@ const PostDialogContent = ({
     const userData = mentionQuery.data?.searchedUsers?.filter(
       (user) => user.username === display,
     );
-    console.log(id);
-    if (userData) {
+
+    if (userData && userData.length > 0) {
       setMentioned((data) => [
         ...data,
         {
