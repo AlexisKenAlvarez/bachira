@@ -28,9 +28,9 @@ export const userRouter = createTRPCRouter({
   getSession: publicProcedure.query(async ({ ctx }) => {
     const { data, error } = await ctx.supabase.auth.getSession();
 
-    if (error) {
-      throw new TRPCError({ code: "UNAUTHORIZED" });
-    }
+    // if (error) {
+    //   throw new TRPCError({ code: "UNAUTHORIZED" });
+    // }
 
     if (!data.session) {
       return null;
