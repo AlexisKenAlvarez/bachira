@@ -1,18 +1,29 @@
-import EditProfile from "@/components/user/EditProfile";
-import { api } from "@/trpc/server";
 import React from "react";
+import EditProfile from "@/components/user/EditProfile";
+import { createClient } from "@/supabase/supabaseServer";
+import { api } from "@/trpc/server";
 
 const page = async ({ params }: { params: { page: string } }) => {
+  const supabase = createClient();
+  const {
+    data: { session: sessionData },
+  } = await supabase.auth.getSession();
 
-  const session = await api.user.getSession()
+  const session = sessionData?.user;
+
   const userData = await api.user.getUser({
-    username: session?.user_metadata.username as string ?? "",
+    username: (session?.user_metadata.username as string) ?? "",
   });
 
   const pages = [
     {
       slug: "edit",
-      component: <EditProfile userDataQueryServer={userData!} username={session?.user_metadata.username as string ?? ""} />,
+      component: (
+        <EditProfile
+          userDataQueryServer={userData!}
+          username={(session?.user_metadata.username as string) ?? ""}
+        />
+      ),
     },
   ];
 

@@ -1,7 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import ImageSmooth from "@/components/shared/ImageSmooth";
 import { supabase } from "@/supabase/supabaseClient";
 import { api } from "@/trpc/client";
@@ -10,19 +9,14 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "@/ui/form";
 import { Input } from "@/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { z } from "zod";
-import type { RouterOutputs } from "@bachira/api";
+import type { Session } from "@supabase/supabase-js";
 
-type ExtendedSession = RouterOutputs["user"]["getSession"] & {
-  user_metadata: {
-    full_name?: string;
-    avatar_url?: string;
-  };
-};
-
-const AddUsername = ({ session }: { session: ExtendedSession }) => {
+const AddUsername = ({ session }: { session: Session["user"] }) => {
   const router = useRouter();
   const addUsernameMutation = api.user.createUser.useMutation();
 
@@ -83,8 +77,8 @@ const AddUsername = ({ session }: { session: ExtendedSession }) => {
                           email: session.email!,
                           username: data.username,
                           id: session.id,
-                          image: session.user_metadata.avatar_url!,
-                          name: session.user_metadata.full_name!,
+                          image: session.user_metadata.avatar_url,
+                          name: session.user_metadata.full_name,
                         });
 
                         await supabase.auth.updateUser({

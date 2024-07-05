@@ -1,18 +1,19 @@
-import { api } from "@/trpc/server";
+import { createClient } from "@/supabase/supabaseServer";
 import { redirect } from "next/navigation";
-
 
 export default async function authLayout({
   children, // will be a page or nested layout
 }: {
   children: React.ReactNode;
 }) {
-  const session = await api.user.getSession()
+  const supabase = createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
 
   if (!session) {
-    console.log("NO SESSIOJNDOIEANODINAWEOI");
-    redirect('/signin')
+    redirect("/signin");
   }
 
-  return <section className="flex-1 flex flex-col">{children}</section>;
+  return <section className="flex flex-1 flex-col">{children}</section>;
 }

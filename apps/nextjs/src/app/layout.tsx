@@ -2,13 +2,14 @@ import AddUsername from "@/components/auth/AddUsername";
 
 import "@/styles/globals.css";
 
-import TRPCProvider from "@/trpc/TRPCProvider";
-import { api } from "@/trpc/server";
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
+import Nav from "@/components/Nav";
+import { createClient } from "@/supabase/supabaseServer";
+import { api } from "@/trpc/server";
+import TRPCProvider from "@/trpc/TRPCProvider";
 import { Toaster } from "react-hot-toast";
 
-import Nav from "@/components/Nav";
 import Providers from "./providers";
 
 const montserrat = Montserrat({
@@ -28,16 +29,19 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const supabase = createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user;
 
-  const session = await api.user.getSession()
-
-  if (session) {
+  if (user) {
     const isCreated = await api.user.isCreated({
-      email: session.email!,
+      email: user.email!,
     });
 
     const countData = await api.notifications.countNotifications({
-      userId: session.id,
+      userId: user.id,
       seen: false,
     });
 
@@ -46,14 +50,14 @@ export default async function RootLayout({
         <html lang="en">
           <body className={`${montserrat.variable} bg-bg font-sans`}>
             {!isCreated ? (
-              <AddUsername session={session} />
+              <AddUsername session={user} />
             ) : (
               <div className="mx-auto flex min-h-screen w-full max-w-[780px] flex-col">
                 <Nav
-                  email={session.email!}
-                  username={session.user_metadata.username as string}
-                  image={session.user_metadata.avatar_url as string}
-                  userId={session.id}
+                  email={user.email!}
+                  username={user.user_metadata.username as string}
+                  image={user.user_metadata.avatar_url as string}
+                  userId={user.id}
                   notifCount={countData ?? 0}
                 />
 

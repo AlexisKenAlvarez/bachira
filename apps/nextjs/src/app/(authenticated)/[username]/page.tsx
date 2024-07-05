@@ -1,12 +1,19 @@
 import { notFound, redirect } from "next/navigation";
 import UserProfile from "@/components/user/UserProfile";
 import { api } from "@/trpc/server";
+import { createClient } from "@/supabase/supabaseServer";
 
 const page = async ({ params }: { params: { username: string } }) => {
   const userData = await api.user.getUser({
     username: params.username,
   });
-  const session = await api.user.getSession();
+
+  const supabase = createClient();
+  const {
+    data: { session: sessionData },
+  } = await supabase.auth.getSession();
+
+  const session = sessionData?.user
 
   if (!userData) {
     notFound();

@@ -1,22 +1,23 @@
 "use client";
-import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
+import type { FollowData as FollowDataType } from "@/lib/userTypes";
 import { api } from "@/trpc/client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
+import { Button } from "@/ui/button";
+import { Skeleton } from "@/ui/skeleton";
+import type { RouterOutputs } from "@bachira/api";
+import type { Session } from "@supabase/supabase-js";
 import {
+  Link as LinkIcon,
   Settings,
   UserCheck2,
   UserPlus2,
-  Link as LinkIcon,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { Button } from "@/ui/button";
-import { Skeleton } from "@/ui/skeleton";
 import CoverButton from "./CoverButton";
-import Link from "next/link";
-import type { FollowData as FollowDataType } from "@/lib/userTypes";
 import FollowData from "./FollowData";
-import type { RouterOutputs } from "@bachira/api";
 
 const UserProfile = ({
   userData,
@@ -24,7 +25,7 @@ const UserProfile = ({
   isFollowing,
   session
 }: {
-  session: NonNullable<RouterOutputs["user"]["getSession"]>;
+  session: Session["user"];
   userData: RouterOutputs["user"]["getUser"];
   inProfile: boolean;
   isFollowing: boolean;

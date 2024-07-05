@@ -25,19 +25,6 @@ export const userRouter = createTRPCRouter({
 
     return data;
   }),
-  getSession: publicProcedure.query(async ({ ctx }) => {
-    const { data, error } = await ctx.supabase.auth.getSession();
-
-    // if (error) {
-    //   throw new TRPCError({ code: "UNAUTHORIZED" });
-    // }
-
-    if (!data.session) {
-      return null;
-    }
-
-    return data.session?.user;
-  }),
   getUser: privateProcedure
     .input(
       z.object({

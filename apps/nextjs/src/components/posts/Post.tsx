@@ -8,9 +8,9 @@ import { useCallback, useState } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "@/ui/dialog";
 
 import PostDialogContent from "./PostDialogContent";
-import type { RouterOutputs } from "@bachira/api";
+import type { Session } from "@supabase/supabase-js";
 
-const Post = ({ session }: { session: RouterOutputs["user"]["getSession"] }) => {
+const Post = ({ session }: { session: Session["user"] }) => {
   const [postOpen, setPostOpen] = useState(false);
 
   const closeDialog = useCallback(() => {

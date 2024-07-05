@@ -1,15 +1,13 @@
-import { supabaseServer } from "@/supabase/supabaseServer";
 import { redirect } from "next/navigation";
+import { createClient } from "@/supabase/supabaseServer";
 
 export default async function authLayout({
   children, // will be a page or nested layout
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = supabaseServer();
+  const supabase = createClient();
   const { data } = await supabase.auth.getSession();
-  console.log("🚀 ~ data:", data)
-  
 
   if (data.session) {
     redirect("/");

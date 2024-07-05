@@ -9,18 +9,16 @@ import { Skeleton } from "@/ui/skeleton";
 import { useInView } from "react-intersection-observer";
 
 import PostData from "./PostData";
-import type { RouterOutputs } from "@bachira/api";
+import type { Session } from "@supabase/supabase-js";
 
 const FeedPosts = ({
   user,
   postId,
 }: {
-  user: NonNullable<RouterOutputs["user"]["getSession"]>;
+  user: Session["user"];
   postId?: number;
 }) => {
-
   const [ref, inView] = useInView();
-
 
   const followingQuery = api.user.postFollowing.useQuery({
     userId: user.id,

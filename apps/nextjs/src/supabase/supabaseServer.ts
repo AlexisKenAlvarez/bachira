@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
-import type { CookieOptions } from "@supabase/ssr";
+import { createServerClient  } from "@supabase/ssr";
+import type {CookieOptions} from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { createServerClient } from "@supabase/ssr";
 
-export function supabaseServer() {
+export const createClient = () => {
   const cookieStore = cookies();
 
   return createServerClient(
@@ -15,12 +15,24 @@ export function supabaseServer() {
           return cookieStore.get(name)?.value;
         },
         set(name: string, value: string, options: CookieOptions) {
-          cookieStore.set({ name, value, ...options });
+          try {
+            cookieStore.set({ name, value, ...options });
+          } catch (error) {
+            // The `set` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
         },
         remove(name: string, options: CookieOptions) {
-          cookieStore.set({ name, value: "", ...options });
+          try {
+            cookieStore.set({ name, value: "", ...options });
+          } catch (error) {
+            // The `delete` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
         },
       },
     },
   );
-}
+};

@@ -86,6 +86,9 @@ importers:
       '@supabase/ssr':
         specifier: ^0.1.0
         version: 0.1.0(@supabase/supabase-js@2.39.8)
+      '@supabase/supabase-js':
+        specifier: ^2.39.8
+        version: 2.39.8
       '@t3-oss/env-nextjs':
         specifier: ^0.7.1
         version: 0.7.1(typescript@5.3.3)(zod@3.22.4)
