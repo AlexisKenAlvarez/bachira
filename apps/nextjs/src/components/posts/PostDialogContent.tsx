@@ -5,21 +5,17 @@ import type { DialogUserType, MentionedType } from "@/lib/userTypes";
 import type { SuggestionDataItem } from "react-mentions";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
-import { Button } from "@/ui/button";
-import { DialogClose } from "@/ui/dialog";
-import { Form, FormControl, FormField } from "@/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from "@/ui/select";
-import { Skeleton } from "@/ui/skeleton";
 import { privacyData } from "@/lib/constants";
 import { cn, getToMentionUsers } from "@/lib/utils";
 import defaultMentionStyle from "@/styles/defaultStyle";
 import { api } from "@/trpc/client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/ui/avatar";
+import { Button } from "@/ui/button";
+import { DialogClose } from "@/ui/dialog";
+import { Form, FormControl, FormField } from "@/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/ui/select";
+import { Separator } from "@/ui/separator";
+import { Skeleton } from "@/ui/skeleton";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronDown, Loader, X } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -27,7 +23,6 @@ import toast from "react-hot-toast";
 import { Mention, MentionsInput } from "react-mentions";
 import { z } from "zod";
 
-import { Separator } from "@/ui/separator";
 import MentionSuggestion from "./MentionSuggestion";
 
 const PostDialogContent = ({
@@ -238,11 +233,11 @@ const PostDialogContent = ({
             name="text"
             control={postForm.control}
             render={({ field }) => (
-              <FormControl>
+              <FormControl className="">
                 <MentionsInput
                   {...field}
                   placeholder="What's on your mind?"
-                  className="outline-nonebg-slate-50 !focus-visible:outline-none w-full border-none py-1 font-primary text-lg !outline-none"
+                  className="!focus-visible:outline-none w-full break-all  py-1 font-primary text-lg  outline-none"
                   style={defaultMentionStyle}
                 >
                   <Mention

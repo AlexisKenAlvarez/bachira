@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { Button } from "@/ui/button";
 import { HoverCardContent } from "@/ui/hover-card";
 import type { RouterOutputs } from "@bachira/api";
+import type { Session } from "@supabase/supabase-js";
 
 const ProfileCardContent = ({
   user,
@@ -16,7 +17,7 @@ const ProfileCardContent = ({
   userFollowing,
 }: {
   post: RouterOutputs["posts"]["getPosts"]["postData"][0];
-  user: NonNullable<RouterOutputs["user"]["getSession"]>;
+  user: Session["user"];
   userFollowing: boolean;
 }) => {
   const utils = api.useUtils();

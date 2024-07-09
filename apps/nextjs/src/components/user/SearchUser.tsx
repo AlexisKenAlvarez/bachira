@@ -15,8 +15,8 @@ const SearchUser = ({ searchValue }: { searchValue: string }) => {
       searchValue,
     },
     {
-      getNextPageParam: ({ nextCursor }) => {
-        return nextCursor;
+      getNextPageParam: (lastPage) => {
+        return lastPage?.nextCursor;
       },
       refetchOnMount: true,
     },
@@ -43,7 +43,7 @@ const SearchUser = ({ searchValue }: { searchValue: string }) => {
       <div className="max-h-full w-full overflow-y-scroll py-4">
         {data?.pages.map((page, i) => (
           <div key={i}>
-            {page.searchedUsers.map((user, j) => (
+            {page?.searchedUsers.map((user, j) => (
               <button
                 className="flex w-full gap-3 px-4 py-2 hover:bg-primary/5"
                 key={user.id}
@@ -56,8 +56,8 @@ const SearchUser = ({ searchValue }: { searchValue: string }) => {
                 }
               >
                 <Image
-                  src={user.image!}
-                  alt={user.username!}
+                  src={user.image}
+                  alt={user.username}
                   className="h-10 w-10 shrink-0 rounded-full"
                   width={500}
                   height={500}

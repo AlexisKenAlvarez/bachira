@@ -22,6 +22,7 @@ import type { RouterOutputs } from "@bachira/api";
 import ProfileCardContent from "../user/ProfileCardContent";
 import PostActions from "./PostActions";
 import PostDialogContent from "./PostDialogContent";
+import type { Session } from "@supabase/supabase-js";
 
 const PostData = ({
   user,
@@ -29,7 +30,7 @@ const PostData = ({
   singlePage,
   userFollowing,
 }: {
-  user: NonNullable<RouterOutputs["user"]["getSession"]>;
+  user: Session["user"];
   post: RouterOutputs["posts"]["getPosts"]["postData"][0];
   singlePage: boolean;
   userFollowing: NonNullable<RouterOutputs["user"]["postFollowing"]["userFollowing"]>;

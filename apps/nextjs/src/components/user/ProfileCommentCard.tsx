@@ -1,13 +1,14 @@
-import { useEffect, useState } from "react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { api } from "@/trpc/client";
 import { Button } from "@/ui/button";
 import { HoverCardContent } from "@/ui/hover-card";
 import { Settings, UserCheck2, UserPlus2 } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 import type { RouterOutputs } from "@bachira/api";
+import type { Session } from "@supabase/supabase-js";
 
 const ProfileCommentCard = ({
   user,
@@ -15,7 +16,7 @@ const ProfileCommentCard = ({
   userFollowing,
 }: {
   data: RouterOutputs["posts"]["getComments"]["commentData"][0];
-  user: NonNullable<RouterOutputs["user"]["getSession"]>;
+  user: Session["user"];
   userFollowing: boolean;
 }) => {
   const utils = api.useUtils();
